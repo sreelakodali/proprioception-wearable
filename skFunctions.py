@@ -5,6 +5,7 @@ import numpy as np
 from scipy import signal
 import constants as CONST
 #import calibration
+import matplotlib.pyplot as plt
 
 
 ## CALIBRATION
@@ -64,3 +65,98 @@ def delay(angle, positionMeasured, timeArr):
 		maxCorr.append(timeArr[i+np.argmax(c)] - timeArr[i])
 		#maxCorr.append(np.argmax(c))
 	return np.mean(maxCorr)
+
+def plot_SingleTactor(s, fileName, time, angle, force, device1_positionMeasured, t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured):
+	fig, ax1 = plt.subplots()
+	fig.subplots_adjust(right=0.75)
+
+	ax2 = ax1.twinx()
+	ax3 = ax1.twinx()
+	# ax4 = ax1.twinx()
+	plt.suptitle("Real-time Data " + fileName[4:-4], name='Arial', weight='bold')
+	ax1.set_xlabel("Time (s)", name='Arial')
+	plt.xticks(name='Arial')
+	plt.yticks(name='Arial')
+
+	ax1.set_ylabel("Angle (degrees)", name='Arial')
+	l1 = ax1.plot(time, angle, 'b', linewidth=1.75, label='Angle')
+	ax1.yaxis.label.set_color('b')
+	ax1.tick_params(axis='y', color='b')
+	#ax1.set_ylim(30,180)
+	ax3.spines['left'].set_color('b')
+
+	ax2.set_ylabel("Force (N)", name='Arial',)
+	l2 = ax2.plot(time, force, 'r', linewidth=1.75, label='Force')
+	ax2.yaxis.label.set_color('r')
+	ax2.spines['right'].set_color('r')
+	ax2.tick_params(axis='y', color='r')
+	ax2.set_ylim(0,15)
+
+	ax3.spines['right'].set_position(('axes',1.2))
+	ax3.set_ylabel("Actuator Position (mm)", name='Arial')
+	l3 = ax3.plot(time, device1_positionMeasured, 'g', linewidth=1.75, label='Actuator Position (Measured)')
+	ax3.yaxis.label.set_color('g')
+	ax3.spines['right'].set_color('g')
+	ax3.tick_params(axis='y', color='g')
+	ax3.set_ylim(0,20)
+
+	# #l4 = ax2.plot(time, device1_positionCommand, color='orange', linewidth=1.75, label='Actuator Position (Command)')
+	for d in t_peakDelays:
+		ax1.axvspan(d[0], d[1], color='teal', alpha=0.5)
+	ax1.plot(time, angle,'bD',markevery=idx_peaksAngle)
+	ax3.plot(time, device1_positionMeasured,'gD',markevery=idx_peaksPositionMeasured)
+	plt.title("Time Delay = %.2f ms" % (t_d*1000), name='Arial')
+
+	l_all = l1+l2+l3#+l4
+	labels = [l.get_label() for l in l_all]
+
+	plt.grid(True)
+	ax1.legend(l_all, labels, loc=0)
+	plt.show()
+	if s==1: plt.savefig(p +"fig_"+fileName[4:-4])
+
+def plot_TwoTactor(s, fileName, time, angle, force, device1_positionMeasured, t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured):
+	fig, axs = plt.subplots(3)
+	plt.suptitle("Real-time Data " + fileName[4:-4], name='Arial', weight='bold')
+	axs[2].set_xlabel("Time (s)", name='Arial')
+	plt.xticks(name='Arial')
+	plt.yticks(name='Arial')
+	axs2 = axs[1].twinx()
+	axs3 = axs[2].twinx()
+
+	axs[0].set_ylabel("Angle (degrees)", name='Arial')
+	l1 = axs[0].plot(time, angle, 'b', linewidth=1.75, label='Angle')
+	axs[0].yaxis.label.set_color('b')
+	axs[0].tick_params(axis='y', color='b')
+	axs[0].set_ylim(0,200)
+	axs[0].spines['left'].set_color('b')
+
+	axs[1].set_ylabel("Force (N)", name='Arial')
+	l2 = axs[1].plot(time, force, 'r', linewidth=1.75, label='Force')
+	axs[1].yaxis.label.set_color('r')
+	axs[1].tick_params(axis='y', color='r')
+	axs[1].set_ylim(0,15)
+	axs2.spines['left'].set_color('r')
+
+	axs2.set_ylabel("Actuator Position (mm)", name='Arial')
+	l3 = axs2.plot(time, device1_positionMeasured, 'g', linewidth=1.75, label='Actuator Position (Measured)')
+	axs2.yaxis.label.set_color('g')
+	axs2.tick_params(axis='y', color='g')
+	axs2.set_ylim(0,20)
+	axs2.spines['right'].set_color('g')
+
+	axs[2].set_ylabel("Force (N)", name='Arial')
+	# l2 = axs[1].plot(time, force, 'r', linewidth=1.75, label='Force')
+	axs[2].yaxis.label.set_color('r')
+	axs[2].tick_params(axis='y', color='r')
+	axs[2].set_ylim(0,15)
+	axs3.spines['left'].set_color('r')
+
+	axs3.set_ylabel("Actuator Position (mm)", name='Arial')
+	#l3 = axs2.plot(time, device1_positionMeasured, 'g', linewidth=1.75, label='Actuator Position (Measured)')
+	axs3.yaxis.label.set_color('g')
+	axs3.tick_params(axis='y', color='g')
+	axs3.set_ylim(0,20)
+	axs3.spines['right'].set_color('g')
+	plt.show()
+	if s==1: plt.savefig(p +"fig_"+fileName[4:-4])
