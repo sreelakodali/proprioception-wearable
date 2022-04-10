@@ -12,7 +12,7 @@ import constants as CONST
 
 ## CONSTANTS
 RUNTIME_LENGTH = 30 # seconds
-PORT_NAME = "/dev/cu.usbmodem1101"
+PORT_NAME = "/dev/cu.usbmodem71181201"
 
 # DIRECTORY
 fileName = str(datetime.datetime.now())[0:16] # default name is date and time
@@ -40,7 +40,7 @@ while (datetime.datetime.now() < endTime):
 
 	# if valid data packet, convert to right units and write in csv
 	if (len(value) == len(dataFunc)):
-		newRow = processNewRow(value, i)
+		newRow = sk.processNewRow(value, i)
 		print(newRow)
 		writer.writerow(newRow)
 	i = i + 1

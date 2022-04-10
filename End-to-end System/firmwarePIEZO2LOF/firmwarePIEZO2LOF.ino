@@ -16,8 +16,8 @@
 #define flexCapacitiveSensor_MAX 193
 
 // Pin Names
-#define position1_IN A1 // pin to measure position1_Measured
-#define position1_OUT 5 // pin to send position1_Command
+#define position1_IN A6 // pin to measure position1_Measured
+#define position1_OUT 21 // pin to send position1_Command
 #define button_IN 2 // pushbutton
 
 // Actuator
@@ -26,7 +26,7 @@ int position1_Command = 0;    // variable to store the servo command
 int position1_Measured = 0;
 
 // Flex sensor
-int flexSensor = 0;        // value read from the sensor
+float flexSensor = 0.0;        // value read from the sensor
 ADS capacitiveFlexSensor;
 //FastMap mapper;
 
@@ -58,15 +58,11 @@ void setup() {
   }
 
   actuator1.attach(position1_OUT); // attach servo
-  pinMode(button_IN, INPUT);
-  pinMode(3, OUTPUT);
-  pinMode(4, OUTPUT);
-  digitalWrite(3, LOW);
-  digitalWrite(4, HIGH);
+//  pinMode(button_IN, INPUT);
 
   if (capacitiveFlexSensor.begin() == false)
   {
-    Serial.println(F("No sensor detected. Check wiring. Freezing..."));
+    Serial.println(("No sensor detected. Check wiring. Freezing..."));
     while (1);
   }
   //mapper.init(flexCapacitiveSensor_MIN, flexCapacitiveSensor_MAX, position_MIN, position_MAX);
@@ -74,8 +70,9 @@ void setup() {
 
 
 void loop() {
+  runtime();
   // loop delay
-  delay(10);
+  delay(100);
 }
 
 void runtime() {
@@ -118,12 +115,16 @@ void sweep() {
     int extending = 1;
     while (counter <= user_position_MAX) {
       actuator1.write(counter);
+      if (capacitiveFlexSensor.available() == true) flexSensor = capacitiveFlexSensor.getX();
       data = readDataFromSensor(i2cAddress);
       position1_Measured = analogRead(position1_IN);
       myTime = millis();
+      Serial.print("Sweep: ");
       Serial.print(myTime);
       Serial.print(" ");
-      Serial.print(position1_Command);
+      Serial.print(flexSensor);
+      Serial.print(" ");
+      Serial.print(counter);
       Serial.print(" ");
       Serial.print(position1_Measured);
       Serial.print(" ");
@@ -141,7 +142,8 @@ void sweep() {
           extending = 1;
         } else counter = counter - 1;
       }
-    }
+      delay(500);
+    }    
 }
 
 /* Calibration: Use a pushbutton to let the device know when it's making contact with
@@ -151,7 +153,9 @@ void calibration() {
   short data;
   unsigned long myTime;
 
-
+  // Reset position of actuator
+  actuator1.write(counter);
+      
   // Caliration Stage 1: Get the zero force of the device not worn
   delay(5000);
   zeroForce = readDataFromSensor(i2cAddress);
