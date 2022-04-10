@@ -12,13 +12,10 @@
 // Constants
 #define position_MIN 46
 #define position_MAX 130
-//#define flexResistiveSensor_MIN 380
-//#define flexResistiveSensor_MAX 480 
 #define flexCapacitiveSensor_MIN 39
 #define flexCapacitiveSensor_MAX 193
 
 // Pin Names
-//#define flexSensor_IN A0
 #define position1_IN A1 // pin to measure position1_Measured
 #define position1_OUT 5 // pin to send position1_Command
 #define button_IN 2 // pushbutton
@@ -27,37 +24,32 @@
 Servo actuator1;  // create servo object to control a servo
 int position1_Command = 0;    // variable to store the servo command
 int position1_Measured = 0;
-//float position1_Measured = 0.0;   // variable to store the measured servo position
-int user_position_MAX = position_MAX;
-int user_position_MIN = position_MIN;
 
 // Flex sensor
 int flexSensor = 0;        // value read from the sensor
 ADS capacitiveFlexSensor;
-FastMap mapper;
-
-//long FilterWeight = 5;
-//ExponentialFilter<long> ADCFilter(FilterWeight, 0);
+//FastMap mapper;
 
 // Push Button
 int buttonState = 0;
 int oldButtonState = 0;
-int pushCount = 0;
-float zeroForce = 0.0;
+int buttonCount = 0;
 
 // force sensor
 byte i2cAddress = 0x04;
-//float force = 0.0;
-int force = 0;
 
-void setup()
-{
-  short data;
-  int counter;
-  unsigned long myTime;
-  bool debug = false;
-  
-  Wire.begin(); // join i2c bus (address optional for master)
+// Calibration
+short zeroForce = 0;
+
+int user_position_MIN = position_MIN;
+short detectionForce = 0;
+
+int user_position_MAX = position_MAX;
+short painForce = 0;
+
+
+void setup() { 
+  Wire.begin(); // join i2c bus
   Serial.begin(57600);  // start serial for output
   Serial.flush();
   
@@ -65,10 +57,7 @@ void setup()
     ; // wait for serial port to connect. Needed for native USB port only
   }
 
-  // attaches the servo on pin to the servo object
-  actuator1.attach(position1_OUT);
-  //Serial.println("Attach servo.");
-  //Serial.println("----------------------------------------");
+  actuator1.attach(position1_OUT); // attach servo
   pinMode(button_IN, INPUT);
   pinMode(3, OUTPUT);
   pinMode(4, OUTPUT);
@@ -78,182 +67,141 @@ void setup()
   if (capacitiveFlexSensor.begin() == false)
   {
     Serial.println(F("No sensor detected. Check wiring. Freezing..."));
-    while (1)
-      ;
+    while (1);
   }
-
-  mapper.init(flexCapacitiveSensor_MIN, flexCapacitiveSensor_MAX, position_MIN, position_MAX);
-  
+  //mapper.init(flexCapacitiveSensor_MIN, flexCapacitiveSensor_MAX, position_MIN, position_MAX);
 }
 
 
-void loop()
-{
-    short data = 10;
-    int counter;
-    unsigned long myTime;
-    bool debug = false;
+void loop() {
+  // loop delay
+  delay(10);
+}
 
-  digitalWrite(3, LOW);
- 
-  /* Note: No sensor should be addressed with default 0x04 value */ 
-    // Reading data from sensor 1
-    if (debug) Serial.println("Reading data from sensor 1");  
-    //flexSensor = analogRead(flexSensor_IN);
-    if (capacitiveFlexSensor.available() == true) {
-      flexSensor = capacitiveFlexSensor.getX();
-    }
-    position1_Command = map(flexSensor, flexCapacitiveSensor_MIN, flexCapacitiveSensor_MAX, position_MIN, position_MAX);//mapper.map(flexSensor);//
-    //data = readDataFromSensor(i2cAddress);
-    position1_Measured = analogRead(position1_IN);
-    //position1_Measured = mapFloat(position1_Measured, 9, 606, 20.0, 0.0);
-    //force = (data - 256) * (45.0)/511;
-    //force = (int) data;
+void runtime() {
+    short data;
+    unsigned long myTime;
+
+    // time for the beginning of the loop
     myTime = millis();
+    
+    // Read flex sensor
+    //flexSensor = analogRead(flexSensor_IN);
+    if (capacitiveFlexSensor.available() == true) flexSensor = capacitiveFlexSensor.getX();
+
+    // Map angle to actuator command
+    position1_Command = map(flexSensor, flexCapacitiveSensor_MIN, flexCapacitiveSensor_MAX, position_MIN, position_MAX);//mapper.map(flexSensor);//
+    
+    // Measure force and actuator position
+    data = readDataFromSensor(i2cAddress);
+    position1_Measured = analogRead(position1_IN);
+
+    // Send command to actuator
     actuator1.write(position1_Command);
-              
+
+    // Send data to serial output
+    Serial.print(myTime);
+    Serial.print(" ");
+    Serial.print(flexSensor);
+    Serial.print(" ");
+    Serial.print(position1_Command);
+    Serial.print(" ");
+    Serial.print(position1_Measured);
+    Serial.print(" ");
+    Serial.println(data);
+}
+
+void sweep() {
+    short data;
+    unsigned long myTime;
+    int counter = user_position_MIN;
+    int extending = 1;
+    while (counter <= user_position_MAX) {
+      actuator1.write(counter);
+      data = readDataFromSensor(i2cAddress);
+      position1_Measured = analogRead(position1_IN);
+      myTime = millis();
       Serial.print(myTime);
       Serial.print(" ");
-//      Serial.print("\tFlexSensor\t");
-      Serial.print(flexSensor);
-      Serial.print(" ");
-//      Serial.print("\tActuatorPosCommand\t");
       Serial.print(position1_Command);
       Serial.print(" ");
-      //Serial.print("\tActuatorPosMeasured\t");
       Serial.print(position1_Measured);
       Serial.print(" ");
-      //Serial.print("\tForce\t");
-      Serial.println(data);    
-//      Serial.print(" N \n");
+      Serial.println(data);
 
-      delay(10); // Change this if you are getting values too quickly
+      if (extending == 1) {
+        if (counter == (user_position_MAX)) {
+          counter = counter - 1;
+          extending = 0;
+        } else counter = counter + 1;
+      }
+      else if (extending == 0) {
+        if (counter == user_position_MIN) {
+          counter = counter + 1;
+          extending = 1;
+        } else counter = counter - 1;
+      }
+    }
 }
-
-void dataCollection() {
-  //    // data collection 
-//    Serial.println("----------------------------------------");  
-//  Serial.println("Data Collection Mode");
-//  Serial.println("----------------------------------------");  
-//    counter = user_position_MIN;
-//    pressState = 0;
-//    while (counter <= user_position_MAX) {
-//      position1_Command = counter;
-//      data = readDataFromSensor(i2cAddress);
-//      position1_Measured = analogRead(position1_IN);
-//      position1_Measured = mapFloat(position1_Measured, 9, 606, 20.0, 0.0);
-//      force = (data - 256) * (45.0)/511;
-//      myTime = millis();
-//      actuator1.write(position1_Command);
-//      Serial.print(myTime);
-//      Serial.print("     Actuator Pos Command: ");
-//      Serial.print(position1_Command);
-//      Serial.print("     Actuator Pos Measured: ");
-//      Serial.print(position1_Measured);
-//      Serial.print("     Force:    ");
-//      
-//      Serial.print(force);    
-//      Serial.print(" N \n");
-//      delay(500); // Change this if you are getting values too quickly
-//      if (pressState == 0) {
-//        if (counter == (user_position_MAX)) {
-//          counter = counter - 1;
-//          pressState = 1;
-//        } else {
-//          counter = counter + 1;
-//        }  
-//      }
-//      else if (pressState == 1) {
-//        if (counter == user_position_MIN) {
-//          counter = counter + 1;
-//          pressState = 0;
-//        } else {
-//          counter = counter - 1;
-//        }
-//      }
-//    }
-}
-
 
 /* Calibration: Use a pushbutton to let the device know when it's making contact with
  *  skin (min) and when at threshold for pain (max). Run this for each user */
-void calibration(bool verbose) {
-
+void calibration() {
   int counter = position_MIN;
-  int user_position_MAX = position_MAX;
   short data;
   unsigned long myTime;
 
-  if (verbose == true) {
-    Serial.println("----------------------------------------");  
-    Serial.println("Calibration Mode");
-    Serial.println("Click the button when device makes contact with your skin and when device is applying max pressure without pain.");
-    Serial.println("----------------------------------------");  
-  }
-  
+
+  // Caliration Stage 1: Get the zero force of the device not worn
+  delay(5000);
+  zeroForce = readDataFromSensor(i2cAddress);
+
+  // Delay between Stage 1 and Stage 2 to wear the device. Click button for next stage
+  while(!(risingEdgeButton() && (buttonCount == 0)));
+
+  // Calibration Stage 2: Get the detection and pain thresholds
   while (counter <= position_MAX) {
-      buttonState = digitalRead(button_IN); // read the pushbutton input pin:
-      position1_Command = counter;
+    
+      // time for the beginning of the loop
+      myTime = millis();
+
+       // Measure force and actuator position
       data = readDataFromSensor(i2cAddress);
       position1_Measured = analogRead(position1_IN);
-      position1_Measured = mapFloat(position1_Measured, 9, 606, 20.0, 0.0);
-      force = (data - 256) * (45.0)/511;
-      myTime = millis();
-      actuator1.write(position1_Command);
 
-      if (verbose == true) {
-        Serial.print(myTime);
-        Serial.print("     Actuator Pos Command: ");
-        Serial.print(position1_Command);
-        Serial.print("     Actuator Pos Measured: ");
-        Serial.print(position1_Measured);
-        Serial.print("     Force:    ");
-        
-        Serial.print(force);    
-        Serial.print(" N \n");
+      // Send command to actuator
+      actuator1.write(counter);
+
+      // Calibration Stage 2a
+      // Click button if you detect the tactor. Detection Threshold stored
+      if (risingEdgeButton() && (buttonCount == 1)) {
+        user_position_MIN = counter;
+        detectionForce = readDataFromSensor(i2cAddress);
       }
       
- //      rising edge detection: if pushbutton pressed, do a pulse
-    if (buttonState != oldButtonState) {
-      if (buttonState == HIGH) {
-
-        if (verbose == true) Serial.println("ON!");
-        
-        // if first time button pressed: set the point which tactor makes contact with skin
-        if (pushCount == 0) {
-          
-          user_position_MIN = position1_Command;
-          pushCount = pushCount + 1;
-          zeroForce = force;
-
-          if (verbose == true) {
-            Serial.println("CALIBRATED: Device contacting skin");
-            Serial.print("Min position: ");
-            Serial.print(user_position_MIN);
-            Serial.print("   Zero Force:");
-            Serial.println(zeroForce);
-          }
-
-        // if second time button pressed: set the max point tactor pushing skin
-        } else if (pushCount == 1) {
-          
-          user_position_MAX = position1_Command-1;
-
-          if (verbose == true) {
-            Serial.println("CALIBRATED: Device's max is set");
-            Serial.print("Max position: ");
-            Serial.print(user_position_MAX);
-            Serial.print("   Max Force:");
-            Serial.println(force);
-          }
-          break;
-        }
+      // Calibration Stage 2b
+      // Click button if feeling pain from tactor. Pain threshold stored
+      if (risingEdgeButton() && (buttonCount == 2)) {
+        user_position_MAX = counter - 1;
+        painForce = readDataFromSensor(i2cAddress);
+        break;
       }
-    }
-    oldButtonState = buttonState;
       delay(500);
       counter = counter + 1;
   }
+}
+
+bool risingEdgeButton() {
+  buttonState = digitalRead(button_IN);
+  if (buttonState != oldButtonState) {
+    if (buttonState == HIGH) {
+      buttonCount = buttonCount + 1;
+      oldButtonState = buttonState;
+      return true;
+    }
+  }
+  oldButtonState = buttonState; 
+  return false;
 }
 
 float mapFloat(int x, int in_min, int in_max, float out_min, float out_max)
