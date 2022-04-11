@@ -14,15 +14,34 @@ import constants as CONST
 # Finding the most recent data directory
 allSubdirs = [CONST.PATH+d for d in os.listdir(CONST.PATH) if os.path.isdir(os.path.join(CONST.PATH, d))]
 p = max(allSubdirs, key=os.path.getctime) + '/'
-fileName = [f for f in os.listdir(p) if f.endswith('.csv')]
+fileName = [f for f in os.listdir(p) if (f.startswith('raw') and f.endswith('.csv'))]
 fileName = fileName[0]
+print("Newest data found: %s" % fileName)
 
 dataFunc = {'time':sk.millisToSeconds, 'flex sensor':sk.computeAngle,'actuator position, command':sk.commandToPosition, \
 			'actuator position, measured':sk.feedbackToPosition, 'force':sk.computeForce}
 columnNames = list(dataFunc.keys())
 
-# Read in and plot data
-data = pd.read_csv(p + fileName, delimiter = ",").astype(float)
+# Create new csv to store processed data
+f = open(p + 'processed_' + fileName[4:-4] + '.csv', 'w+', encoding='UTF8', newline='')
+writer = csv.writer(f)
+writer.writerow(list(dataFunc.keys()))
+
+# Process each data row and save to new file
+i = 0
+with open(p + fileName, 'r') as read_obj:
+	csv_reader = csv.reader(read_obj)
+	for row in csv_reader:
+		# if valid data packet, convert to right units and write in csv
+		if (len(row) == len(dataFunc)):
+			newRow = sk.processNewRow(row, i)
+			#print(newRow)
+			writer.writerow(newRow)
+		i = i + 1
+f.close()
+
+# Read in processsed data and plot data
+data = pd.read_csv(p + 'processed_' + fileName[4:], delimiter = ",").astype(float)
 time = data['time'].tolist()
 angle = data['flex sensor'].tolist() # angle
 device1_positionCommand = data['actuator position, command'].tolist()
@@ -45,6 +64,6 @@ print("Time delay between signals: " + str(t_d) + " s")
 # t_peakDelays = list(zip(t_peaksAngle, t_peaksPositionMeasured))
 
 # plot 1
-sk.plot_OneTactor(1, fileName, time, angle, force, device1_positionMeasured, t_d)
+sk.plot_OneTactor(0, fileName, time, angle, force, device1_positionMeasured, t_d)
 #sk.plot_SingleTactor(0, fileName, time, angle, force, device1_positionMeasured, t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured)
 #sk.plot_TwoTactor(0, fileName, time, angle, force, device1_positionMeasured, t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured)

@@ -26,7 +26,7 @@ int position1_Command = 0;    // variable to store the servo command
 int position1_Measured = 0;
 
 // Flex sensor
-float flexSensor = 0.0;        // value read from the sensor
+int16_t flexSensor = 0;        // value read from the sensor
 ADS capacitiveFlexSensor;
 //FastMap mapper;
 
@@ -78,6 +78,7 @@ void loop() {
 void runtime() {
     short data;
     unsigned long myTime;
+    //byte *buf;
 
     // time for the beginning of the loop
     myTime = millis();
@@ -85,7 +86,8 @@ void runtime() {
     // Read flex sensor
     //flexSensor = analogRead(flexSensor_IN);
     if (capacitiveFlexSensor.available() == true) flexSensor = capacitiveFlexSensor.getX();
-
+    //buf = (byte*) & flexSensor;
+    
     // Map angle to actuator command
     position1_Command = map(flexSensor, flexCapacitiveSensor_MIN, flexCapacitiveSensor_MAX, position_MIN, position_MAX);//mapper.map(flexSensor);//
     
@@ -100,6 +102,10 @@ void runtime() {
     Serial.print(myTime);
     Serial.print(" ");
     Serial.print(flexSensor);
+//    Serial.print(buf[3], BIN);
+//    Serial.print(buf[2], BIN);
+//    Serial.print(buf[1], BIN);
+//    Serial.print(buf[0], BIN);
     Serial.print(" ");
     Serial.print(position1_Command);
     Serial.print(" ");

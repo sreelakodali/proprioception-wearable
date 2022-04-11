@@ -28,8 +28,8 @@ def millisToSeconds(s):
 
 # Function 2: place holder for angle function
 def computeAngle(data):
-	return data #float(bin(data))
-	#format(255, '008b')
+	return float(data)/64.0 #data
+
 # Function 3: Servo command (degrees) --> actuator position (mm)
 def commandToPosition(c):
 	return 0.22*c - 10.7
