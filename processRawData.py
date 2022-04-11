@@ -49,7 +49,7 @@ device1_positionMeasured = data['actuator position, measured'].tolist()
 force  = data['force'].tolist()
 
 t_d = sk.delay(angle, device1_positionMeasured, time)
-print("Time delay between signals: " + str(t_d*2000) + " ms")
+print("Time delay between signals: " + str(t_d*1000) + " ms")
 
 idx_peaksPositionMeasured, _ = signal.find_peaks(np.asarray(device1_positionMeasured), height=(7,20), distance=150)
 idx_peaksPositionMeasured = idx_peaksPositionMeasured.tolist()

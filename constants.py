@@ -7,5 +7,5 @@ PATH = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/'
 ACTUATOR_POSITION_MIN = 0.0
 ACTUATOR_POSITION_MAX = 20.0
 N_CORR = 20000 # computing the delay
-N_WINDOW = 150 # computing the delay
+N_WINDOW = 4000 # computing the delay
 
