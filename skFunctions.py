@@ -68,9 +68,9 @@ def delay(angle, positionMeasured, timeArr):
 		c = signal.correlate(a, p, mode='same') / np.sqrt(signal.correlate(a, a, mode='same')[int(n/2)] * signal.correlate(p, p, mode='same')[int(n/2)])
 		maxCorr.append(timeArr[i+np.argmax(c)] - timeArr[i])
 		#maxCorr.append(np.argmax(c))
-	return np.mean(maxCorr)
+	return np.mean(maxCorr) # unit is seconds
 
-def plot_OneTactor(s, fileName, time, angle, force, device1_positionMeasured, t_d):
+def plot_OneTactor(s, p, fileName, time, angle, force, device1_positionMeasured, t_d):
 	fig, ax1 = plt.subplots()
 	fig.subplots_adjust(right=0.75)
 
@@ -119,7 +119,7 @@ def plot_OneTactor(s, fileName, time, angle, force, device1_positionMeasured, t_
 	plt.show()
 	if s==1: plt.savefig(p +"fig_"+fileName[4:-4])
 
-def plot_SingleTactor(s, fileName, time, angle, force, device1_positionMeasured, t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured):
+def plot_SingleTactor(s, p, fileName, time, angle, force, device1_positionMeasured, t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured):
 	fig, ax1 = plt.subplots()
 	fig.subplots_adjust(right=0.75)
 
@@ -165,10 +165,11 @@ def plot_SingleTactor(s, fileName, time, angle, force, device1_positionMeasured,
 
 	plt.grid(True)
 	ax1.legend(l_all, labels, loc=0)
-	plt.show()
 	if s==1: plt.savefig(p +"fig_"+fileName[4:-4])
+	plt.show()
+	
 
-def plot_TwoTactor(s, fileName, time, angle, force, device1_positionMeasured, t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured):
+def plot_TwoTactor(s, p, fileName, time, angle, force, device1_positionMeasured, t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured):
 	fig, axs = plt.subplots(3)
 	plt.suptitle("Real-time Data " + fileName[4:-4], name='Arial', weight='bold')
 	axs[2].set_xlabel("Time (s)", name='Arial')
@@ -211,5 +212,6 @@ def plot_TwoTactor(s, fileName, time, angle, force, device1_positionMeasured, t_
 	axs3.tick_params(axis='y', color='g')
 	axs3.set_ylim(0,20)
 	axs3.spines['right'].set_color('g')
-	plt.show()
 	if s==1: plt.savefig(p +"fig_"+fileName[4:-4])
+	plt.show()
+	

@@ -12,8 +12,8 @@
 // Constants
 #define position_MIN 46
 #define position_MAX 130
-#define flexCapacitiveSensor_MIN 39
-#define flexCapacitiveSensor_MAX 193
+#define flexCapacitiveSensor_MIN -2000
+#define flexCapacitiveSensor_MAX 11500
 
 // Pin Names
 #define position1_IN A6 // pin to measure position1_Measured
@@ -71,8 +71,7 @@ void setup() {
 
 void loop() {
   runtime();
-  // loop delay
-  delay(100);
+  //delay(100);// loop delay
 }
 
 void runtime() {
