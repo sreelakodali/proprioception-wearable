@@ -1,7 +1,8 @@
 # Constants for Sensory Substitution Devce 
 # Written by: Sreela Kodali (kodali@stanford.edu) 
 
-PATH = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/'
+PATH =  '/Volumes/PIEZO2/'
+#'/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/'
 
 ## DATA PROCESSING CONSTANTS ##
 ACTUATOR_POSITION_MIN = 0.0

@@ -7,7 +7,9 @@
 #include <Wire.h> //For I2C/SMBus
 #include <Servo.h>
 #include "SparkFun_Displacement_Sensor_Arduino_Library.h"
-#include<FastMap.h>
+#include <SD.h>
+#include <SPI.h>
+//#include<FastMap.h>
 
 // Constants
 #define position_MIN 46
@@ -36,7 +38,7 @@ int oldButtonState = 0;
 int buttonCount = 0;
 
 // force sensor
-byte i2cAddress = 0x04;
+const byte i2cAddress = 0x04;
 
 // Calibration
 short zeroForce = 0;
@@ -47,22 +49,30 @@ short detectionForce = 0;
 int user_position_MAX = position_MAX;
 short painForce = 0;
 
+// SD card writing
+const int chipSelect = 10;
+bool serialON = true;
 
 void setup() { 
   Wire.begin(); // join i2c bus
-  Serial.begin(57600);  // start serial for output
-  Serial.flush();
   
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB port only
+  if (serialON) {
+    Serial.begin(57600);  // start serial for output
+    Serial.flush();
+    while (!Serial);
   }
+  // see if the card is present and can be initialized:
+  if (!SD.begin(chipSelect)) {
+    if (serialON) Serial.println("Card failed, or not present");
+    while (1); // No SD card, so don't do anything more - stay stuck here
+  }
+  if (serialON) Serial.println("card initialized.");
 
   actuator1.attach(position1_OUT); // attach servo
 //  pinMode(button_IN, INPUT);
 
-  if (capacitiveFlexSensor.begin() == false)
-  {
-    Serial.println(("No sensor detected. Check wiring. Freezing..."));
+  if (capacitiveFlexSensor.begin() == false) {
+    if (serialON) Serial.println(("No sensor detected. Check wiring. Freezing..."));
     while (1);
   }
   //mapper.init(flexCapacitiveSensor_MIN, flexCapacitiveSensor_MAX, position_MIN, position_MAX);
@@ -77,7 +87,7 @@ void loop() {
 void runtime() {
     short data;
     unsigned long myTime;
-    //byte *buf;
+    String dataString = "";
 
     // time for the beginning of the loop
     myTime = millis();
@@ -97,20 +107,35 @@ void runtime() {
     // Send command to actuator
     actuator1.write(position1_Command);
 
-    // Send data to serial output
-    Serial.print(myTime);
-    Serial.print(" ");
-    Serial.print(flexSensor);
-//    Serial.print(buf[3], BIN);
-//    Serial.print(buf[2], BIN);
-//    Serial.print(buf[1], BIN);
-//    Serial.print(buf[0], BIN);
-    Serial.print(" ");
-    Serial.print(position1_Command);
-    Serial.print(" ");
-    Serial.print(position1_Measured);
-    Serial.print(" ");
-    Serial.println(data);
+    dataString += (String(myTime) + " " + String(flexSensor) + " " + String(position1_Command) + " " + String(position1_Measured) + " " + String(data));
+
+    // open the file.
+    File dataFile = SD.open("new.csv", FILE_WRITE);
+    if (dataFile) {
+      dataFile.println(dataString);
+      dataFile.close();
+//      // print to the serial port too:
+      if (serialON) Serial.println(dataString);
+    } else {
+//      // if the file isn't open, pop up an error:
+      if (serialON) Serial.println("error opening datalog.txt");
+    }
+    
+
+//    // Send data to serial output
+//    Serial.print(myTime);
+//    Serial.print(" ");
+//    Serial.print(flexSensor);
+////    Serial.print(buf[3], BIN);
+////    Serial.print(buf[2], BIN);
+////    Serial.print(buf[1], BIN);
+////    Serial.print(buf[0], BIN);
+//    Serial.print(" ");
+//    Serial.print(position1_Command);
+//    Serial.print(" ");
+//    Serial.print(position1_Measured);
+//    Serial.print(" ");
+//    Serial.println(data);
 }
 
 void sweep() {
