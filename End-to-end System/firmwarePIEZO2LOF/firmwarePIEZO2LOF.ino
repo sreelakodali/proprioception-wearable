@@ -57,7 +57,7 @@ void setup() {
   Wire.begin(); // join i2c bus
   
   if (serialON) {
-    Serial.begin(57600);  // start serial for output
+    Serial.begin(921600);  // start serial for output
     Serial.flush();
     while (!Serial);
   }
@@ -75,7 +75,7 @@ void setup() {
     if (serialON) Serial.println(("No sensor detected. Check wiring. Freezing..."));
     while (1);
   }
-  //mapper.init(flexCapacitiveSensor_MIN, flexCapacitiveSensor_MAX, position_MIN, position_MAX);
+//  calibration();
 }
 
 
@@ -107,35 +107,19 @@ void runtime() {
     // Send command to actuator
     actuator1.write(position1_Command);
 
-    dataString += (String(myTime) + " " + String(flexSensor) + " " + String(position1_Command) + " " + String(position1_Measured) + " " + String(data));
+    dataString += (String(myTime) + "," + String(flexSensor) + "," + String(position1_Command) + "," + String(position1_Measured) + "," + String(data));
 
     // open the file.
     File dataFile = SD.open("new.csv", FILE_WRITE);
     if (dataFile) {
       dataFile.println(dataString);
       dataFile.close();
-//      // print to the serial port too:
+      // print to the serial port too:
       if (serialON) Serial.println(dataString);
     } else {
-//      // if the file isn't open, pop up an error:
+      // if the file isn't open, pop up an error:
       if (serialON) Serial.println("error opening datalog.txt");
     }
-    
-
-//    // Send data to serial output
-//    Serial.print(myTime);
-//    Serial.print(" ");
-//    Serial.print(flexSensor);
-////    Serial.print(buf[3], BIN);
-////    Serial.print(buf[2], BIN);
-////    Serial.print(buf[1], BIN);
-////    Serial.print(buf[0], BIN);
-//    Serial.print(" ");
-//    Serial.print(position1_Command);
-//    Serial.print(" ");
-//    Serial.print(position1_Measured);
-//    Serial.print(" ");
-//    Serial.println(data);
 }
 
 void sweep() {

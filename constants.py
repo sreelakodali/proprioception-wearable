@@ -3,6 +3,8 @@
 
 PATH =  '/Volumes/PIEZO2/'
 #'/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/'
+PORT_NAME = "/dev/cu.usbmodem71181201"
+BAUD_RATE = 921600
 
 ## DATA PROCESSING CONSTANTS ##
 ACTUATOR_POSITION_MIN = 0.0
