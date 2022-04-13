@@ -22,6 +22,14 @@
 #define position1_OUT 21 // pin to send position1_Command
 #define button_IN 2 // pushbutton
 
+bool serialON = true;
+bool sdWriteON = false;
+
+const byte I2C_ADDR = 0x04; // force sensor
+const int CHIP_SELECT = 10; // SD card writing
+const int WRITE_COUNT = 100; // for every n runtime cycles, write out data
+int cycleCount = 0;
+
 // Actuator
 Servo actuator1;  // create servo object to control a servo
 int position1_Command = 0;    // variable to store the servo command
@@ -37,37 +45,32 @@ int buttonState = 0;
 int oldButtonState = 0;
 int buttonCount = 0;
 
-// force sensor
-const byte i2cAddress = 0x04;
-
 // Calibration
 short zeroForce = 0;
-
 int user_position_MIN = position_MIN;
 short detectionForce = 0;
-
 int user_position_MAX = position_MAX;
 short painForce = 0;
 
-// SD card writing
-const int chipSelect = 10;
-bool serialON = true;
-
 void setup() { 
   Wire.begin(); // join i2c bus
-  
+
+  // start serial for output
   if (serialON) {
-    Serial.begin(921600);  // start serial for output
+    Serial.begin(921600);  
     Serial.flush();
     while (!Serial);
   }
-  // see if the card is present and can be initialized:
-  if (!SD.begin(chipSelect)) {
-    if (serialON) Serial.println("Card failed, or not present");
-    while (1); // No SD card, so don't do anything more - stay stuck here
-  }
-  if (serialON) Serial.println("card initialized.");
 
+  if (sdWriteON) {
+    // See if the card is present and can be initialized:
+    if (!SD.begin(CHIP_SELECT)) {
+      if (serialON) Serial.println("Card failed, or not present");
+      while (1); // No SD card, so don't do anything more - stay stuck here
+    }
+    if (serialON) Serial.println("card initialized.");
+  }
+  
   actuator1.attach(position1_OUT); // attach servo
 //  pinMode(button_IN, INPUT);
 
@@ -81,7 +84,6 @@ void setup() {
 
 void loop() {
   runtime();
-  //delay(100);// loop delay
 }
 
 void runtime() {
@@ -93,32 +95,34 @@ void runtime() {
     myTime = millis();
     
     // Read flex sensor
-    //flexSensor = analogRead(flexSensor_IN);
     if (capacitiveFlexSensor.available() == true) flexSensor = capacitiveFlexSensor.getX();
-    //buf = (byte*) & flexSensor;
     
     // Map angle to actuator command
-    position1_Command = map(flexSensor, flexCapacitiveSensor_MIN, flexCapacitiveSensor_MAX, position_MIN, position_MAX);//mapper.map(flexSensor);//
+    position1_Command = map(flexSensor, flexCapacitiveSensor_MIN, flexCapacitiveSensor_MAX, position_MIN, position_MAX);
+    //mapper.map(flexSensor);
     
     // Measure force and actuator position
-    data = readDataFromSensor(i2cAddress);
+    data = readDataFromSensor(I2C_ADDR);
     position1_Measured = analogRead(position1_IN);
 
     // Send command to actuator
     actuator1.write(position1_Command);
 
-    dataString += (String(myTime) + "," + String(flexSensor) + "," + String(position1_Command) + "," + String(position1_Measured) + "," + String(data));
-
-    // open the file.
-    File dataFile = SD.open("raw_data.csv", FILE_WRITE);
-    if (dataFile) {
-      dataFile.println(dataString);
-      dataFile.close();
-      // print to the serial port too:
-      if (serialON) Serial.println(dataString);
-    } else {
-      // if the file isn't open, pop up an error:
-      if (serialON) Serial.println("error opening datalog.txt");
+    cycleCount = cycleCount + 1;
+    if (cycleCount == WRITE_COUNT) {
+      if (sdWriteON || serialON) {
+        dataString += (String(myTime) + "," + String(flexSensor) + "," + String(position1_Command) + "," \
+        + String(position1_Measured) + "," + String(data));
+        if (sdWriteON) {
+          File dataFile = SD.open("raw_data.csv", FILE_WRITE);
+          if (dataFile) {
+            dataFile.println(dataString);
+            dataFile.close();
+          } else if (serialON) Serial.println("error opening datalog.txt");
+        }
+        if (serialON) Serial.println(dataString);
+      } 
+      cycleCount = 0;
     }
 }
 
@@ -127,22 +131,21 @@ void sweep() {
     unsigned long myTime;
     int counter = user_position_MIN;
     int extending = 1;
+    
+    
     while (counter <= user_position_MAX) {
+      String dataString = "";
       actuator1.write(counter);
-      if (capacitiveFlexSensor.available() == true) flexSensor = capacitiveFlexSensor.getX();
-      data = readDataFromSensor(i2cAddress);
+      //if (capacitiveFlexSensor.available() == true) flexSensor = capacitiveFlexSensor.getX();
+      //data = readDataFromSensor(I2C_ADDR);
       position1_Measured = analogRead(position1_IN);
       myTime = millis();
-      Serial.print("Sweep: ");
-      Serial.print(myTime);
-      Serial.print(" ");
-      Serial.print(flexSensor);
-      Serial.print(" ");
-      Serial.print(counter);
-      Serial.print(" ");
-      Serial.print(position1_Measured);
-      Serial.print(" ");
-      Serial.println(data);
+
+      if (serialON) {
+        dataString += (String(myTime) + "," + String(counter) + "," \
+        + String(position1_Measured));
+        Serial.println(dataString);
+      }
 
       if (extending == 1) {
         if (counter == (user_position_MAX)) {
@@ -172,7 +175,7 @@ void calibration() {
       
   // Caliration Stage 1: Get the zero force of the device not worn
   delay(5000);
-  zeroForce = readDataFromSensor(i2cAddress);
+  zeroForce = readDataFromSensor(I2C_ADDR);
 
   // Delay between Stage 1 and Stage 2 to wear the device. Click button for next stage
   while(!(risingEdgeButton() && (buttonCount == 0)));
@@ -184,7 +187,7 @@ void calibration() {
       myTime = millis();
 
        // Measure force and actuator position
-      data = readDataFromSensor(i2cAddress);
+      data = readDataFromSensor(I2C_ADDR);
       position1_Measured = analogRead(position1_IN);
 
       // Send command to actuator
@@ -194,14 +197,14 @@ void calibration() {
       // Click button if you detect the tactor. Detection Threshold stored
       if (risingEdgeButton() && (buttonCount == 1)) {
         user_position_MIN = counter;
-        detectionForce = readDataFromSensor(i2cAddress);
+        detectionForce = readDataFromSensor(I2C_ADDR);
       }
       
       // Calibration Stage 2b
       // Click button if feeling pain from tactor. Pain threshold stored
       if (risingEdgeButton() && (buttonCount == 2)) {
         user_position_MAX = counter - 1;
-        painForce = readDataFromSensor(i2cAddress);
+        painForce = readDataFromSensor(I2C_ADDR);
         break;
       }
       delay(500);
