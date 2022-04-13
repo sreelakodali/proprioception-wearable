@@ -3,6 +3,8 @@
 
 import csv
 import os
+import datetime
+import shutil
 import numpy as np
 import pandas as pd
 from scipy import signal # import lfilter, lfilter_zi, filtfilt, butter
@@ -11,17 +13,46 @@ from operator import itemgetter
 import skFunctions as sk
 import constants as CONST
 
-# Finding the most recent data directory
-#allSubdirs = [CONST.PATH+d for d in os.listdir(CONST.PATH) if os.path.isdir(os.path.join(CONST.PATH, d))]
-allSubdirs = [CONST.PATH+d for d in os.listdir(CONST.PATH)]
+# Finding the most recent data file on SD card
+newestFile = max([CONST.PATH+d for d in os.listdir(CONST.PATH) if (d.startswith('raw') and d.endswith('.csv'))], key=os.path.getctime)
+print(newestFile)
+print("Newest data found: %s" % newestFile)
 
-p = max(allSubdirs, key=os.path.getctime) + '/'
-fileName = [f for f in os.listdir(p) if (f.endswith('.csv'))]
-fileName = fileName[0]
-print("Newest data found: %s" % fileName)
+# Create new folder on local machine and copy raw data over
+fileName = str(datetime.datetime.now())[0:16] # default name is date and time
+fileName = ((fileName.replace('/', '_')).replace(' ', '_')).replace(':','-')
+p = CONST.PATH_LAPTOP +fileName+'/'
+if not (os.path.exists(p)):
+	os.makedirs(p)
+	print("New directory created: %s" % fileName)
+shutil.copyfile(newestFile, (p + 'raw_' + fileName + '.csv'))
+print("File copied.")
+
+dataFunc = {'time':sk.millisToSeconds, 'flex sensor':sk.computeAngle,'actuator position, command':sk.commandToPosition, \
+			'actuator position, measured':sk.feedbackToPosition, 'force':sk.computeForce}
+
+# Create new csv to store processed data
+f = open(p + 'processed_' + fileName + '.csv', 'w+', encoding='UTF8', newline='')
+writer = csv.writer(f)
+writer.writerow(list(dataFunc.keys()))
+
+# Process each data row and save to new file
+i = 0
+with open(p + 'raw_' + fileName + '.csv', 'r') as read_obj:
+	csv_reader = csv.reader(read_obj)
+	for row in csv_reader:
+		# if valid data packet, convert to right units and write in csv
+		if (len(row) == len(dataFunc)):
+			# for j in range(0,len(row)):
+			# 	print(row[j])
+			newRow = sk.processNewRow(row, i)
+			#print(newRow)
+			writer.writerow(newRow)
+		i = i + 1
+f.close()
 
 # Read in processsed data and plot data
-data = pd.read_csv(p + fileName, delimiter = ",").astype(float)
+data = pd.read_csv(p + 'processed_' + fileName + '.csv', delimiter = ",").astype(float)
 time = data['time'].tolist()
 angle = data['flex sensor'].tolist() # angle
 device1_positionCommand = data['actuator position, command'].tolist()

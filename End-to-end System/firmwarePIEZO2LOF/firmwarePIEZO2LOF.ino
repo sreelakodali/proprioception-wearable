@@ -110,7 +110,7 @@ void runtime() {
     dataString += (String(myTime) + "," + String(flexSensor) + "," + String(position1_Command) + "," + String(position1_Measured) + "," + String(data));
 
     // open the file.
-    File dataFile = SD.open("new.csv", FILE_WRITE);
+    File dataFile = SD.open("raw_data.csv", FILE_WRITE);
     if (dataFile) {
       dataFile.println(dataString);
       dataFile.close();

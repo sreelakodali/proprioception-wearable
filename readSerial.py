@@ -10,10 +10,7 @@ from scipy import signal
 import constants as CONST
 
 ## CONSTANTS
-PORT_NAME = "/dev/cu.usbmodem71181201" # change this to Arduino/teeny's port
-BAUD_RATE = 57600
 RUNTIME_LENGTH = 30 # seconds
-
 
 # DIRECTORY
 fileName = str(datetime.datetime.now())[0:16] # default name is date and time
@@ -23,7 +20,7 @@ if not (os.path.exists(p)):
 	os.makedirs(p)
 	print("New directory created: %s" % fileName)
 
-mcu = serial.Serial(port=PORT_NAME, baudrate=BAUD_RATE, timeout=.1)
+mcu = serial.Serial(port=CONST.PORT_NAME, baudrate=CONST.BAUD_RATE, timeout=.1)
 f = open(p + 'raw_' + fileName + '.csv', 'w+', encoding='UTF8', newline='')
 writer = csv.writer(f)
 

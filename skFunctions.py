@@ -52,8 +52,8 @@ def processNewRow(val, loopIncrement):
 		if (val[columnNames.index(key)].lstrip("-").rstrip().isnumeric()): # why did I remove negatives
 			#print("%s numeric - yep" % str(key))
 			x = dataFunc[key](float(val[columnNames.index(key)]))
-			if (loopIncrement < 20 and key == 'time' and x > 2): #fixme
-				break
+			# if (loopIncrement < 20 and key == 'time' and x > 2):
+			# 	break
 			r.append(x)
 	return r
 
