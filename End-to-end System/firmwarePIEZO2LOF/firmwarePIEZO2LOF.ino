@@ -20,7 +20,7 @@
 // Pin Names
 #define position1_IN A6 // pin to measure position1_Measured
 #define position1_OUT 21 // pin to send position1_Command
-#define button_IN 2 // pushbutton
+#define button_IN 4 // pushbutton
 
 bool serialON = true;
 bool sdWriteON = false;
@@ -72,7 +72,7 @@ void setup() {
   }
   
   actuator1.attach(position1_OUT); // attach servo
-//  pinMode(button_IN, INPUT);
+  pinMode(button_IN, INPUT);
 
   if (capacitiveFlexSensor.begin() == false) {
     if (serialON) Serial.println(("No sensor detected. Check wiring. Freezing..."));
@@ -83,6 +83,7 @@ void setup() {
 
 
 void loop() {
+  //if (risingEdgeButton()) Serial.println("bloop!");
   runtime();
 }
 
@@ -214,6 +215,7 @@ void calibration() {
 
 bool risingEdgeButton() {
   buttonState = digitalRead(button_IN);
+  //Serial.println(buttonState);
   if (buttonState != oldButtonState) {
     if (buttonState == HIGH) {
       buttonCount = buttonCount + 1;
