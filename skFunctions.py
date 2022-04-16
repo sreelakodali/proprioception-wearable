@@ -9,8 +9,6 @@ import matplotlib.pyplot as plt
 
 
 ## CALIBRATION
-ACTUATOR_FEEDBACK_MIN = 9
-ACTUATOR_FEEDBACK_MAX = 606
 # zero force
 # max position and force of user
 # min position and force for user (detection)
@@ -36,7 +34,7 @@ def commandToPosition(c):
 
 # Function 4: Feedback signal from actuator (1/1024th of V) to actuator position (mm)
 def feedbackToPosition(f):
-	return mapFloat(f, ACTUATOR_FEEDBACK_MIN, ACTUATOR_FEEDBACK_MAX, CONST.ACTUATOR_POSITION_MAX, CONST.ACTUATOR_POSITION_MIN)
+	return mapFloat(f, CONST.ACTUATOR_FEEDBACK_MIN, CONST.ACTUATOR_FEEDBACK_MAX, CONST.ACTUATOR_POSITION_MAX, CONST.ACTUATOR_POSITION_MIN)
 
 # Function 5: Digital value from force sensor --> force measurement (N)
 def computeForce(data):
@@ -127,7 +125,7 @@ def plot_SingleTactor(s, p, fileName, time, angle, force, device1_positionMeasur
 	ax2 = ax1.twinx()
 	ax3 = ax1.twinx()
 	# ax4 = ax1.twinx()
-	plt.suptitle("Real-time Data " + fileName[4:-4], name='Arial', weight='bold')
+	plt.suptitle("Real-time Data " + fileName[:-4], name='Arial', weight='bold')
 	ax1.set_xlabel("Time (s)", name='Arial')
 	plt.xticks(name='Arial')
 	plt.yticks(name='Arial')
