@@ -83,8 +83,9 @@ void setup() {
 
 
 void loop() {
-  //if (risingEdgeButton()) Serial.println("bloop!");
+//  if (risingEdgeButton()) Serial.println("bloop!");
   runtime();
+//  actuator1.write(65);
 }
 
 void runtime() {
@@ -220,10 +221,12 @@ bool risingEdgeButton() {
     if (buttonState == HIGH) {
       buttonCount = buttonCount + 1;
       oldButtonState = buttonState;
+      delay(50);
       return true;
     }
   }
   oldButtonState = buttonState; 
+  delay(50);
   return false;
 }
 

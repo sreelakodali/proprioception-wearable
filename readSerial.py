@@ -15,7 +15,7 @@ RUNTIME_LENGTH = 30 # seconds
 # DIRECTORY
 fileName = str(datetime.datetime.now())[0:16] # default name is date and time
 fileName = ((fileName.replace('/', '_')).replace(' ', '_')).replace(':','-')
-p = CONST.PATH +fileName+'/'
+p = CONST.PATH_LAPTOP +fileName+'/'
 if not (os.path.exists(p)):
 	os.makedirs(p)
 	print("New directory created: %s" % fileName)

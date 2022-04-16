@@ -6,7 +6,7 @@ PATH_LAPTOP = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/'
 PORT_NAME = "/dev/cu.usbmodem71181201"
 BAUD_RATE = 921600
 DATASRC_SD = False
-TRANSFER_RAW = True
+TRANSFER_RAW = False
 
 ## DATA PROCESSING CONSTANTS ##
 ACTUATOR_POSITION_MIN = 0.0
