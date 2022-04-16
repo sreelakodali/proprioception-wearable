@@ -22,8 +22,8 @@
 #define position1_OUT 21 // pin to send position1_Command
 #define button_IN 4 // pushbutton
 
-bool serialON = true;
-bool sdWriteON = false;
+bool serialON = false;
+bool sdWriteON = true;
 
 const byte I2C_ADDR = 0x04; // force sensor
 const int CHIP_SELECT = 10; // SD card writing
@@ -78,7 +78,7 @@ void setup() {
     if (serialON) Serial.println(("No sensor detected. Check wiring. Freezing..."));
     while (1);
   }
-  calibration();
+  //calibration();
 }
 
 
