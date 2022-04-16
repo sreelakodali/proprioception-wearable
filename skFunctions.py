@@ -4,7 +4,7 @@
 import numpy as np
 from scipy import signal
 import constants as CONST
-#import calibration
+from operator import itemgetter
 import matplotlib.pyplot as plt
 
 
@@ -55,19 +55,62 @@ def processNewRow(val, loopIncrement):
 			r.append(x)
 	return r
 
-def delay(angle, positionMeasured, timeArr):
+def findNWindow(timeArr):
+	i = 1
+	while ((timeArr[i] - timeArr[0]) < 1):
+		i+=1
+	return i
 
-	ind = np.random.choice(len(timeArr)-CONST.N_WINDOW, CONST.N_CORR)
+def delayCrossCorrelation(angle, positionMeasured, timeArr):
+	n_window = findNWindow(timeArr)
+	ind = np.random.choice(len(timeArr)-n_window, CONST.N_CORR)
 	maxCorr = []
 	for i in ind:
-		a = angle[i:i+85]
-		p = positionMeasured[i:i+85]
+		a = angle[i:i+n_window]
+		p = positionMeasured[i:i+n_window]
     
 		n = len(a)
 		c = signal.correlate(a, p, mode='same') / np.sqrt(signal.correlate(a, a, mode='same')[int(n/2)] * signal.correlate(p, p, mode='same')[int(n/2)])
 		maxCorr.append(timeArr[i+np.argmax(c)] - timeArr[i])
 		#maxCorr.append(np.argmax(c))
-	return np.mean(maxCorr) # unit is seconds
+
+	t_d = np.mean(maxCorr)
+
+	idx_peaksPositionMeasured, _ = signal.find_peaks(np.asarray(positionMeasured), height=(6,20), distance=n_window)
+	idx_peaksPositionMeasured = idx_peaksPositionMeasured.tolist()
+	t_peaksPositionMeasured = list(itemgetter(*idx_peaksPositionMeasured)(timeArr))
+
+	idx_peaksAngle = []
+	for t in t_peaksPositionMeasured:
+		t = t - t_d
+		idx_peaksAngle.append((np.abs(timeArr-t)).argmin())
+	t_peaksAngle = list(itemgetter(*idx_peaksAngle)(timeArr))
+
+	t_peakDelays = list(zip(t_peaksAngle, t_peaksPositionMeasured))
+
+	return t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured
+
+def delayPeakToPeak(angle, positionMeasured, timeArr):
+	n_window = findNWindow(timeArr)
+	idx_peaksPositionMeasured, _ = signal.find_peaks(np.asarray(positionMeasured), height=(6,20), distance=n_window)
+	idx_peaksPositionMeasured = idx_peaksPositionMeasured.tolist()
+	t_peaksPositionMeasured = list(itemgetter(*idx_peaksPositionMeasured)(timeArr))
+
+	idx_peaksAngle, _ = signal.find_peaks(np.asarray(angle), height=(30,180), distance=n_window)
+	idx_peaksAngle = idx_peaksAngle.tolist()
+	t_peaksAngle = list(itemgetter(*idx_peaksAngle)(timeArr))
+
+	t_d = 0
+	n_pairs = 0
+	for i in range(0,min(len(t_peaksAngle), len(t_peaksPositionMeasured))):
+		diff = t_peaksPositionMeasured[i] - t_peaksAngle[i]
+		if (diff < 1.0):
+			t_d += diff
+			n_pairs += 1
+	t_d = t_d / n_pairs
+	t_peakDelays = list(zip(t_peaksAngle, t_peaksPositionMeasured))
+
+	return t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured
 
 def plot_OneTactor(s, p, fileName, time, angle, force, device1_positionMeasured, t_d):
 	fig, ax1 = plt.subplots()
@@ -76,7 +119,7 @@ def plot_OneTactor(s, p, fileName, time, angle, force, device1_positionMeasured,
 	ax2 = ax1.twinx()
 	ax3 = ax1.twinx()
 	# ax4 = ax1.twinx()
-	plt.suptitle("Real-time Data " + fileName[4:-4], name='Arial', weight='bold')
+	plt.suptitle("Real-time Data " + fileName[:-4], name='Arial', weight='bold')
 	ax1.set_xlabel("Time (s)", name='Arial')
 	plt.xticks(name='Arial')
 	plt.yticks(name='Arial')
@@ -115,8 +158,9 @@ def plot_OneTactor(s, p, fileName, time, angle, force, device1_positionMeasured,
 
 	plt.grid(True)
 	ax1.legend(l_all, labels, loc=0)
+	if s==1: plt.savefig(p +"fig_"+fileName[:-4])
 	plt.show()
-	if s==1: plt.savefig(p +"fig_"+fileName[4:-4])
+	
 
 def plot_SingleTactor(s, p, fileName, time, angle, force, device1_positionMeasured, t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured):
 	fig, ax1 = plt.subplots()
@@ -164,7 +208,7 @@ def plot_SingleTactor(s, p, fileName, time, angle, force, device1_positionMeasur
 
 	plt.grid(True)
 	ax1.legend(l_all, labels, loc=0)
-	if s==1: plt.savefig(p +"fig_"+fileName[4:-4])
+	if s==1: plt.savefig(p +"fig_"+fileName[:-4])
 	plt.show()
 	
 

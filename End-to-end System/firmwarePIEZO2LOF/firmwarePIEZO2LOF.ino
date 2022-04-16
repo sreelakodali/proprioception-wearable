@@ -83,8 +83,8 @@ void setup() {
 
 
 void loop() {
-  if (risingEdgeButton()) Serial.println(buttonCount);
-  //sweep();
+  //if (risingEdgeButton()) Serial.println(buttonCount);
+  runtime();
 }
 
 void runtime() {
@@ -100,6 +100,9 @@ void runtime() {
     
     // Map angle to actuator command
     position1_Command = map(flexSensor, flexCapacitiveSensor_MIN, flexCapacitiveSensor_MAX, position_MIN, position_MAX);
+    if(position1_Command > position_MAX) position1_Command = position_MAX;
+    if(position1_Command < position_MIN) position1_Command = position_MIN;
+    
     //mapper.map(flexSensor);
     
     // Measure force and actuator position
