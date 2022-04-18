@@ -55,9 +55,7 @@ if fileName.startswith('raw_'):
 		csv_reader = csv.reader(read_obj)
 		for row in csv_reader:
 			# if valid data packet, convert to right units and write in csv
-			if (len(row) == len(dataFunc)):
-				# for j in range(0,len(row)):
-				# 	print(row[j])
+			if (sk.validPacket(row)):
 				newRow = sk.processNewRow(row, i)
 				#print(newRow)
 				writer.writerow(newRow)
@@ -82,8 +80,9 @@ print("Time delay between signals (cross correlation): " + str(t_dCC*1000) + " m
 
 t_dPP, t_peakDelaysPP, idx_peaksAnglePP, idx_peaksPositionMeasuredPP = sk.delayPeakToPeak(angle, device1_positionMeasured, time)
 print("Time delay between signals (peak to peak): " + str(t_dPP*1000) + " ms")
+#print(t_peakDelaysPP)
 
 # plot
-#sk.plot_OneTactor(0, p, fileName, time, angle, force, device1_positionMeasured, t_d)
-sk.plot_SingleTactor(1, p, fileName, time, angle, force, device1_positionMeasured, t_dPP, t_peakDelaysPP, idx_peaksAnglePP, idx_peaksPositionMeasuredPP)
+#sk.plot_OneTactor(0, p, fileName, time, angle, force, device1_positionMeasured, 0)
+sk.plot_SingleTactor(0, p, fileName, time, angle, force, device1_positionMeasured, t_dCC, t_peakDelaysCC, idx_peaksAngleCC, idx_peaksPositionMeasuredCC)
 #sk.plot_TwoTactor(0, p, fileName, time, angle, force, device1_positionMeasured, t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured)

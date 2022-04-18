@@ -29,6 +29,8 @@ const int WRITE_COUNT = 100; // for every n runtime cycles, write out data
 const byte I2C_ADDR = 0x04; // force sensor
 const int CHIP_SELECT = 10; // SD card writing
 int cycleCount = 0;
+int bufferCount = 0;
+String buf = "";
 //bool powerOn;
 
 // Actuator
@@ -70,8 +72,8 @@ void setup() {
       while (1); // No SD card, so don't do anything more - stay stuck here
     }
     if (serialON) Serial.println("card initialized.");
-    SD.remove("raw_data.csv");
-    if (serialON) Serial.println("Removed old data");
+//    SD.remove("raw_data.csv");
+//    if (serialON) Serial.println("Removed old data");
   }
   
   actuator1.attach(position1_OUT); // attach servo
@@ -96,7 +98,6 @@ void runtime() {
     unsigned long myTime;
     String dataString = "";
     
-
     // time for the beginning of the loop
     myTime = millis();
     
@@ -122,7 +123,7 @@ void runtime() {
     //Serial.println((cycleCount == WRITE_COUNT) && powerOn);
     //Serial.println(powerOn);
     if ((cycleCount == WRITE_COUNT)) {
-      if (sdWriteON || serialON) {
+            if (sdWriteON || serialON) {
         dataString += (String(myTime) + "," + String(flexSensor) + "," + String(position1_Command) + "," \
         + String(position1_Measured) + "," + String(data));
         if (sdWriteON) {
@@ -130,17 +131,46 @@ void runtime() {
           if (dataFile) {
             dataFile.println(dataString);
             dataFile.close();
-          } else if (serialON) Serial.println("error opening datalog.txt");
+          } else if (serialON) Serial.println("error opening datalog");
         }
         if (serialON) Serial.println(dataString);
       } 
+
+//      if (sdWriteON) {
+//        
+//        buf += (String(myTime) + "," + String(flexSensor) + "," + String(position1_Command) + "," \
+//        + String(position1_Measured) + "," + String(data) + "\n");
+//        
+//        bufferCount = bufferCount + 1;
+//
+//        if (bufferCount == 25) {
+//          File dataFile = SD.open("raw_data.csv", FILE_WRITE);
+//          if (dataFile) {
+//            dataFile.print(buf);
+//            dataFile.close();
+//            bufferCount = 0;
+//            buf = "";
+//          }
+//        }
+//      } else if (serialON) {
+//        dataString += (String(myTime) + "," + String(flexSensor) + "," + String(position1_Command) + "," \
+//        + String(position1_Measured) + "," + String(data));
+//        Serial.println(dataString);
+//      }
       cycleCount = 0;
     }
 
     // Safety withdraw actuator and stop
     if (risingEdgeButton()) {
       actuator1.write(position_MIN);
-      if (serialON) Serial.println("Safety off activated. Turn off power.");
+      if (serialON) Serial.println("Device off. Turn off power.");
+      if (sdWriteON) {
+        File dataFile = SD.open("raw_data.csv", FILE_WRITE);
+        if (dataFile) {
+            dataFile.print(buf);
+            dataFile.close();
+        }
+      }
       while (1);
     }
 }

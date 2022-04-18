@@ -47,13 +47,20 @@ columnNames = list(dataFunc.keys())
 def processNewRow(val, loopIncrement):
 	r = []
 	for key in dataFunc:
-		if (val[columnNames.index(key)].lstrip("-").rstrip().isnumeric()): # why did I remove negatives
+		if (val[columnNames.index(key)].lstrip("-").rstrip().isnumeric()): # negatives removed otherwise seen as char
 			#print("%s numeric - yep" % str(key))
 			x = dataFunc[key](float(val[columnNames.index(key)]))
 			# if (loopIncrement < 20 and key == 'time' and x > 2):
 			# 	break
 			r.append(x)
 	return r
+
+def validPacket(val):
+	if (len(val) == len(dataFunc)):
+		forceData = float(val[(len(dataFunc)-1)].lstrip("-").rstrip())
+		if (forceData > 100): 
+			return True
+	return False
 
 def findNWindow(timeArr):
 	i = 1
@@ -92,25 +99,29 @@ def delayCrossCorrelation(angle, positionMeasured, timeArr):
 
 def delayPeakToPeak(angle, positionMeasured, timeArr):
 	n_window = findNWindow(timeArr)
-	idx_peaksPositionMeasured, _ = signal.find_peaks(np.asarray(positionMeasured), height=(6,25), distance=n_window)
-	idx_peaksPositionMeasured = idx_peaksPositionMeasured.tolist()
+
+	max_peaksPositionMeasured = signal.argrelextrema(np.asarray(positionMeasured), np.greater)
+	min_peaksPositionMeasured = signal.argrelextrema(np.asarray(positionMeasured), np.less)
+	#idx_peaksPositionMeasured, _ = signal.find_peaks(np.asarray(positionMeasured), height=(0,25), distance=n_window)
+	idx_peaksPositionMeasured = max_peaksPositionMeasured[0].tolist() + min_peaksPositionMeasured[0].tolist()
+
 	t_peaksPositionMeasured = list(itemgetter(*idx_peaksPositionMeasured)(timeArr))
+	print(t_peaksPositionMeasured)
 
-	#print(t_peaksPositionMeasured)
+	max_peaksAngle = signal.argrelextrema(np.asarray(angle), np.greater)
+	min_peaksAngle = signal.argrelextrema(np.asarray(angle), np.less)
+	#idx_peaksAngle, _ = signal.find_peaks(np.asarray(angle), height=(0,180), distance=n_window)
+	idx_peaksAngle = max_peaksAngle[0].tolist() + min_peaksAngle[0].tolist()
 
-	idx_peaksAngle, _ = signal.find_peaks(np.asarray(angle), height=(0,180), distance=n_window)
-	idx_peaksAngle = idx_peaksAngle.tolist()
 	t_peaksAngle = list(itemgetter(*idx_peaksAngle)(timeArr))
-
-	#print(t_peaksAngle)
-
+	print(t_peaksAngle)
 	t_d = 0
 	n_pairs = 0
 	j = 0
 	minLength = min(len(t_peaksAngle), len(t_peaksPositionMeasured))
 
 	# fix this
-	
+
 	#t_peakDelays = []
 	for i in range(0, minLength):
 		for j in range(0, minLength):
