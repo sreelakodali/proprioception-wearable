@@ -80,10 +80,10 @@ force  = data['force'].tolist()
 t_dCC, t_peakDelaysCC, idx_peaksAngleCC, idx_peaksPositionMeasuredCC = sk.delayCrossCorrelation(angle, device1_positionMeasured, time)
 print("Time delay between signals (cross correlation): " + str(t_dCC*1000) + " ms")
 
-# t_dPP, t_peakDelaysPP, idx_peaksAnglePP, idx_peaksPositionMeasuredPP = sk.delayPeakToPeak(angle, device1_positionMeasured, time)
-# print("Time delay between signals (peak to peak): " + str(t_dPP*1000) + " ms")
+t_dPP, t_peakDelaysPP, idx_peaksAnglePP, idx_peaksPositionMeasuredPP = sk.delayPeakToPeak(angle, device1_positionMeasured, time)
+print("Time delay between signals (peak to peak): " + str(t_dPP*1000) + " ms")
 
 # plot
 #sk.plot_OneTactor(0, p, fileName, time, angle, force, device1_positionMeasured, t_d)
-sk.plot_SingleTactor(1, p, fileName, time, angle, force, device1_positionMeasured, t_dCC, t_peakDelaysCC, idx_peaksAngleCC, idx_peaksPositionMeasuredCC)
+sk.plot_SingleTactor(1, p, fileName, time, angle, force, device1_positionMeasured, t_dPP, t_peakDelaysPP, idx_peaksAnglePP, idx_peaksPositionMeasuredPP)
 #sk.plot_TwoTactor(0, p, fileName, time, angle, force, device1_positionMeasured, t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured)

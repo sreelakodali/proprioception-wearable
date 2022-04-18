@@ -23,12 +23,13 @@
 #define button_IN 4 // pushbutton
 
 bool serialON = false;
-bool sdWriteON = true;
+bool sdWriteON = !(serialON);
+const int WRITE_COUNT = 100; // for every n runtime cycles, write out data
 
 const byte I2C_ADDR = 0x04; // force sensor
 const int CHIP_SELECT = 10; // SD card writing
-const int WRITE_COUNT = 100; // for every n runtime cycles, write out data
 int cycleCount = 0;
+//bool powerOn;
 
 // Actuator
 Servo actuator1;  // create servo object to control a servo
@@ -57,7 +58,7 @@ void setup() {
 
   // start serial for output
   if (serialON) {
-    Serial.begin(921600);  
+    Serial.begin(4608000);  
     Serial.flush();
     while (!Serial);
   }
@@ -69,6 +70,8 @@ void setup() {
       while (1); // No SD card, so don't do anything more - stay stuck here
     }
     if (serialON) Serial.println("card initialized.");
+    SD.remove("raw_data.csv");
+    if (serialON) Serial.println("Removed old data");
   }
   
   actuator1.attach(position1_OUT); // attach servo
@@ -85,12 +88,14 @@ void setup() {
 void loop() {
   //if (risingEdgeButton()) Serial.println(buttonCount);
   runtime();
+  //sweep();
 }
 
 void runtime() {
     short data;
     unsigned long myTime;
     String dataString = "";
+    
 
     // time for the beginning of the loop
     myTime = millis();
@@ -113,7 +118,10 @@ void runtime() {
     actuator1.write(position1_Command);
 
     cycleCount = cycleCount + 1;
-    if (cycleCount == WRITE_COUNT) {
+    //powerOn = (data >= 150);
+    //Serial.println((cycleCount == WRITE_COUNT) && powerOn);
+    //Serial.println(powerOn);
+    if ((cycleCount == WRITE_COUNT)) {
       if (sdWriteON || serialON) {
         dataString += (String(myTime) + "," + String(flexSensor) + "," + String(position1_Command) + "," \
         + String(position1_Measured) + "," + String(data));
@@ -127,6 +135,13 @@ void runtime() {
         if (serialON) Serial.println(dataString);
       } 
       cycleCount = 0;
+    }
+
+    // Safety withdraw actuator and stop
+    if (risingEdgeButton()) {
+      actuator1.write(position_MIN);
+      if (serialON) Serial.println("Safety off activated. Turn off power.");
+      while (1);
     }
 }
 

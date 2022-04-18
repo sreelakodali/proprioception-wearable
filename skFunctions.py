@@ -26,7 +26,7 @@ def millisToSeconds(s):
 
 # Function 2: place holder for angle function
 def computeAngle(data):
-	return float(data)/64.0 #data
+	return 180 - float(data)/64.0 #data
 
 # Function 3: Servo command (degrees) --> actuator position (mm)
 def commandToPosition(c):
@@ -76,7 +76,7 @@ def delayCrossCorrelation(angle, positionMeasured, timeArr):
 
 	t_d = np.mean(maxCorr)
 
-	idx_peaksPositionMeasured, _ = signal.find_peaks(np.asarray(positionMeasured), height=(6,20), distance=n_window)
+	idx_peaksPositionMeasured, _ = signal.find_peaks(np.asarray(positionMeasured), height=(6,25), distance=n_window)
 	idx_peaksPositionMeasured = idx_peaksPositionMeasured.tolist()
 	t_peaksPositionMeasured = list(itemgetter(*idx_peaksPositionMeasured)(timeArr))
 
@@ -92,21 +92,39 @@ def delayCrossCorrelation(angle, positionMeasured, timeArr):
 
 def delayPeakToPeak(angle, positionMeasured, timeArr):
 	n_window = findNWindow(timeArr)
-	idx_peaksPositionMeasured, _ = signal.find_peaks(np.asarray(positionMeasured), height=(6,20), distance=n_window)
+	idx_peaksPositionMeasured, _ = signal.find_peaks(np.asarray(positionMeasured), height=(6,25), distance=n_window)
 	idx_peaksPositionMeasured = idx_peaksPositionMeasured.tolist()
 	t_peaksPositionMeasured = list(itemgetter(*idx_peaksPositionMeasured)(timeArr))
 
-	idx_peaksAngle, _ = signal.find_peaks(np.asarray(angle), height=(30,180), distance=n_window)
+	#print(t_peaksPositionMeasured)
+
+	idx_peaksAngle, _ = signal.find_peaks(np.asarray(angle), height=(0,180), distance=n_window)
 	idx_peaksAngle = idx_peaksAngle.tolist()
 	t_peaksAngle = list(itemgetter(*idx_peaksAngle)(timeArr))
 
+	#print(t_peaksAngle)
+
 	t_d = 0
 	n_pairs = 0
-	for i in range(0,min(len(t_peaksAngle), len(t_peaksPositionMeasured))):
-		diff = t_peaksPositionMeasured[i] - t_peaksAngle[i]
-		if (diff < 1.0):
-			t_d += diff
-			n_pairs += 1
+	j = 0
+	minLength = min(len(t_peaksAngle), len(t_peaksPositionMeasured))
+
+	# fix this
+	
+	#t_peakDelays = []
+	for i in range(0, minLength):
+		for j in range(0, minLength):
+		# find matching pair of points. <1.0 >0.0
+		# while((diff < 0.0) or (diff > 1.0)):
+		# 	j = j + 1
+		# 	diff = t_peaksPositionMeasured[i] - t_peaksAngle[j]
+
+			diff = t_peaksPositionMeasured[i] - t_peaksAngle[j]
+			if ((diff > 0.0) and (diff < 1.0)):
+				t_d += diff
+				n_pairs += 1
+				#t_peakDelays.append((t_peaksAngle[j], t_peaksPositionMeasured[i]))
+	
 	t_d = t_d / n_pairs
 	t_peakDelays = list(zip(t_peaksAngle, t_peaksPositionMeasured))
 

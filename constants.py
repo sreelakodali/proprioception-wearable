@@ -1,12 +1,14 @@
 # Constants for Sensory Substitution Devce 
 # Written by: Sreela Kodali (kodali@stanford.edu) 
 
+BAUD_RATE = 4608000
+DATASRC_SD = True
+TRANSFER_RAW = False
+
+
 PATH =  '/Volumes/PIEZO2/'
 PATH_LAPTOP = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/'
 PORT_NAME = "/dev/cu.usbmodem71181201"
-BAUD_RATE = 921600
-DATASRC_SD = False
-TRANSFER_RAW = False
 
 ## DATA PROCESSING CONSTANTS ##
 ACTUATOR_POSITION_MIN = 0.0
