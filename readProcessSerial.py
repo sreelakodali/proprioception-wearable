@@ -10,9 +10,6 @@ from scipy import signal
 import constants as CONST
 import skFunctions as sk
 
-## CONSTANTS
-RUNTIME_LENGTH = 30 # seconds
-
 # DIRECTORY
 fileName = str(datetime.datetime.now())[0:16] # default name is date and time
 fileName = ((fileName.replace('/', '_')).replace(' ', '_')).replace(':','-')
@@ -32,7 +29,7 @@ dataFunc = {'time':sk.millisToSeconds, 'flex sensor':sk.computeAngle,'actuator p
 # Read in serial data and save in csv
 i = 0
 if (not(CONST.TRANSFER_RAW)): writer.writerow(list(dataFunc.keys()))
-endTime = datetime.datetime.now() + datetime.timedelta(seconds=RUNTIME_LENGTH)
+endTime = datetime.datetime.now() + datetime.timedelta(seconds=CONST.RUNTIME_LENGTH)
 while (datetime.datetime.now() < endTime):
 	value = mcu.readline()
 	value = str(value, "utf-8").split(",")

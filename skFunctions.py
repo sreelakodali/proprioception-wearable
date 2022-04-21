@@ -5,7 +5,10 @@ import numpy as np
 from scipy import signal
 import constants as CONST
 from operator import itemgetter
-import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use("TkAgg")
+from matplotlib import pyplot as plt
+import constants as CONST
 
 
 ## CALIBRATION
@@ -26,11 +29,13 @@ def millisToSeconds(s):
 
 # Function 2: place holder for angle function
 def computeAngle(data):
-	return 180 - float(data)/64.0 #data
+	return mapFloat(data, CONST.ANGLE_DATA_MIN, CONST.ANGLE_DATA_MAX, CONST.ANGLE_MIN, CONST.ANGLE_MAX)
+	#180 - float(data)/64.0 #data
 
 # Function 3: Servo command (degrees) --> actuator position (mm)
 def commandToPosition(c):
-	return 0.22*c - 10.7
+	return mapFloat(c, CONST.ACTUATOR_COMMAND_MIN, CONST.ACTUATOR_COMMAND_MAX, CONST.ACTUATOR_POSITION_MIN, CONST.ACTUATOR_POSITION_MAX)
+	#return 0.22*c - 10.7
 
 # Function 4: Feedback signal from actuator (1/1024th of V) to actuator position (mm)
 def feedbackToPosition(f):
@@ -38,7 +43,8 @@ def feedbackToPosition(f):
 
 # Function 5: Digital value from force sensor --> force measurement (N)
 def computeForce(data):
-	return (data - 256) * (45.0)/511
+	return ((data - 249) * (45.0)/511) - CONST.ZERO_FORCE #(data - 256) * (45.0)/511 
+	#changed bc uncalibrated
 
 dataFunc = {'time':millisToSeconds, 'flex sensor':computeAngle,'actuator position, command':commandToPosition, \
 			'actuator position, measured':feedbackToPosition, 'force':computeForce}
@@ -106,7 +112,7 @@ def delayPeakToPeak(angle, positionMeasured, timeArr):
 	idx_peaksPositionMeasured = max_peaksPositionMeasured[0].tolist() + min_peaksPositionMeasured[0].tolist()
 
 	t_peaksPositionMeasured = list(itemgetter(*idx_peaksPositionMeasured)(timeArr))
-	print(t_peaksPositionMeasured)
+	#print(t_peaksPositionMeasured)
 
 	max_peaksAngle = signal.argrelextrema(np.asarray(angle), np.greater)
 	min_peaksAngle = signal.argrelextrema(np.asarray(angle), np.less)
@@ -114,7 +120,7 @@ def delayPeakToPeak(angle, positionMeasured, timeArr):
 	idx_peaksAngle = max_peaksAngle[0].tolist() + min_peaksAngle[0].tolist()
 
 	t_peaksAngle = list(itemgetter(*idx_peaksAngle)(timeArr))
-	print(t_peaksAngle)
+	#print(t_peaksAngle)
 	t_d = 0
 	n_pairs = 0
 	j = 0
@@ -141,7 +147,7 @@ def delayPeakToPeak(angle, positionMeasured, timeArr):
 
 	return t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured
 
-def plot_OneTactor(s, p, fileName, time, angle, force, device1_positionMeasured, t_d):
+def plot_NoDelay(s, p, fileName, time, angle, force, device1_positionMeasured, device1_positionCommand):
 	fig, ax1 = plt.subplots()
 	fig.subplots_adjust(right=0.75)
 
@@ -173,16 +179,11 @@ def plot_OneTactor(s, p, fileName, time, angle, force, device1_positionMeasured,
 	ax3.yaxis.label.set_color('g')
 	ax3.spines['right'].set_color('g')
 	ax3.tick_params(axis='y', color='g')
-	ax3.set_ylim(0,20)
+	ax3.set_ylim(0,25)
 
-	# #l4 = ax2.plot(time, device1_positionCommand, color='orange', linewidth=1.75, label='Actuator Position (Command)')
-	# for d in t_peakDelays:
-	# 	ax1.axvspan(d[0], d[1], color='teal', alpha=0.5)
-	# ax1.plot(time, angle,'bD',markevery=idx_peaksAngle)
-	# ax3.plot(time, device1_positionMeasured,'gD',markevery=idx_peaksPositionMeasured)
-	plt.title("Time Delay = %.2f ms" % (t_d*1000), name='Arial')
+	l4 = ax3.plot(time, device1_positionCommand, color='orange', linewidth=1.75, label='Actuator Position (Command)')
 
-	l_all = l1+l2+l3#+l4
+	l_all = l1+l2+l3+l4
 	labels = [l.get_label() for l in l_all]
 
 	plt.grid(True)

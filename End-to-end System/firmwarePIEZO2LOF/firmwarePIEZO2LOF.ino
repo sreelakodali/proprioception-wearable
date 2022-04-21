@@ -12,17 +12,17 @@
 //#include<FastMap.h>
 
 // Constants
+#define flexCapacitiveSensor_MIN 3400
+#define flexCapacitiveSensor_MAX 12100
 #define position_MIN 46
 #define position_MAX 130
-#define flexCapacitiveSensor_MIN -2000
-#define flexCapacitiveSensor_MAX 11500
 
 // Pin Names
 #define position1_IN A6 // pin to measure position1_Measured
 #define position1_OUT 21 // pin to send position1_Command
 #define button_IN 4 // pushbutton
 
-bool serialON = false;
+bool serialON = true;
 bool sdWriteON = !(serialON);
 const int WRITE_COUNT = 100; // for every n runtime cycles, write out data
 
@@ -88,8 +88,12 @@ void setup() {
 
 
 void loop() {
-  //if (risingEdgeButton()) Serial.println(buttonCount);
-  runtime();
+  if(buttonCount % 2 == 1) {
+    runtime();  
+  }
+  else {
+    runtime_NoFeedback();
+  }
   //sweep();
 }
 
@@ -159,20 +163,102 @@ void runtime() {
 //      }
       cycleCount = 0;
     }
+    risingEdgeButton();
+//    // Safety withdraw actuator and stop
+//    if (risingEdgeButton()) {
+//      actuator1.write(position_MIN);
+//      if (serialON) Serial.println("Device off. Turn off power.");
+//      if (sdWriteON) {
+//        File dataFile = SD.open("raw_data.csv", FILE_WRITE);
+//        if (dataFile) {
+//            dataFile.print(buf);
+//            dataFile.close();
+//        }
+//      }
+//      while (1);
+//    }
+}
 
-    // Safety withdraw actuator and stop
-    if (risingEdgeButton()) {
-      actuator1.write(position_MIN);
-      if (serialON) Serial.println("Device off. Turn off power.");
-      if (sdWriteON) {
-        File dataFile = SD.open("raw_data.csv", FILE_WRITE);
-        if (dataFile) {
-            dataFile.print(buf);
+void runtime_NoFeedback() {
+    short data;
+    unsigned long myTime;
+    String dataString = "";
+    
+    // time for the beginning of the loop
+    myTime = millis();
+    
+    // Read flex sensor
+    if (capacitiveFlexSensor.available() == true) flexSensor = capacitiveFlexSensor.getX();
+    
+    // Map angle to actuator command
+    position1_Command = map(flexSensor, flexCapacitiveSensor_MIN, flexCapacitiveSensor_MAX, position_MIN, position_MAX);
+    if(position1_Command > position_MAX) position1_Command = position_MAX;
+    if(position1_Command < position_MIN) position1_Command = position_MIN;
+    
+    //mapper.map(flexSensor);
+    
+    // Measure force and actuator position
+    data = readDataFromSensor(I2C_ADDR);
+    position1_Measured = analogRead(position1_IN);
+
+    // Send command to actuator
+    actuator1.write(position_MIN);
+
+    cycleCount = cycleCount + 1;
+    //powerOn = (data >= 150);
+    //Serial.println((cycleCount == WRITE_COUNT) && powerOn);
+    //Serial.println(powerOn);
+    if ((cycleCount == WRITE_COUNT)) {
+            if (sdWriteON || serialON) {
+        dataString += (String(myTime) + "," + String(flexSensor) + "," + String(position1_Command) + "," \
+        + String(position1_Measured) + "," + String(data));
+        if (sdWriteON) {
+          File dataFile = SD.open("raw_data.csv", FILE_WRITE);
+          if (dataFile) {
+            dataFile.println(dataString);
             dataFile.close();
+          } else if (serialON) Serial.println("error opening datalog");
         }
-      }
-      while (1);
+        if (serialON) Serial.println(dataString);
+      } 
+
+//      if (sdWriteON) {
+//        
+//        buf += (String(myTime) + "," + String(flexSensor) + "," + String(position1_Command) + "," \
+//        + String(position1_Measured) + "," + String(data) + "\n");
+//        
+//        bufferCount = bufferCount + 1;
+//
+//        if (bufferCount == 25) {
+//          File dataFile = SD.open("raw_data.csv", FILE_WRITE);
+//          if (dataFile) {
+//            dataFile.print(buf);
+//            dataFile.close();
+//            bufferCount = 0;
+//            buf = "";
+//          }
+//        }
+//      } else if (serialON) {
+//        dataString += (String(myTime) + "," + String(flexSensor) + "," + String(position1_Command) + "," \
+//        + String(position1_Measured) + "," + String(data));
+//        Serial.println(dataString);
+//      }
+      cycleCount = 0;
     }
+    risingEdgeButton();
+//    // Safety withdraw actuator and stop
+//    if (risingEdgeButton()) {
+//      actuator1.write(position_MIN);
+//      if (serialON) Serial.println("Device off. Turn off power.");
+//      if (sdWriteON) {
+//        File dataFile = SD.open("raw_data.csv", FILE_WRITE);
+//        if (dataFile) {
+//            dataFile.print(buf);
+//            dataFile.close();
+//        }
+//      }
+//      while (1);
+//    }
 }
 
 void sweep() {
@@ -222,31 +308,57 @@ void calibration() {
   actuator1.write(counter);
 
   if (serialON) Serial.println("---- DEVICE CALIBRATION ----");
-  if (serialON) Serial.println("For the first step, please do not wear the actuator. Leave it on the table, and press the button when ready.");
+  if (serialON) Serial.println("For the first step, please don't wear the actuator, and press the button when ready.");
+
+  while(!risingEdgeButton());
+
+  // Calibration 1: Sweep and record the actuator position feedback positions
+  sweep();
+  if (serialON) Serial.println("Calibration Stage 1 complete. Researcher will record values and will let you know when to press the button for next stage.");
+
+  while(!risingEdgeButton());
+
+  if (serialON) Serial.println("Calibration Stage 2: Please wear the device. Press button once ready.");
+
+  while(!risingEdgeButton());
+
+  if (serialON) Serial.println("Calibration Stage 2 Instructions");
+  if (serialON) Serial.println("Raise your left arm with your palm facing the ceiling until it is parallel with the table.");
+  if (serialON) Serial.println("Keeping your upper arm parallel still, bend your elbow towards yourself slowly and then back to the original position slowly.");
+  if (serialON) Serial.println("Please repeat this motion until researcher tells you to stop.");
+  if (serialON) Serial.println("Press button once when you're ready to begin. And then press again when researcher tells you to complete this stage.");
+
+  // record flex values
+  while(!(risingEdgeButton())) {
+    runtime_NoFeedback();
+  }
+
+  if (serialON) Serial.println("Calibration Stage 2 complete. Researcher will record values and will let you know when to press the button for next stage.");
 
   while(!risingEdgeButton());
   
-  // Caliration Stage 1: Get the zero force of the device not worn
-  if (serialON) Serial.println("Calibration Stage 1. Please do not wear the actuator and leave it on the table.");
-  delay(5000);
+  // Caliration Stage 3: Get the zero force of the device not worn
+  if (serialON) Serial.println("Calibration Stage 3 Instructions");
+  if (serialON) Serial.println("Raise your left arm with your palm facing the ceiling until it is parallel with the table.");
+  if (serialON) Serial.println("Press button once when you're ready to begin.");
+  delay(2000);
   zeroForce = readDataFromSensor(I2C_ADDR);
   
-  if (serialON) Serial.println("Calibration Stage 1 complete. Zero Force = ");
-  if (serialON) Serial.println((zeroForce - 256) * (45.0)/511);
+  if (serialON) Serial.println("Calibration Stage 3 complete. Zero Force = ");
+  if (serialON) Serial.println((zeroForce - 249) * (45.0)/511);
   
-  if (serialON) Serial.println("Calibration Stage 2. Please wear the actuator on your forearm, and press the button when ready.");
+  if (serialON) Serial.println("Calibration Stage 3. Researcher will record values and will let you know when to press the button for next stage.");
   
-  // Delay between Stage 1 and Stage 2 to wear the device. Click button for next stage
   while(!(risingEdgeButton()));
 
-  if (serialON) Serial.println("Calibration Stage 2 Instructions");
+  if (serialON) Serial.println("Calibration Stage 4 Instructions");
   if (serialON) Serial.println("The actuator will extend into your arm and apply a deep pressure.");
-  if (serialON) Serial.println("During this stage, please click the button once to indicate when you detect the pressure, and click then again when you feel pain.");
-  if (serialON) Serial.println("When you're ready to begin calibration stage 2, press the button.");
+  if (serialON) Serial.println("During this stage, please click the button once to indicate when it is too uncomfortable.");
+  if (serialON) Serial.println("When you're ready to begin calibration stage 4, press the button.");
 
   while(!(risingEdgeButton()));
 
-  if (serialON) Serial.println("Calibration Stage 2 beginning...");
+  if (serialON) Serial.println("Calibration Stage 4 beginning...");
   // Calibration Stage 2: Get the detection and pain thresholds
   while (counter <= position_MAX) {
 
@@ -259,34 +371,34 @@ void calibration() {
 
      
       if (risingEdgeButton()) {
-        // Calibration Stage 2a
-        // Click button if you detect the tactor. Detection Threshold stored
-        if (buttonCount == 4) {
-          user_position_MIN = counter;
-          detectionForce = readDataFromSensor(I2C_ADDR);
-          if (serialON) {
-            Serial.println("DETECTION THRESHOLD:");
-            Serial.println((detectionForce - 256) * (45.0)/511);
-          }
-        }
+//        // Calibration Stage 2a
+//        // Click button if you detect the tactor. Detection Threshold stored
+//        if (buttonCount == 4) {
+//          user_position_MIN = counter;
+//          detectionForce = readDataFromSensor(I2C_ADDR);
+//          if (serialON) {
+//            Serial.println("DETECTION THRESHOLD:");
+//            Serial.println((detectionForce - 256) * (45.0)/511);
+//          }
+//        }
 
         // Calibration Stage 2b
         // Click button if feeling pain from tactor. Pain threshold stored
-        else {
+        //else {
           user_position_MAX = counter - 1;
           painForce = readDataFromSensor(I2C_ADDR);
           if (serialON) {
-            Serial.println("PAIN THRESHOLD:");
-            Serial.println((painForce - 256) * (45.0)/511);
+            Serial.println("DISCOMFORT THRESHOLD:");
+            Serial.println((painForce - 249) * (45.0)/511);
           }
           break; 
-        } 
+        //} 
       }
       delay(500);
       counter = counter + 1;
   }
 
-  if (serialON) Serial.println("Calibration Stage 2 complete. Min and max actuator positions are:");
+  if (serialON) Serial.println("Calibration Stage 4 complete. Min and max actuator positions are:");
   if (serialON) Serial.println(user_position_MIN);
   if (serialON) Serial.println(user_position_MAX);
   if (serialON) Serial.println("Make sure to researcher records these values and updates them in the processing code.");
