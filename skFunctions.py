@@ -9,6 +9,7 @@ import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib import pyplot as plt
 import constants as CONST
+import random
 
 
 ## CALIBRATION
@@ -29,8 +30,8 @@ def millisToSeconds(s):
 
 # Function 2: place holder for angle function
 def computeAngle(data):
-	return mapFloat(data, CONST.ANGLE_DATA_MIN, CONST.ANGLE_DATA_MAX, CONST.ANGLE_MIN, CONST.ANGLE_MAX)
-	#180 - float(data)/64.0 #data
+	return 180 - float(data)/64.0 #float(data)
+	#mapFloat(data, CONST.ANGLE_DATA_MIN, CONST.ANGLE_DATA_MAX, CONST.ANGLE_MIN, CONST.ANGLE_MAX)
 
 # Function 3: Servo command (degrees) --> actuator position (mm)
 def commandToPosition(c):
@@ -53,9 +54,13 @@ columnNames = list(dataFunc.keys())
 def processNewRow(val, loopIncrement):
 	r = []
 	for key in dataFunc:
+		# if (key == 'flex sensor'):
+		# 	#print(float(val[columnNames.index(key)]))
+		# 	x = dataFunc[key](float(val[columnNames.index(key)]))
+		# 	r.append(x)
 		if (val[columnNames.index(key)].lstrip("-").rstrip().isnumeric()): # negatives removed otherwise seen as char
-			#print("%s numeric - yep" % str(key))
 			x = dataFunc[key](float(val[columnNames.index(key)]))
+			# old code, if serial flush pushes garbage
 			# if (loopIncrement < 20 and key == 'time' and x > 2):
 			# 	break
 			r.append(x)
@@ -67,6 +72,28 @@ def validPacket(val):
 		if (forceData > 100): 
 			return True
 	return False
+
+def generateRandomTrials():
+	trialAngles = []
+	for i in range (0,6):
+		t = list(range(40,180,15))
+	
+		if i < 2:
+			r = [t.pop(random.randrange(len(t)))]
+			r.append(t.pop(random.randrange(len(t))))
+			half1 = t[:4]
+			half2 = t[4:]
+
+			x = random.randrange(2)
+			if (x == 0): half1.reverse()
+			else: half2.reverse()
+			x = random.randrange(2)
+			if (x == 0): t = half1 + half2 + r
+			else: t = half2 + half1 + r
+	
+		else: random.shuffle(t)
+		trialAngles = trialAngles + t
+	return trialAngles
 
 def findNWindow(timeArr):
 	i = 1

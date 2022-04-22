@@ -10,11 +10,12 @@ import os
 import constants as CONST
 import skFunctions as sk
 import skPilotGraphics as skG
+import random
 
 t = 10
 nTrials = 0
 sc = turtle.Screen()
-trialAngles = range(30,180,15) # Generate trial angles
+trialAngles = sk.generateRandomTrials() # Generate random trials
 
 def updateTrialLabel():
 	global sc
@@ -33,17 +34,28 @@ skG.initialize()
 # Initialize Serial reading and data saving
 fileName = str(datetime.datetime.now())[0:16] # default name is date and time
 fileName = ((fileName.replace('/', '_')).replace(' ', '_')).replace(':','-')
-p = CONST.PATH_LAPTOP +fileName+'_PILOT/'
-# if not (os.path.exists(p)):
-# 	os.makedirs(p)
-# 	print("New directory created: %s" % fileName)
+p = CONST.PATH_LAPTOP +fileName+'/'
+if not (os.path.exists(p)):
+	os.makedirs(p)
+	print("New directory created: %s" % fileName)
 mcu = serial.Serial(port=CONST.PORT_NAME, baudrate=CONST.BAUD_RATE, timeout=.1)
-# if (CONST.TRANSFER_RAW): f = open(p + 'raw_' + fileName + '.csv', 'w+', encoding='UTF8', newline='')
-# else: f = open(p + "processed_" + fileName + '.csv', 'w+', encoding='UTF8', newline='')
-# writer = csv.writer(f)
+if (CONST.TRANSFER_RAW): f = open(p + 'raw_' + fileName + '.csv', 'w+', encoding='UTF8', newline='')
+else:
+	f = open(p + "processed_" + fileName + '.csv', 'w+', encoding='UTF8', newline='')
+	g = open(p + "trialAngles_" + fileName + '.csv', 'w+', encoding='UTF8', newline='')
+	w = csv.writer(g)
+	for a in trialAngles:
+		w.writerow([a])
+	g.close()
+	print("Trial angles saved.")
+writer = csv.writer(f)
 dataFunc = {'time':sk.millisToSeconds, 'flex sensor':sk.computeAngle,'actuator position, command':sk.commandToPosition, \
 			'actuator position, measured':sk.feedbackToPosition, 'force':sk.computeForce}
-# writer.writerow(list(dataFunc.keys()))
+
+columnNames = list(dataFunc.keys())
+columnNames.append('Trial Number')
+columnNames.append('Target Angle')
+writer.writerow(columnNames)
 
 # Read in serial data and save in csv
 skG.drawForearm(sc,trialAngles[nTrials])
@@ -55,20 +67,20 @@ while (nTrials < CONST.N_TOTAL_TRIALS):
 	value = str(value, "utf-8").split(",")
 
 	# if valid data packet, convert to right units and write in csv
-	#print(len(value))
 	if (len(value) == len(dataFunc)):
 		newRow = sk.processNewRow(value, nTrials)
 		serialAngle = newRow[1]
-		#s = "Time=" + str(newRow[0]) + ", Measured=" + str(serialAngle) + ", Target=" + str(trialAngles[nTrials])
-		newRow.append(nTrials)
 		print(newRow)
-		#writer.writerow(newRow)
-		#print(s)
+		s = "Measured=" + str(serialAngle) + ", Target=" + str(trialAngles[nTrials])
+		newRow.append(nTrials)
+		newRow.append(trialAngles[nTrials])
+		writer.writerow(newRow)
+		print(s)
 		if ((serialAngle > (trialAngles[nTrials] - CONST.ANGLE_TOLERANCE)) and (serialAngle < (trialAngles[nTrials] + CONST.ANGLE_TOLERANCE))):
 			serialAngleBuf.append(serialAngle)
 
 			# looking for value being held
-			if (len(serialAngleBuf) == 32):
+			if (len(serialAngleBuf) == CONST.ANGLE_CONSECUTIVE):
 				skG.star()
 				skG.deleteStar(sc)
 				skG.deleteForearm(sc)
@@ -80,7 +92,4 @@ while (nTrials < CONST.N_TOTAL_TRIALS):
 				skG.delay(sc, t)
 		else:
 			serialAngleBuf = []
-#f.close()
-
-
-
+f.close()
