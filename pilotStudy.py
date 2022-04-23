@@ -16,11 +16,13 @@ t = 10
 nTrials = 0
 sc = turtle.Screen()
 trialAngles = sk.generateRandomTrials() # Generate random trials
+N_TOTAL_TRIALS = len(trialAngles)
 
 def updateTrialLabel():
 	global sc
 	sc.tracer(0)
 	turtle.penup()
+	skG.removeTrialLabel(sc)
 	turtle.goto(325,300)
 	global nTrials
 	turtle.write(nTrials+1, move=False, font=("Arial",36, "normal"))
@@ -29,7 +31,7 @@ def updateTrialLabel():
 # Initialize GUI
 sc.tracer(0)
 sc.title("Pilot Study")
-skG.initialize()
+skG.initializePilot()
 
 # Initialize Serial reading and data saving
 fileName = str(datetime.datetime.now())[0:16] # default name is date and time
@@ -58,11 +60,12 @@ columnNames.append('Target Angle')
 writer.writerow(columnNames)
 
 # Read in serial data and save in csv
-skG.drawForearm(sc,trialAngles[nTrials])
+skG.drawForearm(sc,trialAngles[nTrials], skG.COLOR)
 updateTrialLabel()
 skG.delay(sc, t)
+if (CONST.SHOW_ARM): skG.buffer('white')
 serialAngleBuf = []
-while (nTrials < CONST.N_TOTAL_TRIALS):
+while (nTrials < N_TOTAL_TRIALS):
 	value = mcu.readline()
 	value = str(value, "utf-8").split(",")
 
@@ -75,18 +78,22 @@ while (nTrials < CONST.N_TOTAL_TRIALS):
 		newRow.append(trialAngles[nTrials])
 		writer.writerow(newRow)
 		print(s)
+		if (CONST.SHOW_ARM): turtle.undo() # angle
+		if (CONST.SHOW_ARM): turtle.undo() # dot
+		if (CONST.SHOW_ARM): skG.drawForearm(sc,serialAngle, skG.COLOR_SERIAL)
+
 		if ((serialAngle > (trialAngles[nTrials] - CONST.ANGLE_TOLERANCE)) and (serialAngle < (trialAngles[nTrials] + CONST.ANGLE_TOLERANCE))):
 			serialAngleBuf.append(serialAngle)
 
 			# looking for value being held
 			if (len(serialAngleBuf) == CONST.ANGLE_CONSECUTIVE):
-				skG.star()
+				skG.star(sc)
 				skG.deleteStar(sc)
-				skG.deleteForearm(sc)
+				skG.erase(sc, 'white')
 				nTrials = nTrials + 1
 				if nTrials == len(trialAngles):
 					break
-				skG.drawForearm(sc,trialAngles[nTrials])
+				skG.drawForearm(sc,trialAngles[nTrials], skG.COLOR)
 				updateTrialLabel()
 				skG.delay(sc, t)
 		else:

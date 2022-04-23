@@ -13,7 +13,7 @@
 
 // Constants
 #define flexCapacitiveSensor_MIN 0
-#define flexCapacitiveSensor_MAX 5500
+#define flexCapacitiveSensor_MAX 11400
 #define position_MIN 46
 #define position_MAX 130
 #define sreela_MAX 90 //dorsal forearm, maxforce without reaching max current
@@ -27,11 +27,11 @@ typedef enum { NONE, ZERO_FORCE, FLEX, MAX_PRESSURE, ACTUATOR
 } CALIBRATION_OPTIONS;
 
 const bool serialON = true;
-const CALIBRATION_OPTIONS calibrationMode = NONE;
+const CALIBRATION_OPTIONS calibrationMode = FLEX;
 const bool fastMapON = false;
 const bool sdWriteON = !(serialON);
 int user_position_MIN = position_MIN;
-int user_position_MAX = sreela_MAX;
+int user_position_MAX = 60;
 
 const int WRITE_COUNT = 100; // for every n runtime cycles, write out data
 const byte I2C_ADDR = 0x04; // force sensor
@@ -243,7 +243,7 @@ void sweep() {
     int extending = 1;
     
     
-    while (counter <= user_position_MAX) {
+    while (counter <= position_MAX) {
       String dataString = "";
       actuator1.write(counter);
       //if (capacitiveFlexSensor.available() == true) flexSensor = capacitiveFlexSensor.getX();
@@ -258,13 +258,13 @@ void sweep() {
       }
 
       if (extending == 1) {
-        if (counter == (user_position_MAX)) {
+        if (counter == (position_MAX)) {
           counter = counter - 1;
           extending = 0;
         } else counter = counter + 1;
       }
       else if (extending == 0) {
-        if (counter == user_position_MIN) {
+        if (counter == position_MIN) {
           counter = counter + 1;
           extending = 1;
           break;

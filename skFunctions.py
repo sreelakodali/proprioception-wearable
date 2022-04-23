@@ -30,7 +30,11 @@ def millisToSeconds(s):
 
 # Function 2: place holder for angle function
 def computeAngle(data):
-	return 180 - float(data)/64.0 #float(data)
+	a = 180 - float(data)/64.0 #float(data)
+	return a
+	#if a > 90: return a
+	#else: return a - 0.2*(90-a)
+	 
 	#mapFloat(data, CONST.ANGLE_DATA_MIN, CONST.ANGLE_DATA_MAX, CONST.ANGLE_MIN, CONST.ANGLE_MAX)
 
 # Function 3: Servo command (degrees) --> actuator position (mm)
@@ -208,9 +212,9 @@ def plot_NoDelay(s, p, fileName, time, angle, force, device1_positionMeasured, d
 	ax3.tick_params(axis='y', color='g')
 	ax3.set_ylim(0,25)
 
-	l4 = ax3.plot(time, device1_positionCommand, color='orange', linewidth=1.75, label='Actuator Position (Command)')
+	#l4 = ax3.plot(time, device1_positionCommand, color='orange', linewidth=1.75, label='Actuator Position (Command)')
 
-	l_all = l1+l2+l3+l4
+	l_all = l1+l2+l3#+l4
 	labels = [l.get_label() for l in l_all]
 
 	plt.grid(True)

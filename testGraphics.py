@@ -11,7 +11,7 @@ import constants as CONST
 import skFunctions as sk
 import skPilotGraphics as skG
 
-t = 10
+t = 1
 nTrials = 0
 sc = turtle.Screen()
 
@@ -28,24 +28,26 @@ def updateTrialLabel():
 # Initialize GUI
 sc.tracer(0)
 sc.title("Pilot Study")
-skG.initialize()
-skG.buffer()
+skG.initializePilot()
+skG.buffer('white')
 
 trialAngles = range(30,180,15)
 
 # # read angle from serial
 for i in trialAngles:
-	skG.deleteForearm(sc)
-	skG.drawForearm(sc,i)
+	skG.deleteForearm(sc, 7)
+	skG.drawForearm(sc,i, skG.COLOR)
 	updateTrialLabel()
 	skG.delay(sc, t)
 
-skG.star()
+skG.star(sc)
 skG.deleteStar(sc)
 
+skG.erase(sc, skG.COLOR_SERIAL)
+skG.delay(sc, t)
 for i in trialAngles:
-	skG.deleteForearm(sc)
-	skG.drawForearm(sc,i)
+	skG.deleteForearm(sc, 7)
+	skG.drawForearm(sc,i, skG.COLOR)
 	updateTrialLabel()
 	skG.delay(sc, t)
 # skG.drawForearm(sc,30)
