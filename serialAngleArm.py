@@ -44,6 +44,6 @@ while (datetime.datetime.now() < endTime):
 		serialAngle = newRow[1]
 		s = "Measured=" + str(serialAngle)
 		print(s)
-		turtle.undo() # angle
-		turtle.undo() # dot
+		turtle.undo()
+		turtle.undo()
 		skG.drawForearm(sc,serialAngle, skG.COLOR_SERIAL)

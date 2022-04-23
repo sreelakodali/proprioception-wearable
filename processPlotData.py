@@ -34,7 +34,7 @@ if (CONST.DATASRC_SD):
 # Find the most recent data directory
 allSubdirs = [CONST.PATH_LAPTOP+d for d in os.listdir(CONST.PATH_LAPTOP) if os.path.isdir(os.path.join(CONST.PATH_LAPTOP, d))]
 p = max(allSubdirs, key=os.path.getctime) + '/'
-fileName = [f for f in os.listdir(p) if (f.endswith('.csv'))]
+fileName = [f for f in os.listdir(p) if (f.startswith('processed') and f.endswith('.csv'))]
 fileName = fileName[0]
 print("Newest data found: %s" % fileName)
 
@@ -75,15 +75,15 @@ device1_positionCommand = data['actuator position, command'].tolist()
 device1_positionMeasured = data['actuator position, measured'].tolist()
 force  = data['force'].tolist()
 
-t_dCC, t_peakDelaysCC, idx_peaksAngleCC, idx_peaksPositionMeasuredCC = sk.delayCrossCorrelation(angle, device1_positionMeasured, time)
-print("Time delay between signals (cross correlation): " + str(t_dCC*1000) + " ms")
+# t_dCC, t_peakDelaysCC, idx_peaksAngleCC, idx_peaksPositionMeasuredCC = sk.delayCrossCorrelation(angle, device1_positionMeasured, time)
+# print("Time delay between signals (cross correlation): " + str(t_dCC*1000) + " ms")
 
-# t_dPP, t_peakDelaysPP, idx_peaksAnglePP, idx_peaksPositionMeasuredPP = sk.delayPeakToPeak(angle, device1_positionMeasured, time)
-# print("Time delay between signals (peak to peak): " + str(t_dPP*1000) + " ms")
-# #print(t_peakDelaysPP)
+# # t_dPP, t_peakDelaysPP, idx_peaksAnglePP, idx_peaksPositionMeasuredPP = sk.delayPeakToPeak(angle, device1_positionMeasured, time)
+# # print("Time delay between signals (peak to peak): " + str(t_dPP*1000) + " ms")
+# # #print(t_peakDelaysPP)
 
-t_dCC_command, _ , _ , _ = sk.delayCrossCorrelation(device1_positionCommand, device1_positionMeasured, time)
-print("Time delay between signals (cross correlation): " + str(t_dCC_command*1000) + " ms")
+# t_dCC_command, _ , _ , _ = sk.delayCrossCorrelation(device1_positionCommand, device1_positionMeasured, time)
+# print("Time delay between signals (cross correlation): " + str(t_dCC_command*1000) + " ms")
 
 # t_dPP_command, _ , _ , _ = sk.delayPeakToPeak(device1_positionCommand, device1_positionMeasured, time)
 # print("Time delay between signals (peak to peak): " + str(t_dPP_command*1000) + " ms")

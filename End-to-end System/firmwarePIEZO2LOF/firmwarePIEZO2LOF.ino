@@ -27,7 +27,7 @@ typedef enum { NONE, ZERO_FORCE, FLEX, MAX_PRESSURE, ACTUATOR
 } CALIBRATION_OPTIONS;
 
 const bool serialON = true;
-const CALIBRATION_OPTIONS calibrationMode = FLEX;
+const CALIBRATION_OPTIONS calibrationMode = NONE;
 const bool fastMapON = false;
 const bool sdWriteON = !(serialON);
 int user_position_MIN = position_MIN;

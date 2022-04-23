@@ -110,6 +110,14 @@ def deleteStar(screen):
 		undo()
 	update()
 
+def updateTrialLabel(screen, nTrials):
+	screen.tracer(0)
+	penup()
+	removeTrialLabel(screen)
+	goto(325,300)
+	write(nTrials+1, move=False, font=("Arial",36, "normal"))
+	penup()
+
 def erase(screen, c):
 	#screen.tracer(1,10)
 	#showturtle()

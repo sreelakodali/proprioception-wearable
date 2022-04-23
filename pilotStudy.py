@@ -16,17 +16,17 @@ t = 10
 nTrials = 0
 sc = turtle.Screen()
 trialAngles = sk.generateRandomTrials() # Generate random trials
-N_TOTAL_TRIALS = len(trialAngles)
+N_TOTAL_TRIALS = 2#len(trialAngles)
 
-def updateTrialLabel():
-	global sc
-	sc.tracer(0)
-	turtle.penup()
-	skG.removeTrialLabel(sc)
-	turtle.goto(325,300)
-	global nTrials
-	turtle.write(nTrials+1, move=False, font=("Arial",36, "normal"))
-	turtle.penup()
+# def updateTrialLabel():
+# 	global sc
+# 	sc.tracer(0)
+# 	turtle.penup()
+# 	skG.removeTrialLabel(sc)
+# 	turtle.goto(325,300)
+# 	global nTrials
+# 	turtle.write(nTrials+1, move=False, font=("Arial",36, "normal"))
+# 	turtle.penup()
 
 # Initialize GUI
 sc.tracer(0)
@@ -61,7 +61,7 @@ writer.writerow(columnNames)
 
 # Read in serial data and save in csv
 skG.drawForearm(sc,trialAngles[nTrials], skG.COLOR)
-updateTrialLabel()
+skG.updateTrialLabel(sc, nTrials)
 skG.delay(sc, t)
 if (CONST.SHOW_ARM): skG.buffer('white')
 serialAngleBuf = []
@@ -94,7 +94,7 @@ while (nTrials < N_TOTAL_TRIALS):
 				if nTrials == len(trialAngles):
 					break
 				skG.drawForearm(sc,trialAngles[nTrials], skG.COLOR)
-				updateTrialLabel()
+				skG.updateTrialLabel(sc, nTrials)
 				skG.delay(sc, t)
 		else:
 			serialAngleBuf = []
