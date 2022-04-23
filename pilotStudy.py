@@ -70,7 +70,6 @@ while (nTrials < CONST.N_TOTAL_TRIALS):
 	if (len(value) == len(dataFunc)):
 		newRow = sk.processNewRow(value, nTrials)
 		serialAngle = newRow[1]
-		print(newRow)
 		s = "Measured=" + str(serialAngle) + ", Target=" + str(trialAngles[nTrials])
 		newRow.append(nTrials)
 		newRow.append(trialAngles[nTrials])
