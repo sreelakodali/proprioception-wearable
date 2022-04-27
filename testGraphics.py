@@ -11,7 +11,7 @@ import constants as CONST
 import skFunctions as sk
 import skPilotGraphics as skG
 
-t = 1
+t = 100
 nTrials = 0
 sc = turtle.Screen()
 
@@ -55,7 +55,7 @@ for i in trialAngles:
 # skG.delay(sc, t)
 	#while(serialAngle != i);
 
-# sc.onscreenclick(updateTrials)
-# listen()
+sc.onscreenclick(updateTrialLabel)
+listen()
 
 # done()

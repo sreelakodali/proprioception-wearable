@@ -105,6 +105,67 @@ def findNWindow(timeArr):
 		i+=1
 	return i
 
+#def data rate
+
+def evaluatePilotPerformance(time, trial, targetAngle):
+
+	prevTrial = -1
+	t_start = []
+	rowCount = 0
+
+	for i in trial:
+		t = time[int(i)]
+
+		# if it's not the first row, update prevTrial
+		if ((rowCount != 0)):
+			prevTrial = trial[rowCount-1]
+
+		# if it's the first trial, min t is the first
+		if ((i != prevTrial) and (rowCount == 0)):
+			t_min = t # set the min time
+			t_max = 0
+
+		# if its a new trial and not first trial
+		if ((i != prevTrial) and (rowCount != 0)):
+			#t_diff.append(t_max - t_min)
+			t_start.append(t_min)
+
+			t_min = time[rowCount] # set the min time
+			t_max = 0
+
+
+
+		# #elif: (t < t_min): t_min = t
+
+		if (t > t_max): t_max = t
+		rowCount = rowCount + 1
+
+	#t_diff.append(t_max - t_min)
+	t_start.append(t_min)
+	t_start.append(1210.299)
+
+	print(len(t_start))
+
+
+	t_diff = []
+
+	for i in range(0, len(t_start)-1):
+		if (i != 0):
+			t_diff.append(t_start[i]-t_start[i-1])
+
+	t_avg = [sum(t_diff[0:10])/len(t_diff[0:10]), sum(t_diff[11:20])/len(t_diff[11:20]), sum(t_diff[21:30])/len(t_diff[21:30]), sum(t_diff[31:40])/len(t_diff[31:40]), sum(t_diff[41:50])/len(t_diff[41:50]), sum(t_diff[51:])/len(t_diff[51:])]
+	print(t_avg)
+	return t_diff
+
+
+def plot_pilotResults(t_diff):
+	fig, ax1 = plt.subplots()
+	l1 = ax1.plot(range(0,len(t_diff)), t_diff, 'b', linewidth=1.75, label='time per trial')
+	plt.suptitle("Time Per Trial: Pilot Results", name='Arial', weight='bold')
+	ax1.set_ylabel("Time", name='Arial')
+	ax1.set_xlabel("Trial Count", name='Arial')
+	plt.show()
+
 def delayCrossCorrelation(angle, positionMeasured, timeArr):
 	n_window = findNWindow(timeArr)
 	ind = np.random.choice(len(timeArr)-n_window, CONST.N_CORR)

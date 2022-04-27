@@ -75,6 +75,12 @@ device1_positionCommand = data['actuator position, command'].tolist()
 device1_positionMeasured = data['actuator position, measured'].tolist()
 force  = data['force'].tolist()
 
+trial = data['Trial Number'].tolist()
+targetAngle  = data['Target Angle'].tolist()
+
+t_diff = sk.evaluatePilotPerformance(time, trial, targetAngle)
+#print(t_diff)
+sk.plot_pilotResults(t_diff)
 # t_dCC, t_peakDelaysCC, idx_peaksAngleCC, idx_peaksPositionMeasuredCC = sk.delayCrossCorrelation(angle, device1_positionMeasured, time)
 # print("Time delay between signals (cross correlation): " + str(t_dCC*1000) + " ms")
 
@@ -90,6 +96,6 @@ force  = data['force'].tolist()
 # #print(t_peakDelaysPP)
 
 # plot
-sk.plot_NoDelay(0, p, fileName, time, angle, force, device1_positionMeasured, device1_positionCommand)
+#k.plot_NoDelay(1, p, fileName, time[100:140], angle[100:140], force[100:140], device1_positionMeasured[100:140], device1_positionCommand[100:140])
 #sk.plot_SingleTactor(0, p, fileName, time, angle, force, device1_positionMeasured, t_dCC, t_peakDelaysCC, idx_peaksAngleCC, idx_peaksPositionMeasuredCC)
 #sk.plot_TwoTactor(0, p, fileName, time, angle, force, device1_positionMeasured, t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured)
