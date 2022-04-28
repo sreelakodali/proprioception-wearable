@@ -38,6 +38,19 @@ def drawForearm(screen, angle, c):
 	dot(HAND_SIZE)
 	update()
 
+def drawForearm2(screen, angle, c):
+	penup()
+	screen.tracer(0)
+	color(c, c)
+	goto(0, -ARM_LENGTH*3)
+	seth(180)
+	pendown()
+	left(angle)
+	backward(ARM_LENGTH)
+	dot(HAND_SIZE)
+	update()
+
+
 def deleteForearm(screen, r):
 	screen.tracer(0)
 	for i in range(0,r):

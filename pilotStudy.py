@@ -23,8 +23,8 @@ subjectAngleAttempts = []
 serialAngle = 0
 
 def completeTrial(x,y):
-	skG.star(sc)
-	skG.deleteStar(sc)
+	# skG.star(sc)
+	# skG.deleteStar(sc)
 	skG.erase(sc, 'white')
 	global nTrials, subjectAngleAttempts, serialAngle
 	nTrials = nTrials + 1
@@ -67,7 +67,7 @@ writer.writerow(columnNames)
 skG.drawForearm(sc,trialAngles[nTrials], skG.COLOR)
 skG.updateTrialLabel(sc, nTrials)
 skG.delay(sc, t)
-if (CONST.SHOW_ARM): skG.buffer('white')
+skG.buffer('white')
 
 while (nTrials < N_TOTAL_TRIALS):
 	value = mcu.readline()
@@ -82,9 +82,11 @@ while (nTrials < N_TOTAL_TRIALS):
 		newRow.append(trialAngles[nTrials])
 		writer.writerow(newRow)
 		print(s)
-		if (CONST.SHOW_ARM): turtle.undo() # angle
-		if (CONST.SHOW_ARM): turtle.undo() # dot
-		if (CONST.SHOW_ARM): skG.drawForearm(sc,serialAngle, skG.COLOR_SERIAL)
+		turtle.undo() # angle
+		turtle.undo() # dot
+		if nTrials < 20:
+			skG.drawForearm(sc,serialAngle, skG.COLOR_SERIAL)
+		else: skG.drawForearm2(sc,serialAngle, 'white')
 
 		# if I click then done with trial, store angle and move onto next
 		sc.onscreenclick(completeTrial)

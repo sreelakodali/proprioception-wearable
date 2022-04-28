@@ -48,7 +48,7 @@ def feedbackToPosition(f):
 
 # Function 5: Digital value from force sensor --> force measurement (N)
 def computeForce(data):
-	return ((data - 249) * (45.0)/511) - CONST.ZERO_FORCE #(data - 256) * (45.0)/511 
+	return ((data - 235) * (45.0)/511) - CONST.ZERO_FORCE #(data - 256) * (45.0)/511 
 	#changed bc uncalibrated
 
 dataFunc = {'time':millisToSeconds, 'flex sensor':computeAngle,'actuator position, command':commandToPosition, \
@@ -271,7 +271,7 @@ def plot_NoDelay(s, p, fileName, time, angle, force, device1_positionMeasured, d
 	ax3.yaxis.label.set_color('g')
 	ax3.spines['right'].set_color('g')
 	ax3.tick_params(axis='y', color='g')
-	ax3.set_ylim(0,25)
+	ax3.set_ylim(0,20)
 
 	#l4 = ax3.plot(time, device1_positionCommand, color='orange', linewidth=1.75, label='Actuator Position (Command)')
 
@@ -279,7 +279,7 @@ def plot_NoDelay(s, p, fileName, time, angle, force, device1_positionMeasured, d
 	labels = [l.get_label() for l in l_all]
 
 	plt.grid(True)
-	ax1.legend(l_all, labels, loc=0)
+	#ax1.legend(l_all, labels, loc=0)
 	if s==1: plt.savefig(p +"fig_"+fileName[:-4])
 	plt.show()
 	

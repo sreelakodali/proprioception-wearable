@@ -13,10 +13,10 @@
 
 // Constants
 #define flexCapacitiveSensor_MIN 0
-#define flexCapacitiveSensor_MAX 11400
+#define flexCapacitiveSensor_MAX 11600
 #define position_MIN 46
 #define position_MAX 130
-#define sreela_MAX 90 //dorsal forearm, maxforce without reaching max current
+#define sreela_MAX 87 //dorsal forearm, maxforce without reaching max current
 
 // Pin Names
 #define position1_IN A6 // pin to measure position1_Measured
@@ -339,7 +339,7 @@ void calibrationMaxDeepPressure() {
       position1_Measured = analogRead(position1_IN);
       // Send command to actuator
       actuator1.write(counter);
-      if (serialON) Serial.println((data - 249) * (45.0)/511);
+      if (serialON) Serial.println((data - 235) * (45.0)/511);
       if (risingEdgeButton()) {
 //        // Calibration Stage 2a
 //        // Click button if you detect the tactor. Detection Threshold stored
@@ -358,7 +358,7 @@ void calibrationMaxDeepPressure() {
           painForce = readDataFromSensor(I2C_ADDR);
           if (serialON) {
             Serial.println("DISCOMFORT THRESHOLD:");
-            Serial.println((painForce - 249) * (45.0)/511);
+            Serial.println((painForce - 235) * (45.0)/511);
           }
           break; 
         //} 
