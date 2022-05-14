@@ -103,12 +103,13 @@ void setup() {
 }
 
 void loop() {
-  if(buttonCount % 2 == 1) {
-    runtime();  
-  }
-  else {
-    runtime_NoFeedback();
-  }
+//  if(buttonCount % 2 == 1) {
+//    runtime();  
+//  }
+//  else {
+//    runtime_NoFeedback();
+//  }
+  sweep(10);
 }
 
 void writeOutData(unsigned long t, int f, int c, int m, short d) {
@@ -237,7 +238,7 @@ void runtime_NoFeedback() {
     risingEdgeButton();
 }
 
-void sweep() {
+void sweep(int t_d) {
     unsigned long myTime;
     int counter = user_position_MIN;
     int extending = 1;
@@ -270,7 +271,7 @@ void sweep() {
           break;
         } else counter = counter - 1;
       }
-      delay(500);
+      delay(t_d);
     }    
 }
 
@@ -280,7 +281,7 @@ void calibrationActuatorFeedback() {
   if (serialON) Serial.println("Calibration: Actuator");
   if (serialON) Serial.println("Instructions: For this calibration stage, please don't wear the actuator. Make sure power is on and press the button when ready.");
   while(!risingEdgeButton());
-  sweep();
+  sweep(500);
   if (serialON) Serial.println("Calibration stage complete. Researcher will record values and will let you know when to begin next stage.");
 }
 
