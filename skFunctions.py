@@ -47,6 +47,12 @@ def commandToPosition(c):
 def feedbackToPosition(f):
 	return mapFloat(f, CONST.ACTUATOR_FEEDBACK_MIN, CONST.ACTUATOR_FEEDBACK_MAX, CONST.ACTUATOR_POSITION_MAX, CONST.ACTUATOR_POSITION_MIN)
 
+# delta change in feedback signal results in how much change in actuator position in mm
+# slope of the previous function
+# returns mm
+def delta_feedbackToPosition(delta):
+	return delta*CONST.ACTUATOR_POSITION_MAX/(CONST.ACTUATOR_FEEDBACK_MAX-CONST.ACTUATOR_FEEDBACK_MIN)
+
 # Function 5: Digital value from force sensor --> force measurement (N)
 def computeForce(data):
 	return ((data - 235) * (45.0)/511) - CONST.ZERO_FORCE #(data - 256) * (45.0)/511 
@@ -191,6 +197,11 @@ def findRisingEdge(s, t, minThresh, w):
 	# print(ix_end)
 	return ix_start, ix_end, avgThresh
 
+def actuatorSpeed(deltaFeedbackSignal, t_risingEdge):
+	# returns mm/s
+	# rising edge is in milliseconds, hence why 1000 const included
+	# delta_feedbackToPosition returns mm
+	return delta_feedbackToPosition(deltaFeedbackSignal)*1000/t_risingEdge
 
 
 def plot_pilotResults(t_diff):
@@ -283,13 +294,17 @@ def plot_timing(s, p, fileName, time, command, measured, i_startC, i_endC, i_sta
 	plt.yticks(name='Arial')
 
 	ax1.set_ylabel("Actuator Position (mm)", name='Arial')
-	ax1.plot(time, command, 'orange', time, measured, 'g')
+	ax1.plot(time, command, 'mediumaquamarine', time, measured, 'g')
 	ax1.set_ylim(min(measured)-0.25,max(command)+0.25)
 
 	#l_all = l1#+l2#+l3#+l4
 	#labels = [l.get_label() for l in l_all]
 	ax1.plot(time, measured,'gD',markevery=[i_startM, i_endM])
-	ax1.plot(time, command,'rD',markevery=[i_startC, i_endC])
+	ax1.plot(time, command,'cD',markevery=[i_startC, i_endC])
+	
+	ax1.axvspan(time[i_startM], time[i_endM], color='lime', alpha=0.5)
+	ax1.axvspan(time[i_endC], time[i_endM], color='powderblue', alpha=0.5)
+
 
 	plt.grid(True)
 	#ax1.legend(l_all, labels, loc=0)

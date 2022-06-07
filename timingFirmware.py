@@ -54,14 +54,15 @@ command = data['command'].tolist()
 measured = data['measured'].tolist()
 
 
-
 window_size = 200
 edgeWindow = 30
+minThresh = 5
+
 l = len(t2) / window_size 
 t_delay = []
 t_risingEdge = []
 speed = []
-# i = 3
+# i = 0
 # if (i >= 0):
 for i in range(math.floor(l)-1):#range(6):#
 	# print(i*window_size)
@@ -71,20 +72,25 @@ for i in range(math.floor(l)-1):#range(6):#
 	m = measured[i*window_size:i*window_size+200]
 
 	idx_startC, idx_endC,  deltaCommand = sk.findRisingEdge(c, t, 1, edgeWindow)
-	idx_startM, idx_endM, deltaMeasured = sk.findRisingEdge(m, t, 5, edgeWindow)
+	idx_startM, idx_endM, deltaMeasured = sk.findRisingEdge(m, t, minThresh, edgeWindow)
 
 	if (not((idx_startM == 0) and (idx_endM == 0))):
 		td = t[idx_endM] - t[idx_endC]
 		tRE = t[idx_endM] - t[idx_startM]
+		s = sk.actuatorSpeed(deltaMeasured, tRE)
+		# print(td)
+		# print(tRE)
+		# print(deltaMeasured)
+		# print(sk.delta_feedbackToPosition(deltaMeasured))
 		t_delay.append(td)
 		t_risingEdge.append(tRE)
-		speed.append(sk.feedbackToPosition(deltaMeasured)/tRE)
-		print(i)
+		speed.append(s) # mm/s
+		#print(i)
 
-	sk.plot_timing(0, p, fileName, t2[i*window_size:i*window_size+200], commandMapped[i*window_size:i*window_size+200], measuredMapped[i*window_size:i*window_size+200], idx_startC, idx_endC, idx_startM, idx_endM)
+		#sk.plot_timing(0, p, fileName, t2[i*window_size:i*window_size+200], commandMapped[i*window_size:i*window_size+200], measuredMapped[i*window_size:i*window_size+200], idx_startC, idx_endC, idx_startM, idx_endM)
 
-print(t_delay)
-print(t_risingEdge)
+#print(t_delay)
+#print(t_risingEdge)
 print(speed)
 
 
