@@ -2,6 +2,7 @@
 # Written by: Sreela Kodali (kodali@stanford.edu) 
 
 import numpy as np
+import math
 from scipy import signal
 import constants as CONST
 from operator import itemgetter
@@ -157,6 +158,40 @@ def evaluatePilotPerformance(time, trial, targetAngle):
 	print(t_avg)
 	return t_diff
 
+def findRisingEdge(s, t, minThresh, w):
+	avg1 = sum(s[:w])/len(s[:w])
+	avg2 = sum(s[-w:])/len(s[-w:])
+	# print(avg1)
+	# print(avg2)
+
+	ix_start = 0
+	ix_end = 0
+	avgThresh = 0
+
+	# check if edge present
+	if (abs(avg2 - avg1) >= minThresh):
+		avgThresh = math.floor(abs(avg2 - avg1))
+		#print(avgThresh)
+
+		for i in range(len(s) - w):
+			a = s[w+i]
+			if (abs(a-avg1) >= avgThresh):
+				ix_end = w+i
+				break
+
+		if (ix_end > 0):
+			for i in range(ix_end-1, ix_end-w, -1):
+				b = s[i]
+				# print(i)
+				# print(abs(s[ix_end] - b))
+				if(abs(s[ix_end] - b) >= avgThresh):
+					ix_start = i
+					break
+	# print(ix_start)
+	# print(ix_end)
+	return ix_start, ix_end, avgThresh
+
+
 
 def plot_pilotResults(t_diff):
 	fig, ax1 = plt.subplots()
@@ -238,6 +273,28 @@ def delayPeakToPeak(angle, positionMeasured, timeArr):
 	t_peakDelays = list(zip(t_peaksAngle, t_peaksPositionMeasured))
 
 	return t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured
+
+
+def plot_timing(s, p, fileName, time, command, measured, i_startC, i_endC, i_startM, i_endM):
+	fig, ax1 = plt.subplots()
+	plt.suptitle("Timing Data " + fileName[:-4], name='Arial', weight='bold')
+	ax1.set_xlabel("Time (ms)", name='Arial')
+	plt.xticks(name='Arial')
+	plt.yticks(name='Arial')
+
+	ax1.set_ylabel("Actuator Position (mm)", name='Arial')
+	ax1.plot(time, command, 'orange', time, measured, 'g')
+	ax1.set_ylim(min(measured)-0.25,max(command)+0.25)
+
+	#l_all = l1#+l2#+l3#+l4
+	#labels = [l.get_label() for l in l_all]
+	ax1.plot(time, measured,'gD',markevery=[i_startM, i_endM])
+	ax1.plot(time, command,'rD',markevery=[i_startC, i_endC])
+
+	plt.grid(True)
+	#ax1.legend(l_all, labels, loc=0)
+	if s==1: plt.savefig(p +"fig_"+fileName[:-4])
+	plt.show()
 
 def plot_NoDelay(s, p, fileName, time, angle, force, device1_positionMeasured, device1_positionCommand):
 	fig, ax1 = plt.subplots()

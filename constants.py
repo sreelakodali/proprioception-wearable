@@ -3,7 +3,7 @@
 
 BAUD_RATE = 4608000
 DATASRC_SD = False
-TRANSFER_RAW = False
+TRANSFER_RAW = True
 
 # Calibration
 ACTUATOR_FEEDBACK_MAX = 988
@@ -23,10 +23,11 @@ ZERO_FORCE = 1.59
 RUNTIME_LENGTH_ARM = 1000 # seconds
 
 # DATA Collection
-PATH =  '/Volumes/PIEZO2/'
-PATH_LAPTOP = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/Pilot/'
+PATH_SD =  '/Volumes/PIEZO2/'
+#PATH_LAPTOP = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/Pilot/'
+PATH_LAPTOP = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/timing/'
 PORT_NAME = "/dev/cu.usbmodem71181201"
-RUNTIME_LENGTH = 30 # seconds
+RUNTIME_LENGTH = 10 # seconds
 
 ## DATA PROCESSING CONSTANTS ##
 ANGLE_MIN = 180

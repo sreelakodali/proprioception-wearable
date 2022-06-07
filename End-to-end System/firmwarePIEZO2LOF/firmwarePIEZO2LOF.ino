@@ -1,6 +1,6 @@
 /*
  * Firmware Code for Proprioception Wearable Device
- * Written by Sreela Kodali (kodali@stanford)
+ * Written by Sreela Kodali (kodali@stanford.edu)
  * 
  * */
 
@@ -26,6 +26,7 @@
 typedef enum { NONE, ZERO_FORCE, FLEX, MAX_PRESSURE, ACTUATOR  
 } CALIBRATION_OPTIONS;
 
+// Parameters
 const bool serialON = true;
 const CALIBRATION_OPTIONS calibrationMode = NONE;
 const bool fastMapON = false;
@@ -33,10 +34,12 @@ const bool sdWriteON = !(serialON);
 int user_position_MIN = position_MIN;
 int user_position_MAX = 60;
 
-const int WRITE_COUNT = 100; // for every n runtime cycles, write out data
+const int WRITE_COUNT = 2000; // for every n runtime cycles, write out data
+const int COMMAND_COUNT = 400000;
 const byte I2C_ADDR = 0x04; // force sensor
 const int CHIP_SELECT = 10; // SD card writing
 const int BUFFER_SIZE = 25; // how many datastrings until sd card write within 512 buffer
+int commandCount = 0;
 int cycleCount = 0;
 int bufferCount = 0;
 String buf = "";
@@ -103,13 +106,14 @@ void setup() {
 }
 
 void loop() {
-//  if(buttonCount % 2 == 1) {
-//    runtime();  
-//  }
-//  else {
-//    runtime_NoFeedback();
-//  }
-  sweep(10);
+  if(buttonCount % 2 == 1) {
+    //runtime();
+    sweep2();  
+  }
+  else {
+    runtime_NoFeedback();
+  }
+//  sweep(10);
 }
 
 void writeOutData(unsigned long t, int f, int c, int m, short d) {
@@ -128,7 +132,7 @@ void writeOutData(unsigned long t, int f, int c, int m, short d) {
   }  
 }
 
-void writeOutDataBatching(unsigned long t, int f, int c, int m, short d) {
+void writeOutDataBatching(unsigned long t, int f, int c, int m, short d, unsigned long t1, unsigned long t2, unsigned long t3, unsigned long t4) {
   String dataString = "";
   
   if (sdWriteON) {
@@ -147,8 +151,8 @@ void writeOutDataBatching(unsigned long t, int f, int c, int m, short d) {
     }
   } else if (serialON) {
       dataString = (String(t) + "," + String(f) + "," + String(c) + "," \
-      + String(m) + "," + String(d));
-      Serial.println(dataString);
+      + String(m) + "," + String(d) + "," + String(t1) + "," + String(t2) + "," + String(t3) + "," + String(t4) + ",");
+      Serial.print(dataString);
   }
 }
 
@@ -171,35 +175,52 @@ void safety() {
 void runtime() {
     short data;
     unsigned long myTime;
-    
+    unsigned long myTime_1;
+    unsigned long myTime_2;
+    unsigned long myTime_3;
+    unsigned long myTime_4;
+    unsigned long myTime_5;
+
     // time for the beginning of the loop
-    myTime = millis();
+    myTime = micros();
     
     // Read flex sensor
     if (capacitiveFlexSensor.available() == true) flexSensor = capacitiveFlexSensor.getX();
+
+    myTime_1 = micros();
     
     // Map angle to actuator command
     if (fastMapON) position1_Command = mapper.map(flexSensorFloat);
     else position1_Command = map(flexSensor, flexCapacitiveSensor_MIN, flexCapacitiveSensor_MAX, position_MIN, position_MAX);
     if(position1_Command > position_MAX) position1_Command = position_MAX;
     if(position1_Command < position_MIN) position1_Command = position_MIN;
-    
-    // Measure force and actuator position
-    data = readDataFromSensor(I2C_ADDR);
-    position1_Measured = analogRead(position1_IN);
 
+    myTime_2 = micros(); // after computation
+    
     // Send command to actuator
     actuator1.write(position1_Command);
+
+    myTime_3 = micros(); // after sending to servo
+    
+    // Measure actuator position
+    position1_Measured = analogRead(position1_IN);
 
     cycleCount = cycleCount + 1;
     // fix test code
     //powerOn = (data >= 150);
     //Serial.println((cycleCount == WRITE_COUNT) && powerOn);
     //Serial.println(powerOn);
+
+    myTime_4 = micros(); // after reading
+    
     if ((cycleCount == WRITE_COUNT)) {
-      writeOutData(myTime, flexSensor, position1_Command, position1_Measured, data);
+      data = readDataFromSensor(I2C_ADDR);
+      writeOutDataBatching(myTime, flexSensor, position1_Command, position1_Measured, data, myTime_1, myTime_2, myTime_3, myTime_4);
       cycleCount = 0;
     }
+
+    myTime_5 = micros(); // after data write out
+    Serial.println(myTime_5);
     risingEdgeButton();
 }
 
@@ -247,8 +268,6 @@ void sweep(int t_d) {
     while (counter <= position_MAX) {
       String dataString = "";
       actuator1.write(counter);
-      //if (capacitiveFlexSensor.available() == true) flexSensor = capacitiveFlexSensor.getX();
-      //data = readDataFromSensor(I2C_ADDR);
       position1_Measured = analogRead(position1_IN);
       myTime = millis();
 
@@ -273,6 +292,42 @@ void sweep(int t_d) {
       }
       delay(t_d);
     }    
+}
+
+void sweep2() {
+    unsigned long myTime_1;
+    unsigned long myTime_2;
+    //int next_c;
+    int c = user_position_MIN;
+    //int extending = 1;
+
+    while (c <= position_MAX + 1) {
+      String dataString = "";
+
+      commandCount = commandCount + 1;
+      cycleCount = cycleCount + 1;
+
+      myTime_1 = micros();
+      
+      if (commandCount == COMMAND_COUNT) {
+        actuator1.write(c);
+        c = c + 1;
+        commandCount = 0;
+      }
+
+      myTime_2 = micros();
+
+
+      if (cycleCount == WRITE_COUNT) {
+        position1_Measured = analogRead(position1_IN);
+        if (serialON) {
+          dataString = (String(myTime_1) + "," + String(myTime_2) + "," + String(c) + "," + String(position1_Measured) + ",");
+          Serial.println(dataString);
+        }
+        cycleCount = 0;
+      }
+
+    }
 }
 
 void calibrationActuatorFeedback() {
