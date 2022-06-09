@@ -55,7 +55,7 @@ def delta_feedbackToPosition(delta):
 
 # Function 5: Digital value from force sensor --> force measurement (N)
 def computeForce(data):
-	return ((data - 235) * (45.0)/511) - CONST.ZERO_FORCE #(data - 256) * (45.0)/511 
+	return ((data - 255) * (45.0)/511) - CONST.ZERO_FORCE #(data - 256) * (45.0)/511 
 	#changed bc uncalibrated
 
 dataFunc = {'time':millisToSeconds, 'flex sensor':computeAngle,'actuator position, command':commandToPosition, \
@@ -285,10 +285,29 @@ def delayPeakToPeak(angle, positionMeasured, timeArr):
 
 	return t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured
 
-
-def plot_timing(s, p, fileName, time, command, measured, i_startC, i_endC, i_startM, i_endM):
+def plot_timingAll(s, p, fileName, time, command, measured):
 	fig, ax1 = plt.subplots()
-	plt.suptitle("Timing Data " + fileName[:-4], name='Arial', weight='bold')
+	plt.suptitle("All Timing Data " + fileName[:-4], name='Arial', weight='bold')
+	ax1.set_xlabel("Time (ms)", name='Arial')
+	plt.xticks(name='Arial')
+	plt.yticks(name='Arial')
+
+	ax1.set_ylabel("Actuator Position (mm)", name='Arial')
+	ax1.plot(time, command, 'mediumaquamarine', time, measured, 'g')
+	ax1.set_ylim(0,21)
+
+	#l_all = l1#+l2#+l3#+l4
+	#labels = [l.get_label() for l in l_all]
+
+	plt.grid(True)
+	#ax1.legend(l_all, labels, loc=0)
+	if s==1: plt.savefig(p +"fig_"+fileName[:-4])
+	plt.show()
+
+
+def plot_timingWindow(s, p, fileName, time, command, measured, i_startC, i_endC, i_startM, i_endM):
+	fig, ax1 = plt.subplots()
+	plt.suptitle("Window of Timing Data " + fileName[:-4], name='Arial', weight='bold')
 	ax1.set_xlabel("Time (ms)", name='Arial')
 	plt.xticks(name='Arial')
 	plt.yticks(name='Arial')
@@ -305,11 +324,36 @@ def plot_timing(s, p, fileName, time, command, measured, i_startC, i_endC, i_sta
 	ax1.axvspan(time[i_startM], time[i_endM], color='lime', alpha=0.5)
 	ax1.axvspan(time[i_endC], time[i_endM], color='powderblue', alpha=0.5)
 
+	plt.grid(True)
+	#ax1.legend(l_all, labels, loc=0)
+	if s==1: plt.savefig(p +"fig_"+fileName[:-4])
+	plt.show()
+
+def plot_timingAnalysis(s, p, fileName, t_delay, t_risingEdge, speed, command):
+	fig, ax1 = plt.subplots()
+	ax2 = ax1.twinx()
+	plt.suptitle("Timing Analysis " + fileName[:-4], name='Arial', weight='bold')
+	ax1.set_xlabel("Actuator Command", name='Arial')
+	plt.xticks(name='Arial')
+	plt.yticks(name='Arial')
+
+	ax1.set_ylabel("Time (ms)", name='Arial')
+	#ax1.plot(command, t_delay, 'powderblue', command, t_risingEdge, 'c')
+	ax1.scatter(command, t_delay, c='powderblue')
+	ax1.scatter(command, t_risingEdge, c='c')
+	ax1.set_ylim(0,300)
+
+	ax2.set_ylabel("Speed (mm/s)", name='Arial',)
+	ax2.scatter(command, speed, c='m')
+	#ax2.plot(command, speed, 'm')
+	ax2.set_ylim(0,28)
 
 	plt.grid(True)
 	#ax1.legend(l_all, labels, loc=0)
 	if s==1: plt.savefig(p +"fig_"+fileName[:-4])
 	plt.show()
+
+
 
 def plot_NoDelay(s, p, fileName, time, angle, force, device1_positionMeasured, device1_positionCommand):
 	fig, ax1 = plt.subplots()

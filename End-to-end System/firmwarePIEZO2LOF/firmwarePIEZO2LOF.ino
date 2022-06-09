@@ -14,8 +14,8 @@
 // Constants
 #define flexCapacitiveSensor_MIN 0
 #define flexCapacitiveSensor_MAX 11600
-#define position_MIN 46
-#define position_MAX 130
+#define position_MIN 46 //140 new
+#define position_MAX 130 // 45 new
 #define sreela_MAX 87 //dorsal forearm, maxforce without reaching max current
 
 // Pin Names
@@ -34,7 +34,7 @@ const bool sdWriteON = !(serialON);
 int user_position_MIN = position_MIN;
 int user_position_MAX = 60;
 
-const int WRITE_COUNT = 2000; // for every n runtime cycles, write out data
+const int WRITE_COUNT = 100;//2000; // for every n runtime cycles, write out data
 const int COMMAND_COUNT = 400000;
 const byte I2C_ADDR = 0x04; // force sensor
 const int CHIP_SELECT = 10; // SD card writing
@@ -108,6 +108,7 @@ void setup() {
 void loop() {
   if(buttonCount % 2 == 1) {
     //runtime();
+    //sweep(1000);
     sweep2();  
   }
   else {
@@ -215,12 +216,13 @@ void runtime() {
     
     if ((cycleCount == WRITE_COUNT)) {
       data = readDataFromSensor(I2C_ADDR);
-      writeOutDataBatching(myTime, flexSensor, position1_Command, position1_Measured, data, myTime_1, myTime_2, myTime_3, myTime_4);
+      //writeOutDataBatching(myTime, flexSensor, position1_Command, position1_Measured, data, myTime_1, myTime_2, myTime_3, myTime_4);
+      writeOutData(myTime, flexSensor, position1_Command, position1_Measured, data);
       cycleCount = 0;
     }
 
     myTime_5 = micros(); // after data write out
-    Serial.println(myTime_5);
+    //Serial.println(myTime_5);
     risingEdgeButton();
 }
 
@@ -297,6 +299,7 @@ void sweep(int t_d) {
 void sweep2() {
     unsigned long myTime_1;
     unsigned long myTime_2;
+    short data;
     //int next_c;
     int c = user_position_MIN;
     //int extending = 1;
@@ -319,9 +322,10 @@ void sweep2() {
 
 
       if (cycleCount == WRITE_COUNT) {
-        position1_Measured = analogRead(position1_IN);
+        //position1_Measured = analogRead(position1_IN);
+        data = readDataFromSensor(I2C_ADDR);
         if (serialON) {
-          dataString = (String(myTime_1) + "," + String(myTime_2) + "," + String(c) + "," + String(position1_Measured) + ",");
+          dataString = (String(myTime_1) + "," + String(myTime_2) + "," + String(c) + "," + String(data) + ",");
           Serial.println(dataString);
         }
         cycleCount = 0;
