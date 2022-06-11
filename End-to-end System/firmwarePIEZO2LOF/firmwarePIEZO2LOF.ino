@@ -14,8 +14,8 @@
 // Constants
 #define flexCapacitiveSensor_MIN 0
 #define flexCapacitiveSensor_MAX 11600
-#define position_MIN 46 //140 new
-#define position_MAX 130 // 45 new
+#define position_MIN 140//46 //140 new
+#define position_MAX 45//130 // 45 new
 #define sreela_MAX 87 //dorsal forearm, maxforce without reaching max current
 
 // Pin Names
@@ -34,7 +34,7 @@ const bool sdWriteON = !(serialON);
 int user_position_MIN = position_MIN;
 int user_position_MAX = 60;
 
-const int WRITE_COUNT = 100;//2000; // for every n runtime cycles, write out data
+const int WRITE_COUNT = 2000; // for every n runtime cycles, write out data
 const int COMMAND_COUNT = 400000;
 const byte I2C_ADDR = 0x04; // force sensor
 const int CHIP_SELECT = 10; // SD card writing
@@ -98,10 +98,10 @@ void setup() {
 
   pinMode(button_IN, INPUT);
 
-  if (capacitiveFlexSensor.begin() == false) {
-    if (serialON) Serial.println(("No sensor detected. Check wiring. Freezing..."));
-    while (1);
-  }
+//  if (capacitiveFlexSensor.begin() == false) {
+//    if (serialON) Serial.println(("No sensor detected. Check wiring. Freezing..."));
+//    while (1);
+//  }
   calibration(calibrationMode);
 }
 
@@ -267,7 +267,7 @@ void sweep(int t_d) {
     int extending = 1;
     
     
-    while (counter <= position_MAX) {
+    while (counter >= position_MAX) {
       String dataString = "";
       actuator1.write(counter);
       position1_Measured = analogRead(position1_IN);
@@ -281,16 +281,16 @@ void sweep(int t_d) {
 
       if (extending == 1) {
         if (counter == (position_MAX)) {
-          counter = counter - 1;
+          counter = counter + 1;
           extending = 0;
-        } else counter = counter + 1;
+        } else counter = counter - 1;
       }
       else if (extending == 0) {
         if (counter == position_MIN) {
-          counter = counter + 1;
+          counter = counter - 1;
           extending = 1;
           break;
-        } else counter = counter - 1;
+        } else counter = counter + 1;
       }
       delay(t_d);
     }    
@@ -304,7 +304,7 @@ void sweep2() {
     int c = user_position_MIN;
     //int extending = 1;
 
-    while (c <= position_MAX + 1) {
+    while (c >= 100) {
       String dataString = "";
 
       commandCount = commandCount + 1;
@@ -314,18 +314,17 @@ void sweep2() {
       
       if (commandCount == COMMAND_COUNT) {
         actuator1.write(c);
-        c = c + 1;
+        c = c - 1;
         commandCount = 0;
       }
 
       myTime_2 = micros();
 
-
       if (cycleCount == WRITE_COUNT) {
-        //position1_Measured = analogRead(position1_IN);
+        position1_Measured = 0;//analogRead(position1_IN);
         data = readDataFromSensor(I2C_ADDR);
         if (serialON) {
-          dataString = (String(myTime_1) + "," + String(myTime_2) + "," + String(c) + "," + String(data) + ",");
+          dataString = (String(myTime_1) + "," + String(myTime_2) + "," + String(c) + "," + String(data) + "," + String(position1_Measured) + ",");
           Serial.println(dataString);
         }
         cycleCount = 0;

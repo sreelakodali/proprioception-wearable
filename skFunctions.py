@@ -167,21 +167,30 @@ def evaluatePilotPerformance(time, trial, targetAngle):
 def findRisingEdge(s, t, minThresh, w):
 	avg1 = sum(s[:w])/len(s[:w])
 	avg2 = sum(s[-w:])/len(s[-w:])
-	# print(avg1)
-	# print(avg2)
+	# print("avg1 = " + str(avg1))
+	# print("avg2 = " + str(avg2))
 
 	ix_start = 0
 	ix_end = 0
 	avgThresh = 0
+	# plateauLength = 0
+	# minPlateauLength = w/2
 
 	# check if edge present
 	if (abs(avg2 - avg1) >= minThresh):
 		avgThresh = math.floor(abs(avg2 - avg1))
-		#print(avgThresh)
+		# print("avgThresh=" + str(avgThresh))
 
 		for i in range(len(s) - w):
 			a = s[w+i]
-			if (abs(a-avg1) >= avgThresh):
+			if (abs(a-avg1) >= avgThresh): # abs for position
+				# plateauLength = 0
+				# for j in range(w):
+				# 	print("i=" + str(i) + "j=" + str(j) + "sum =" + str(w + i + j))
+				# 	a2 = s[w+i+j]
+				# 	if ((a2-avg1) >= avgThresh):
+				# 		plateauLength = plateauLength + 1
+				# 	if (plateauLength >= minPlateauLength):
 				ix_end = w+i
 				break
 
@@ -190,7 +199,8 @@ def findRisingEdge(s, t, minThresh, w):
 				b = s[i]
 				# print(i)
 				# print(abs(s[ix_end] - b))
-				if(abs(s[ix_end] - b) >= avgThresh):
+				#print(abs(b-avg1))
+				if((abs(s[ix_end] - b) >= avgThresh)):
 					ix_start = i
 					break
 	# print(ix_start)
@@ -285,16 +295,26 @@ def delayPeakToPeak(angle, positionMeasured, timeArr):
 
 	return t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured
 
-def plot_timingAll(s, p, fileName, time, command, measured):
+#def plot_timingAll(s, p, fileName, time, command, measured, i_startC, i_endM, i):
+def plot_timingAll(s, p, fileName, time, command, position, force):
 	fig, ax1 = plt.subplots()
+	ax2 = ax1.twinx()
+
 	plt.suptitle("All Timing Data " + fileName[:-4], name='Arial', weight='bold')
 	ax1.set_xlabel("Time (ms)", name='Arial')
 	plt.xticks(name='Arial')
 	plt.yticks(name='Arial')
 
 	ax1.set_ylabel("Actuator Position (mm)", name='Arial')
-	ax1.plot(time, command, 'mediumaquamarine', time, measured, 'g')
-	ax1.set_ylim(0,21)
+	#ax1.plot(time, command, 'mediumaquamarine', time, measured, 'g')
+	ax1.plot(time, command, 'mediumaquamarine')
+	#ax1.set_ylim(0,21)
+
+	ax2.set_ylabel("Force (N)", name='Arial')
+	ax2.plot(time, force, 'r')
+	ax2.set_ylim(0,18)
+
+	#ax1.axvspan(time[i*200 + i_startC], time[i*200 + i_endM], color='powderblue', alpha=0.5)
 
 	#l_all = l1#+l2#+l3#+l4
 	#labels = [l.get_label() for l in l_all]
@@ -305,23 +325,35 @@ def plot_timingAll(s, p, fileName, time, command, measured):
 	plt.show()
 
 
-def plot_timingWindow(s, p, fileName, time, command, measured, i_startC, i_endC, i_startM, i_endM):
+def plot_timingWindow(s, p, fileName, time, command, measured, i_startC, i_endC, i_startM, i_endM, measureDelay_force):
 	fig, ax1 = plt.subplots()
+	ax2 = ax1.twinx()
 	plt.suptitle("Window of Timing Data " + fileName[:-4], name='Arial', weight='bold')
 	ax1.set_xlabel("Time (ms)", name='Arial')
 	plt.xticks(name='Arial')
 	plt.yticks(name='Arial')
 
 	ax1.set_ylabel("Actuator Position (mm)", name='Arial')
-	ax1.plot(time, command, 'mediumaquamarine', time, measured, 'g')
-	ax1.set_ylim(min(measured)-0.25,max(command)+0.25)
+	ax1.plot(time, command, 'mediumaquamarine')
+	ax1.set_ylim(min(command)-0.25, max(command)+0.25)
+	ax1.plot(time, command,'cD',markevery=[i_startC, i_endC])
+
+	if (not(measureDelay_force)):
+		ax1.plot(time, command, 'mediumaquamarine', time, measured, 'g') # switch
+		ax1.set_ylim(min(measured)-0.25,max(command)+0.25) # switch
+		ax1.plot(time, measured,'gD',markevery=[i_startM, i_endM]) # switch axis and colo
+		ax1.axvspan(time[i_startM], time[i_endM], color='lime', alpha=0.5) # switch axis
+
+	else:
+		ax2.set_ylabel("Force (N)", name='Arial') # switch
+		ax2.plot(time,measured,'r')
+		ax2.set_ylim(min(measured)-0.25, max(measured)+0.25)
+		ax2.plot(time, measured,'rD',markevery=[i_startM, i_endM]) # switch axis and colo
+		ax2.axvspan(time[i_startM], time[i_endM], color='lime', alpha=0.5) # switch axis
 
 	#l_all = l1#+l2#+l3#+l4
 	#labels = [l.get_label() for l in l_all]
-	ax1.plot(time, measured,'gD',markevery=[i_startM, i_endM])
-	ax1.plot(time, command,'cD',markevery=[i_startC, i_endC])
 	
-	ax1.axvspan(time[i_startM], time[i_endM], color='lime', alpha=0.5)
 	ax1.axvspan(time[i_endC], time[i_endM], color='powderblue', alpha=0.5)
 
 	plt.grid(True)
@@ -329,11 +361,12 @@ def plot_timingWindow(s, p, fileName, time, command, measured, i_startC, i_endC,
 	if s==1: plt.savefig(p +"fig_"+fileName[:-4])
 	plt.show()
 
-def plot_timingAnalysis(s, p, fileName, t_delay, t_risingEdge, speed, command):
+def plot_timingAnalysis(s, p, fileName, t_delay, t_risingEdge, speed, command, xaxis_time):
 	fig, ax1 = plt.subplots()
 	ax2 = ax1.twinx()
 	plt.suptitle("Timing Analysis " + fileName[:-4], name='Arial', weight='bold')
-	ax1.set_xlabel("Actuator Command", name='Arial')
+	if (xaxis_time): ax1.set_xlabel("Time", name='Arial') # switch
+	else: ax1.set_xlabel("Actuator Command", name='Arial') # switch
 	plt.xticks(name='Arial')
 	plt.yticks(name='Arial')
 
@@ -341,12 +374,12 @@ def plot_timingAnalysis(s, p, fileName, t_delay, t_risingEdge, speed, command):
 	#ax1.plot(command, t_delay, 'powderblue', command, t_risingEdge, 'c')
 	ax1.scatter(command, t_delay, c='powderblue')
 	ax1.scatter(command, t_risingEdge, c='c')
-	ax1.set_ylim(0,300)
+	ax1.set_ylim(0,1200)
 
-	ax2.set_ylabel("Speed (mm/s)", name='Arial',)
-	ax2.scatter(command, speed, c='m')
-	#ax2.plot(command, speed, 'm')
-	ax2.set_ylim(0,28)
+	# ax2.set_ylabel("Speed (mm/s)", name='Arial',) 
+	# ax2.scatter(command, speed, c='m')
+	# #ax2.plot(command, speed, 'm')
+	# ax2.set_ylim(0,28)
 
 	plt.grid(True)
 	#ax1.legend(l_all, labels, loc=0)
@@ -367,12 +400,13 @@ def plot_NoDelay(s, p, fileName, time, angle, force, device1_positionMeasured, d
 	plt.xticks(name='Arial')
 	plt.yticks(name='Arial')
 
-	ax1.set_ylabel("Angle (degrees)", name='Arial')
-	l1 = ax1.plot(time, angle, 'b', linewidth=1.75, label='Angle')
-	ax1.yaxis.label.set_color('b')
-	ax1.tick_params(axis='y', color='b')
-	#ax1.set_ylim(30,180)
-	ax3.spines['left'].set_color('b')
+	# temporary!!
+	# ax1.set_ylabel("Angle (degrees)", name='Arial')
+	# l1 = ax1.plot(time, angle, 'b', linewidth=1.75, label='Angle')
+	# ax1.yaxis.label.set_color('b')
+	# ax1.tick_params(axis='y', color='b')
+	# #ax1.set_ylim(30,180)
+	# ax3.spines['left'].set_color('b')
 
 	ax2.set_ylabel("Force (N)", name='Arial',)
 	l2 = ax2.plot(time, force, 'r', linewidth=1.75, label='Force')
@@ -389,10 +423,10 @@ def plot_NoDelay(s, p, fileName, time, angle, force, device1_positionMeasured, d
 	ax3.tick_params(axis='y', color='g')
 	ax3.set_ylim(0,20)
 
-	#l4 = ax3.plot(time, device1_positionCommand, color='orange', linewidth=1.75, label='Actuator Position (Command)')
+	l4 = ax3.plot(time, device1_positionCommand, color='orange', linewidth=1.75, label='Actuator Position (Command)')
 
-	l_all = l1+l2+l3#+l4
-	labels = [l.get_label() for l in l_all]
+	#l_all = l1+l2+l3#+l4
+	#labels = [l.get_label() for l in l_all]
 
 	plt.grid(True)
 	#ax1.legend(l_all, labels, loc=0)
