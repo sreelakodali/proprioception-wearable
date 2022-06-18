@@ -43,6 +43,10 @@ def commandToPosition(c):
 	return mapFloat(c, CONST.ACTUATOR_COMMAND_MIN, CONST.ACTUATOR_COMMAND_MAX, CONST.ACTUATOR_POSITION_MIN, CONST.ACTUATOR_POSITION_MAX)
 	#return 0.22*c - 10.7
 
+def commandToPosition_Actuator2(c):
+	return mapFloat(c, 140, 45, 0, 2)
+	#return 0.22*c - 10.7
+
 # Function 4: Feedback signal from actuator (1/1024th of V) to actuator position (mm)
 def feedbackToPosition(f):
 	return mapFloat(f, CONST.ACTUATOR_FEEDBACK_MIN, CONST.ACTUATOR_FEEDBACK_MAX, CONST.ACTUATOR_POSITION_MAX, CONST.ACTUATOR_POSITION_MIN)
@@ -312,7 +316,7 @@ def plot_timingAll(s, p, fileName, time, command, position, force):
 
 	ax2.set_ylabel("Force (N)", name='Arial')
 	ax2.plot(time, force, 'r')
-	ax2.set_ylim(0,18)
+	#ax2.set_ylim(0,18)
 
 	#ax1.axvspan(time[i*200 + i_startC], time[i*200 + i_endM], color='powderblue', alpha=0.5)
 
