@@ -26,7 +26,7 @@ import skFunctions as sk
 # mcu = serial.Serial(port=CONST.PORT_NAME, baudrate=CONST.BAUD_RATE, timeout=.1)
 # f = open(p + fileName + '.csv', 'w+', encoding='UTF8', newline='')
 # writer = csv.writer(f)
-# writer.writerow(['t1', 't2', 'command', 'measured'])
+# writer.writerow(['t1', 't2', 'command', 'measured', 'zero'])
 
 # # Read in serial data and save in csv
 # endTime = datetime.datetime.now() + datetime.timedelta(seconds=CONST.RUNTIME_LENGTH)
@@ -53,16 +53,17 @@ t2 = list(map(sk.millisToSeconds, data['t2'].tolist()))
 #command = list(map(sk.commandToPosition, data['command'].tolist()))
 #position = list(map(sk.feedbackToPosition, data['position'].tolist()))
 force = list(map(sk.computeForce, data['measured'].tolist()))
+positionCommand = list(map(sk.commandToPosition_Actuator2, data['command'].tolist()))
 commandRaw = data['command'].tolist()
 forceRaw = data['measured'].tolist()
-position = list(map(sk.commandToPosition_Actuator2, data['command'].tolist()))
+
 #positionRaw = data['position'].tolist()
 
 #sk.plot_NoDelay(0, p, fileName, t2, [], force, [], command)
-sk.plot_timingAll(0, p, fileName, t2, position, [], force)
+#sk.plot_timingAll(0, p, fileName, t2, positionCommand, [], force)
 
 measureDelay_force = True # switch
-window_size = 200
+window_size = 133#120 # changed from 200
 edgeWindow = 30
 minThresh = 2  #5 for actuator position
 
@@ -110,17 +111,17 @@ for i in range(math.floor(l)-1):#range(6):#
 		correspondingCommands.append(c[idx_endC])
 		correspondingTimes.append(t[idx_endC])
 		#sk.plot_timingAll(0, p, fileName, t2, commandMapped, measuredMapped, idx_startC, idx_endM, i)
-		#sk.plot_timingWindow(0, p, fileName, t, c, m_all, idx_startC, idx_endC, idx_startM, idx_endM, measureDelay_force) # switch force or position
+	sk.plot_timingWindow(0, p, fileName, t, c, m_all, idx_startC, idx_endC, idx_startM, idx_endM, measureDelay_force) # switch force or position
 		#sk.plot_timingWindow(0, p, fileName, t, command[i*window_size:i*window_size+200], m_all, idx_startC, idx_endC, idx_startM, idx_endM, measureDelay_force) # switch force or position
 
 print(sum(t_delay)/len(t_delay))
 print(stat.median(t_delay))
-# print(t_risingEdge)
-# if (not(measureDelay_force)): print(speed)
-#print(correspondingCommands)
+print(t_risingEdge)
+if (not(measureDelay_force)): print(speed)
+print(correspondingCommands)
 
-# sk.plot_timingAnalysis(0, p, fileName, t_delay, t_risingEdge, [], correspondingCommands, 0)
-# sk.plot_timingAnalysis(1, p, fileName, t_delay, t_risingEdge, [], correspondingTimes, 1)
+sk.plot_timingAnalysis(0, p, fileName, t_delay, t_risingEdge, [], correspondingCommands, 0)
+sk.plot_timingAnalysis(1, p, fileName, t_delay, t_risingEdge, [], correspondingTimes, 1)
 
 
 # 	# Create new csv to store processed data

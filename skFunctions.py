@@ -44,7 +44,7 @@ def commandToPosition(c):
 	#return 0.22*c - 10.7
 
 def commandToPosition_Actuator2(c):
-	return mapFloat(c, 140, 45, 0, 2)
+	return mapFloat(c, 139, 46, 0, 2)
 	#return 0.22*c - 10.7
 
 # Function 4: Feedback signal from actuator (1/1024th of V) to actuator position (mm)
