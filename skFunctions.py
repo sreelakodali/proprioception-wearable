@@ -9,6 +9,7 @@ from operator import itemgetter
 import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib import pyplot as plt
+from scipy.signal import lfilter, lfilter_zi, filtfilt, butter
 import constants as CONST
 import random
 
@@ -44,7 +45,7 @@ def commandToPosition(c):
 	#return 0.22*c - 10.7
 
 def commandToPosition_Actuator2(c):
-	return mapFloat(c, 139, 46, 0, 2)
+	return mapFloat(180-c, 139, 46, 0, 2)
 	#return 0.22*c - 10.7
 
 # Function 4: Feedback signal from actuator (1/1024th of V) to actuator position (mm)
@@ -59,7 +60,7 @@ def delta_feedbackToPosition(delta):
 
 # Function 5: Digital value from force sensor --> force measurement (N)
 def computeForce(data):
-	return ((data - 255) * (45.0)/511) - CONST.ZERO_FORCE #(data - 256) * (45.0)/511 
+	return round(((data - 255) * (45.0)/511) - CONST.ZERO_FORCE, 2) #(data - 256) * (45.0)/511 
 	#changed bc uncalibrated
 
 dataFunc = {'time':millisToSeconds, 'flex sensor':computeAngle,'actuator position, command':commandToPosition, \
@@ -255,6 +256,17 @@ def delayCrossCorrelation(angle, positionMeasured, timeArr):
 
 	return t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured
 
+def butter_lowpass(cutoff, fs, order=5):
+    nyq = 0.5 * fs
+    normal_cutoff = cutoff / nyq
+    b, a = butter(order, normal_cutoff, btype='low', analog=False)
+    return b, a
+
+def butter_lowpass_filter(data, cutoff, fs, order=5):
+    b, a = butter_lowpass(cutoff, fs, order=order)
+    y = lfilter(b, a, data)
+    return y
+
 def delayPeakToPeak(angle, positionMeasured, timeArr):
 	n_window = findNWindow(timeArr)
 
@@ -300,7 +312,7 @@ def delayPeakToPeak(angle, positionMeasured, timeArr):
 	return t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured
 
 #def plot_timingAll(s, p, fileName, time, command, measured, i_startC, i_endM, i):
-def plot_timingAll(s, p, fileName, time, command, position, force):
+def plot_timingAll(s, p, fileName, time, command, position, force, actuatorType):
 	fig, ax1 = plt.subplots()
 	ax2 = ax1.twinx()
 
@@ -310,9 +322,12 @@ def plot_timingAll(s, p, fileName, time, command, position, force):
 	plt.yticks(name='Arial')
 
 	ax1.set_ylabel("Actuator Position (mm)", name='Arial')
-	#ax1.plot(time, command, 'mediumaquamarine', time, measured, 'g')
-	ax1.plot(time, command, 'mediumaquamarine')
+	if (actuatorType == 1):
+		ax1.plot(time, command, 'mediumaquamarine', time, position, 'g')
 	#ax1.set_ylim(0,21)
+	elif (actuatorType == 2):
+		ax1.plot(time, command, 'mediumaquamarine')
+	
 
 	ax2.set_ylabel("Force (N)", name='Arial')
 	ax2.plot(time, force, 'r')

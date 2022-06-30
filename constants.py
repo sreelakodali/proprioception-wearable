@@ -27,7 +27,7 @@ PATH_SD =  '/Volumes/PIEZO2/'
 #PATH_LAPTOP = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/Pilot/'
 PATH_LAPTOP = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/timing/'
 PORT_NAME = "/dev/cu.usbmodem71181201"
-RUNTIME_LENGTH = 360 # seconds
+RUNTIME_LENGTH = 60 # seconds
 
 ## DATA PROCESSING CONSTANTS ##
 ANGLE_MIN = 180

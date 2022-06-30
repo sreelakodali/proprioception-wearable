@@ -14,8 +14,8 @@
 // Constants
 #define flexCapacitiveSensor_MIN 0
 #define flexCapacitiveSensor_MAX 11600
-#define position_MIN 139//46 //140 new
-#define position_MAX 47//130 // 45 new
+#define position_MIN 46//46 //139 new
+#define position_MAX 139//130 // 47 new
 #define sreela_MAX 87 //dorsal forearm, maxforce without reaching max current
 
 // Pin Names
@@ -28,13 +28,14 @@ typedef enum { NONE, ZERO_FORCE, FLEX, MAX_PRESSURE, ACTUATOR
 
 // Parameters
 const bool serialON = true;
+const int actuatorType = 2;
 const CALIBRATION_OPTIONS calibrationMode = NONE;
 const bool fastMapON = false;
 const bool sdWriteON = !(serialON);
 int user_position_MIN = position_MIN;
-int user_position_MAX = 110;//position_MAX;
+int user_position_MAX = position_MAX;
 
-const int WRITE_COUNT = 2000; // typically 2000, for every n runtime cycles, write out data
+const int WRITE_COUNT = 1000; // typically 2000, for every n runtime cycles, write out data
 const int COMMAND_COUNT = 400000;
 const byte I2C_ADDR = 0x04; // force sensor
 const int CHIP_SELECT = 10; // SD card writing
@@ -304,7 +305,7 @@ void sweep2() {
     int c = user_position_MIN;
     //int extending = 1;
 
-    while (c >= user_position_MAX) {
+    while (c <= user_position_MAX) {
       String dataString = "";
 
       commandCount = commandCount + 1;
@@ -314,8 +315,12 @@ void sweep2() {
 
       //if (risingEdgeButton()) {
       if (commandCount == COMMAND_COUNT) {
-        actuator1.write(c);
-        c = c - 1;
+        if (actuatorType == 1) {
+          actuator1.write(c);  
+        } else {
+          actuator1.write(180-c);
+        }
+        c = c + 1;
         commandCount = 0;
       }
 
@@ -437,7 +442,13 @@ void calibrationMaxDeepPressure() {
  *  skin (min) and when at threshold for pain (max). Run this for each user */
 void calibration(CALIBRATION_OPTIONS mode) {
   // Reset position of actuator
-  actuator1.write(position_MIN);
+  //actuator1.write(position_MIN);
+
+  if (actuatorType == 1) {
+     actuator1.write(position_MIN);  
+  } else {
+     actuator1.write(180-position_MIN);
+  }
 
   for (int i = 0; i < mode; i++) {
       switch (mode - i) {
