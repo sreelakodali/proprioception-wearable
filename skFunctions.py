@@ -22,15 +22,15 @@ import random
 ## FUNCTIONS ##
 # Offloading computation that isn't needed real-time to computer
 
-# Function 0: Mapping float value x in different range 
+# Mapping float value x in different range 
 def mapFloat(x, in_min, in_max, out_min, out_max):
 	return (float) ((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
 
-# Function 1: millisecond --> second
+#  millisecond --> second
 def millisToSeconds(s):
 	return s/1000
 
-# Function 2: place holder for angle function
+# Computing angle from flex sensor data
 def computeAngle(data):
 	a = 180 - float(data)/64.0 #float(data)
 	return a
@@ -39,16 +39,16 @@ def computeAngle(data):
 	 
 	#mapFloat(data, CONST.ANGLE_DATA_MIN, CONST.ANGLE_DATA_MAX, CONST.ANGLE_MIN, CONST.ANGLE_MAX)
 
-# Function 3: Servo command (degrees) --> actuator position (mm)
+# Servo command (degrees) --> actuator position (mm)
 def commandToPosition(c):
 	return mapFloat(c, CONST.ACTUATOR_COMMAND_MIN, CONST.ACTUATOR_COMMAND_MAX, CONST.ACTUATOR_POSITION_MIN, CONST.ACTUATOR_POSITION_MAX)
 	#return 0.22*c - 10.7
 
 def commandToPosition_Actuator2(c):
-	return mapFloat(180-c, 139, 46, 0, 2)
+	return mapFloat(180-c, 139, 46, 0, 20)
 	#return 0.22*c - 10.7
 
-# Function 4: Feedback signal from actuator (1/1024th of V) to actuator position (mm)
+# Feedback signal from actuator (1/1024th of V) to actuator position (mm)
 def feedbackToPosition(f):
 	return mapFloat(f, CONST.ACTUATOR_FEEDBACK_MIN, CONST.ACTUATOR_FEEDBACK_MAX, CONST.ACTUATOR_POSITION_MAX, CONST.ACTUATOR_POSITION_MIN)
 
@@ -169,7 +169,7 @@ def evaluatePilotPerformance(time, trial, targetAngle):
 	print(t_avg)
 	return t_diff
 
-def findRisingEdge(s, t, minThresh, w):
+def findRisingEdge(s, t, minThresh, w, measureDelay_force):
 	avg1 = sum(s[:w])/len(s[:w])
 	avg2 = sum(s[-w:])/len(s[-w:])
 	# print("avg1 = " + str(avg1))
@@ -182,13 +182,17 @@ def findRisingEdge(s, t, minThresh, w):
 	# minPlateauLength = w/2
 
 	# check if edge present
-	if (abs(avg2 - avg1) >= minThresh):
+	if (abs(avg2 - avg1) >= minThresh): #0):
 		avgThresh = math.floor(abs(avg2 - avg1))
-		# print("avgThresh=" + str(avgThresh))
+		#print("avgThresh=" + str(avgThresh))
 
 		for i in range(len(s) - w):
 			a = s[w+i]
-			if (abs(a-avg1) >= avgThresh): # abs for position
+			if (measureDelay_force == True):
+				diff = (a-avg1)
+			elif (measureDelay_force == False):
+				diff = abs(a-avg1)
+			if (diff >= avgThresh): # abs for position
 				# plateauLength = 0
 				# for j in range(w):
 				# 	print("i=" + str(i) + "j=" + str(j) + "sum =" + str(w + i + j))
@@ -200,7 +204,8 @@ def findRisingEdge(s, t, minThresh, w):
 				break
 
 		if (ix_end > 0):
-			for i in range(ix_end-1, ix_end-w, -1):
+			#for i in range(ix_end-1, ix_end-w, -1):
+			for i in range(ix_end-1, 0, -1):
 				b = s[i]
 				# print(i)
 				# print(abs(s[ix_end] - b))
@@ -312,7 +317,7 @@ def delayPeakToPeak(angle, positionMeasured, timeArr):
 	return t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured
 
 #def plot_timingAll(s, p, fileName, time, command, measured, i_startC, i_endM, i):
-def plot_timingAll(s, p, fileName, time, command, position, force, actuatorType):
+def plot_timingActuatorAll(s, p, fileName, time, command, position, force, actuatorType):
 	fig, ax1 = plt.subplots()
 	ax2 = ax1.twinx()
 
@@ -344,7 +349,7 @@ def plot_timingAll(s, p, fileName, time, command, position, force, actuatorType)
 	plt.show()
 
 
-def plot_timingWindow(s, p, fileName, time, command, measured, i_startC, i_endC, i_startM, i_endM, measureDelay_force):
+def plot_timingActuatorWindow(s, p, fileName, time, command, measured, i_startC, i_endC, i_startM, i_endM, measureDelay_force):
 	fig, ax1 = plt.subplots()
 	ax2 = ax1.twinx()
 	plt.suptitle("Window of Timing Data " + fileName[:-4], name='Arial', weight='bold')
@@ -380,12 +385,12 @@ def plot_timingWindow(s, p, fileName, time, command, measured, i_startC, i_endC,
 	if s==1: plt.savefig(p +"fig_"+fileName[:-4])
 	plt.show()
 
-def plot_timingAnalysis(s, p, fileName, t_delay, t_risingEdge, speed, command, xaxis_time):
+def plot_timingActuatorAnalysis(s, p, fileName, t_delay, t_risingEdge, speed, command, xaxis_time):
 	fig, ax1 = plt.subplots()
 	ax2 = ax1.twinx()
 	plt.suptitle("Timing Analysis " + fileName[:-4], name='Arial', weight='bold')
 	if (xaxis_time): ax1.set_xlabel("Time", name='Arial') # switch
-	else: ax1.set_xlabel("Actuator Command", name='Arial') # switch
+	else: ax1.set_xlabel("Actuator Extension (mm)", name='Arial') # switch
 	plt.xticks(name='Arial')
 	plt.yticks(name='Arial')
 

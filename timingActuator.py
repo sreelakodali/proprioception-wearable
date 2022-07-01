@@ -1,4 +1,4 @@
-# Timing Analysis of Firmware
+# Timing Analysis of Actuator
 # Written by: Sreela Kodali (kodali@stanford.edu) 
 
 import serial
@@ -28,26 +28,27 @@ readRealTimeData = False
 computeDelay = True
 fileSrc = "MOST_RECENT"
 fileSrcRecent = True
-measureDelay_force = True # switch
+measureDelay_force = True
+showWindow = False
 
 window_size = 200#120 # changed from 200
 edgeWindow = 30
-minThresh = 5  #5 for actuator position
+minThresh = 1  #5 for actuator position
 
-opts, args = getopt.getopt(sys.argv[1:],"",["realTime=","computeDelay=", "fileSrc=", "delayFrom=", "windowSize="])
+# -a actuator type
+# -displayWindow whether or not to display zoomed in windows measuring the delays between rising edges
+opts, args = getopt.getopt(sys.argv[1:],"a:",["realTime","computeDelay", "fileSrc=", "measureFromPos", "windowSize=", "displayWindow"])
 
 for opt, arg in opts:
+	if opt == "-a":
+		actuatorType = int(arg)
+
 	if opt == "--realTime":
-		if (arg == 'y'):
-			readRealTimeData = True
-		elif (arg == 'n'):
-			realRealTimeData = False
+		readRealTimeData = True
+		computeDelay = False
 
 	if opt == "--computeDelay":
-		if (arg == 'y'):
-			computeDelay = True
-		elif (arg == 'n'):
-			computeDelay = False
+		computeDelay = True
 
 	if opt == "--fileSrc":
 		fileSrc = arg
@@ -55,13 +56,15 @@ for opt, arg in opts:
 			fileSrcRecent = True
 		else:
 			fileSrcRecent = False
-	if opt == "--delayFrom":
-		if (arg == 'force'):
-			measureDelay_force = True
-		elif (arg == 'pos'):
-			measureDelay_force = False
+
+	if opt == "--measureFromPos":
+		measureDelay_force = False
+
 	if opt == "--windowSize":
 		window_size = int(arg)
+
+	if opt == "--displayWindow":
+		showWindow = True
 
 # Read data from serial
 if (readRealTimeData == True):
@@ -110,11 +113,11 @@ if (computeDelay == True):
 
 	if (actuatorType == 2):
 		positionCommand = list(map(sk.commandToPosition_Actuator2, data['command'].tolist()))
+		position = []
 	elif (actuatorType == 1):
 		positionCommand = list(map(sk.commandToPosition, data['command'].tolist()))
 		position = list(map(sk.feedbackToPosition, data['position'].tolist()))
 		positionRaw = data['position'].tolist()
-
 
 	# Filtering
 	# order = 10
@@ -123,11 +126,7 @@ if (computeDelay == True):
 	# force = sk.butter_lowpass_filter(force, cutoff, fs, order)
 	# force = median_filter(force, 500)
 
-
-	if (actuatorType == 2):
-		sk.plot_timingAll(0, p, fileName, t2, positionCommand, [], force, actuatorType)
-	if (actuatorType == 1):
-		sk.plot_timingAll(0, p, fileName, t2, positionCommand, position, force, actuatorType)
+	sk.plot_timingActuatorAll(0, p, fileName, t2, positionCommand, position, force, actuatorType)
 
 	l = len(t2) / window_size 
 	t_delay = []
@@ -136,24 +135,26 @@ if (computeDelay == True):
 	correspondingTimes = []
 	if (not(measureDelay_force)): speed = []
 
-	# i = 0
-	# if (i >= 0):
-	for i in range(math.floor(l)-1):#range(6):#
+	i = 1
+	if (i >= 0):
+	# for i in range(math.floor(l)-1):#range(6):#
 		print(i)
 		t = t2[i*window_size:i*window_size+window_size]
-		c = commandRaw[i*window_size:i*window_size+window_size]
-		c_all = positionCommand[i*window_size:i*window_size+window_size]
-		idx_startC, idx_endC,  deltaCommand = sk.findRisingEdge(c, t, 1, edgeWindow)
+		c_raw = commandRaw[i*window_size:i*window_size+window_size]
+		c = positionCommand[i*window_size:i*window_size+window_size]
+		idx_startC, idx_endC,  deltaCommand = sk.findRisingEdge(c_raw, t, 1, edgeWindow, measureDelay_force)
 
 		# switch
 		if (measureDelay_force):
-			m = forceRaw[i*window_size:i*window_size+window_size]
-			m_all =  force[i*window_size:i*window_size+window_size]
+			m_raw = forceRaw[i*window_size+idx_endC:i*window_size+window_size]
+			m =  force[i*window_size:i*window_size+window_size]
 		else:
-			m = positionRaw[i*window_size:i*window_size+window_size]
-			m_all =  position[i*window_size:i*window_size+window_size]
+			m_raw = positionRaw[i*window_size+idx_endC:i*window_size+window_size]
+			m =  position[i*window_size:i*window_size+window_size]
 		
-		idx_startM, idx_endM, delta = sk.findRisingEdge(m, t, 1, edgeWindow)		
+		idx_startM, idx_endM, delta = sk.findRisingEdge(m_raw, t, 1, 60, measureDelay_force)
+		idx_startM = idx_startM + idx_endC
+		idx_endM = idx_endM + idx_endC
 
 		check1 = (idx_endC > idx_startC) and (idx_endM > idx_startM)
 		check2 = (idx_startM > idx_startC)
@@ -174,23 +175,21 @@ if (computeDelay == True):
 			if (not(measureDelay_force)): speed.append(s) # mm/s # switch
 			correspondingCommands.append(c[idx_endC])
 			correspondingTimes.append(t[idx_endC])
-			#sk.plot_timingAll(0, p, fileName, t2, commandMapped, measuredMapped, idx_startC, idx_endM, i)
-		#sk.plot_timingWindow(0, p, fileName, t, c_all, m_all, idx_startC, idx_endC, idx_startM, idx_endM, measureDelay_force) # switch force or position
-			#sk.plot_timingWindow(0, p, fileName, t, command[i*window_size:i*window_size+200], m_all, idx_startC, idx_endC, idx_startM, idx_endM, measureDelay_force) # switch force or position
+		if (showWindow == True):
+			sk.plot_timingActuatorWindow(0, p, fileName, t, c, m, idx_startC, idx_endC, idx_startM, idx_endM, measureDelay_force) # switch force or position
 
-	print(sum(t_delay)/len(t_delay))
-	print(stat.median(t_delay))
-	print(t_risingEdge)
+	if (len(t_delay) > 0):
+		print(sum(t_delay)/len(t_delay))
+		print(stat.median(t_delay))
+	#print(t_risingEdge)
 	if (not(measureDelay_force)): print(speed)
 	#print(correspondingCommands)
 
-	sk.plot_timingAnalysis(0, p, fileName, t_delay, t_risingEdge, [], correspondingCommands, 0)
-	sk.plot_timingAnalysis(0, p, fileName, t_delay, t_risingEdge, [], correspondingTimes, 1)
+	sk.plot_timingActuatorAnalysis(0, p, fileName, t_delay, t_risingEdge, [], correspondingCommands, 0)
 
-
-# 	# Create new csv to store processed data
-# 	f = open(p + 'processed_' + fileName[4:], 'w+', encoding='UTF8', newline='')
-# 	writer = csv.writer(f)
+	# # Create new csv to store processed data
+	# f = open(p + 'processed_' + fileName[4:], 'w+', encoding='UTF8', newline='')
+	# writer = csv.writer(f)
 
 	# # Process each data row and save to new file
 	# with open(p + fileName, 'r') as read_obj:
