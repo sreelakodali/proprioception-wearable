@@ -19,9 +19,10 @@
 #define sreela_MAX 87 //dorsal forearm, maxforce without reaching max current
 
 // Pin Names
-#define position1_IN A6 // pin to measure position1_Measured
-#define position1_OUT 21 // pin to send position1_Command
+#define position1_IN A7 // pin to measure position1_Measured
+#define position1_OUT 22 // pin to send position1_Command
 #define button_IN 4 // pushbutton
+#define led_OUT 5 // led indicator
 
 typedef enum { NONE, ZERO_FORCE, FLEX, MAX_PRESSURE, ACTUATOR  
 } CALIBRATION_OPTIONS;
@@ -91,32 +92,51 @@ void setup() {
     //    SD.remove("raw_data.csv");
     //    if (serialON) Serial.println("Removed old data");
   }
+  
   if (fastMapON) mapper.init(175, 40, position_MIN, position_MAX);
 
-  // attach servo
+  // attach servo and put in minimum position
   actuator1.attach(position1_OUT); 
   actuator1.write(position_MIN);
 
   pinMode(button_IN, INPUT);
+  pinMode(led_OUT, OUTPUT);
 
-//  if (capacitiveFlexSensor.begin() == false) {
-//    if (serialON) Serial.println(("No sensor detected. Check wiring. Freezing..."));
-//    while (1);
-//  }
+  if (capacitiveFlexSensor.begin() == false) {
+    if (serialON) Serial.println(("No sensor detected. Check wiring. Freezing..."));
+    while (1);
+  }
   calibration(calibrationMode);
 }
 
 void loop() {
-  if(buttonCount % 2 == 1) {
-    //runtime();
-    //sweep(1000);
-    sweep2();  
-  }
-  else {
-    runtime_NoFeedback();
-  }
-//  sweep(10);
+//  if(buttonCount % 2 == 1) runtime();
+//  else runtime_NoFeedback(); 
+  sweep2();
 }
+
+
+//////////////////////////////////////////////////////////////////////////////////////////
+// SUPPORTING FUNCTIONS //
+//////////////////////////////////////////////////////////////////////////////////////////
+
+void testPushbutton () {
+  digitalWrite(led_OUT, LOW);
+  if (risingEdgeButton()) {
+    if (serialON) Serial.println("Pushed!");
+    digitalWrite(led_OUT, HIGH);
+    delay(50);
+    digitalWrite(led_OUT, LOW);
+  }
+}
+
+void testLed (int t_d) {
+  digitalWrite(led_OUT, LOW);
+  delay(t_d);
+  digitalWrite(led_OUT, HIGH);
+  delay(t_d);
+}
+
 
 void writeOutData(unsigned long t, int f, int c, int m, short d) {
   String dataString = "";
@@ -262,6 +282,8 @@ void runtime_NoFeedback() {
     risingEdgeButton();
 }
 
+// sweeping actuator position, increasing and decreasing. infinite loop.
+// t_d is time between actuator steps
 void sweep(int t_d) {
     unsigned long myTime;
     int counter = user_position_MIN;
@@ -297,13 +319,13 @@ void sweep(int t_d) {
     }    
 }
 
+
+// Measuring Actuator Position
 void sweep2() {
     unsigned long myTime_1;
     unsigned long myTime_2;
     short data;
-    //int next_c;
     int c = user_position_MIN;
-    //int extending = 1;
 
     while (c <= user_position_MAX) {
       String dataString = "";
@@ -480,7 +502,7 @@ bool risingEdgeButton() {
     if (buttonState == HIGH) {
       buttonCount = buttonCount + 1;
       oldButtonState = buttonState;
-      delay(100);
+      delay(300);
       return true;
     }
   }

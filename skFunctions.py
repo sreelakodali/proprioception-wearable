@@ -186,12 +186,16 @@ def findRisingEdge(s, t, minThresh, w, measureDelay_force):
 		avgThresh = math.floor(abs(avg2 - avg1))
 		#print("avgThresh=" + str(avgThresh))
 
-		for i in range(len(s) - w):
-			a = s[w+i]
+		for i in range(len(s) - w - 1, w, -1):
+			a = s[i]
+		# for i in range(len(s) - w):
+		# 	a = s[w+i]
 			if (measureDelay_force == True):
-				diff = (a-avg1)
+				diff = (avg2 - a)
+				#diff = (a-avg1)
 			elif (measureDelay_force == False):
-				diff = abs(a-avg1)
+				diff = abs(avg2 - a)
+				#diff = abs(a-avg1)
 			if (diff >= avgThresh): # abs for position
 				# plateauLength = 0
 				# for j in range(w):
@@ -200,11 +204,11 @@ def findRisingEdge(s, t, minThresh, w, measureDelay_force):
 				# 	if ((a2-avg1) >= avgThresh):
 				# 		plateauLength = plateauLength + 1
 				# 	if (plateauLength >= minPlateauLength):
-				ix_end = w+i
+				ix_end = i+1
 				break
 
 		if (ix_end > 0):
-			#for i in range(ix_end-1, ix_end-w, -1):
+			#for i in range(ix_end-1, ix_end-w, -1): # don't want to be limited to w window for length of rising
 			for i in range(ix_end-1, 0, -1):
 				b = s[i]
 				# print(i)
@@ -212,7 +216,10 @@ def findRisingEdge(s, t, minThresh, w, measureDelay_force):
 				#print(abs(b-avg1))
 				if((abs(s[ix_end] - b) >= avgThresh)):
 					ix_start = i
-					break
+
+					if (ix_start > 0):
+						if (s[ix_start-1] > b):
+							break
 	# print(ix_start)
 	# print(ix_end)
 	return ix_start, ix_end, avgThresh

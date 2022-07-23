@@ -135,24 +135,26 @@ if (computeDelay == True):
 	correspondingTimes = []
 	if (not(measureDelay_force)): speed = []
 
-	i = 1
-	if (i >= 0):
-	# for i in range(math.floor(l)-1):#range(6):#
+	# i = 1
+	# if (i >= 0):
+	for i in range(math.floor(l)-1):#range(6):#
 		print(i)
 		t = t2[i*window_size:i*window_size+window_size]
 		c_raw = commandRaw[i*window_size:i*window_size+window_size]
 		c = positionCommand[i*window_size:i*window_size+window_size]
-		idx_startC, idx_endC,  deltaCommand = sk.findRisingEdge(c_raw, t, 1, edgeWindow, measureDelay_force)
+		idx_startC, idx_endC,  deltaCommand = sk.findRisingEdge(c_raw, t, minThresh, edgeWindow, measureDelay_force)
 
 		# switch
 		if (measureDelay_force):
 			m_raw = forceRaw[i*window_size+idx_endC:i*window_size+window_size]
 			m =  force[i*window_size:i*window_size+window_size]
+			idx_startM, idx_endM, delta = sk.findRisingEdge(m_raw, t, 1, edgeWindow, measureDelay_force)
 		else:
 			m_raw = positionRaw[i*window_size+idx_endC:i*window_size+window_size]
 			m =  position[i*window_size:i*window_size+window_size]
+			idx_startM, idx_endM, delta = sk.findRisingEdge(m_raw, t, 5, edgeWindow, measureDelay_force)
 		
-		idx_startM, idx_endM, delta = sk.findRisingEdge(m_raw, t, 1, 60, measureDelay_force)
+		#idx_startM, idx_endM, delta = sk.findRisingEdge(m_raw, t, minThresh, edgeWindow, measureDelay_force)
 		idx_startM = idx_startM + idx_endC
 		idx_endM = idx_endM + idx_endC
 
