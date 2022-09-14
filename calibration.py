@@ -1,0 +1,144 @@
+# Calibration 
+# Written by: Sreela Kodali (kodali@stanford.edu) 
+
+import serial
+import datetime
+import csv
+import os
+import shutil
+import numpy as np
+from scipy import signal
+import constants as CONST
+import skFunctions as sk
+import turtle
+import skPilotGraphics as skG
+import random
+
+
+# Wait for subject input
+print("Please input the subject number: ")
+nSubject = input()
+
+# # DIRECTORY
+fileName = str(datetime.datetime.now())[0:16] # default name is date and time
+fileName = ((fileName.replace('/', '_')).replace(' ', '_')).replace(':','-')
+fileName = fileName + "_subject" + str(nSubject)
+p = CONST.PATH_LAPTOP +fileName+'/'
+if not (os.path.exists(p)):
+	os.makedirs(p)
+	print("New directory created: %s" % fileName)
+
+mcu = serial.Serial(port=CONST.PORT_NAME, baudrate=CONST.BAUD_RATE, timeout=.1)
+f = open(p + 'calibrationData' + '.py', 'w+', encoding='UTF8')
+f.write("#" + fileName + "\n")
+shutil.copy2(os.path.join('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/','constants.py'),p)
+print("Created calibration file for subject and copied constants. Press button to begin calibration.")
+#writer = csv.writer(f)
+
+# Read in calibration parameters and save in file
+i = 0
+#endTime = datetime.datetime.now() + datetime.timedelta(seconds=120)
+#while (datetime.datetime.now() < endTime):
+while (i <= 5):
+
+	value = (mcu.readline()).decode()
+	value = value.strip()
+
+	if (value):
+		print(value)
+
+		if ("Begin flex sensor calibration" in value):
+			break
+
+		if (value.isnumeric()):
+
+			if (i == 0):
+				f.write("ACTUATOR_FEEDBACK_MAX = " + value + "\n")
+			elif (i == 1):
+				f.write("ACTUATOR_FEEDBACK_MIN = " + value + "\n")
+			elif (i == 2):
+				f.write("ZERO_FORCE = " + value + "\n")
+			elif (i == 3):
+				f.write("USER_MAX_FORCE_DATA = " + value + "\n")
+			elif (i == 4):
+				f.write("USER_MAX_ACTUATOR_COMMAND = " + value + "\n")
+			i = i + 1
+			#value = int(value)
+			#f.write(value+"\n")
+
+# now for flex arm
+dataFunc = {'time':sk.millisToSeconds, 'flex sensor':sk.computeAngle,'actuator position, command':sk.commandToPosition, \
+			'actuator position, measured':sk.feedbackToPosition, 'force':sk.computeForce}
+
+# first just read the values
+min_AngleData = 500;
+max_AngleData = 500;
+endTime = datetime.datetime.now() + datetime.timedelta(seconds=10)
+while (datetime.datetime.now() < endTime):
+	value = mcu.readline()
+	value = str(value, "utf-8").split(",")
+
+	# if valid data packet, convert to right units and write in csv
+	if (len(value) == len(dataFunc)):
+
+		#newRow = sk.processNewRow(value, 0)
+		#serialAngle = newRow[1]
+		#s = "Measured=" + str(serialAngle)
+		#print(value)
+		print(value)
+		value = int(value[1])
+		
+		if (value < min_AngleData): min_AngleData = value
+		if (value > max_AngleData): max_AngleData = value
+
+f.write("ANGLE_DATA_MIN = " + str(min_AngleData) + "\n")
+f.write("ANGLE_DATA_MAX = " + str(max_AngleData) + "\n")
+i = i + 2
+
+# then see if calibrated
+sc = turtle.Screen()
+sc.tracer(0)
+sc.title("SerialArm")
+skG.initializeSerial()
+
+endTime = datetime.datetime.now() + datetime.timedelta(seconds=10)
+while (datetime.datetime.now() < endTime):
+	value = mcu.readline()
+	value = str(value, "utf-8").split(",")
+
+	# if valid data packet, convert to right units and write in csv
+	if (len(value) == len(dataFunc)):
+		data = int(value[1])
+		serialAngle = sk.mapFloat(data, min_AngleData, max_AngleData, CONST.ANGLE_MIN, CONST.ANGLE_MAX)
+		s = "Measured=" + str(serialAngle)
+		print(s)
+		turtle.undo()
+		turtle.undo()
+		skG.drawForearm(sc,serialAngle, skG.COLOR_SERIAL)
+
+	# if (not(CONST.TRANSFER_RAW)):
+	# 	# if valid data packet, convert to right units and write in csv
+	# 	#print(len(value))
+	# 	if (len(value) == len(dataFunc)):
+	# 		newRow = sk.processNewRow(value, i)
+	# 		print(newRow)
+	# 		writer.writerow(newRow)
+	# 	i = i + 1
+
+	# else:
+	# 	print(value)
+		# writer.writerow(value)
+
+sc.bye()
+
+while (i == 7):
+	value = (mcu.readline()).decode()
+	value = value.strip()
+
+	if (value):
+		print(value)
+
+		if ("Calibrated" in value):
+			break
+
+f.close()

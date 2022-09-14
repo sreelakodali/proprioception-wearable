@@ -19,10 +19,10 @@ import constants as CONST
 import skFunctions as sk
 
 
-RUNTIME_LENGTH = 30 # seconds
+RUNTIME_LENGTH = 300 # seconds
 
 actuatorType = 1
-material = "cow"
+material = "air"
 
 readRealTimeData = False
 computeDelay = True
@@ -33,11 +33,11 @@ showWindow = False
 
 window_size = 200#120 # changed from 200
 edgeWindow = 30
-minThresh = 1  #5 for actuator position
+minThresh = 5 #for actuator position
 
 # -a actuator type
 # -displayWindow whether or not to display zoomed in windows measuring the delays between rising edges
-opts, args = getopt.getopt(sys.argv[1:],"a:",["realTime","computeDelay", "fileSrc=", "measureFromPos", "windowSize=", "displayWindow"])
+opts, args = getopt.getopt(sys.argv[1:],"a:",["realTime","computeDelay", "fileSrc", "measureFromPos", "windowSize=", "displayWindow"])
 
 for opt, arg in opts:
 	if opt == "-a":
@@ -142,7 +142,10 @@ if (computeDelay == True):
 		t = t2[i*window_size:i*window_size+window_size]
 		c_raw = commandRaw[i*window_size:i*window_size+window_size]
 		c = positionCommand[i*window_size:i*window_size+window_size]
-		idx_startC, idx_endC,  deltaCommand = sk.findRisingEdge(c_raw, t, minThresh, edgeWindow, measureDelay_force)
+		idx_startC, idx_endC,  deltaCommand = sk.findRisingEdge(c_raw, t, 1, edgeWindow, measureDelay_force)
+
+		# grad_C = np.gradient(c_raw, t)
+		# print(max(grad_C))
 
 		# switch
 		if (measureDelay_force):
@@ -153,6 +156,11 @@ if (computeDelay == True):
 			m_raw = positionRaw[i*window_size+idx_endC:i*window_size+window_size]
 			m =  position[i*window_size:i*window_size+window_size]
 			idx_startM, idx_endM, delta = sk.findRisingEdge(m_raw, t, 5, edgeWindow, measureDelay_force)
+
+		# grad_M = np.gradient(m, t)
+		# print((grad_M))
+		# print(min(grad_M))
+		# print(max(grad_M))
 		
 		#idx_startM, idx_endM, delta = sk.findRisingEdge(m_raw, t, minThresh, edgeWindow, measureDelay_force)
 		idx_startM = idx_startM + idx_endC
@@ -177,8 +185,20 @@ if (computeDelay == True):
 			if (not(measureDelay_force)): speed.append(s) # mm/s # switch
 			correspondingCommands.append(c[idx_endC])
 			correspondingTimes.append(t[idx_endC])
+
+			
 		if (showWindow == True):
 			sk.plot_timingActuatorWindow(0, p, fileName, t, c, m, idx_startC, idx_endC, idx_startM, idx_endM, measureDelay_force) # switch force or position
+			# response = input('Correct measurement? ')
+
+			# if (response == 'y'):
+			# 	print("Correct measurement, added.")
+			# 	t_delay.append(td)
+			# 	t_risingEdge.append(tRE)
+			# 	if (not(measureDelay_force)): speed.append(s) # mm/s # switch
+			# 	correspondingCommands.append(c[idx_endC])
+			# 	correspondingTimes.append(t[idx_endC])
+
 
 	if (len(t_delay) > 0):
 		print(sum(t_delay)/len(t_delay))

@@ -60,7 +60,7 @@ def delta_feedbackToPosition(delta):
 
 # Function 5: Digital value from force sensor --> force measurement (N)
 def computeForce(data):
-	return round(((data - 255) * (45.0)/511) - CONST.ZERO_FORCE, 2) #(data - 256) * (45.0)/511 
+	return round(((data - 255) * (45.0)/512) - CONST.ZERO_FORCE, 2) #(data - 256) * (45.0)/511 
 	#changed bc uncalibrated
 
 dataFunc = {'time':millisToSeconds, 'flex sensor':computeAngle,'actuator position, command':commandToPosition, \
@@ -186,43 +186,52 @@ def findRisingEdge(s, t, minThresh, w, measureDelay_force):
 		avgThresh = math.floor(abs(avg2 - avg1))
 		#print("avgThresh=" + str(avgThresh))
 
-		for i in range(len(s) - w - 1, w, -1):
-			a = s[i]
-		# for i in range(len(s) - w):
-		# 	a = s[w+i]
-			if (measureDelay_force == True):
+		if (measureDelay_force == True):
+			for i in range(len(s) - w - 1, w, -1):
+				a = s[i]
 				diff = (avg2 - a)
-				#diff = (a-avg1)
-			elif (measureDelay_force == False):
-				diff = abs(avg2 - a)
-				#diff = abs(a-avg1)
-			if (diff >= avgThresh): # abs for position
-				# plateauLength = 0
-				# for j in range(w):
-				# 	print("i=" + str(i) + "j=" + str(j) + "sum =" + str(w + i + j))
-				# 	a2 = s[w+i+j]
-				# 	if ((a2-avg1) >= avgThresh):
-				# 		plateauLength = plateauLength + 1
-				# 	if (plateauLength >= minPlateauLength):
-				ix_end = i+1
-				break
+				if (diff >= avgThresh):
+					ix_end = i+1
+					break
 
-		if (ix_end > 0):
-			#for i in range(ix_end-1, ix_end-w, -1): # don't want to be limited to w window for length of rising
-			for i in range(ix_end-1, 0, -1):
-				b = s[i]
-				# print(i)
-				# print(abs(s[ix_end] - b))
-				#print(abs(b-avg1))
-				if((abs(s[ix_end] - b) >= avgThresh)):
-					ix_start = i
+			if (ix_end > 0):
+				for i in range(ix_end-1, ix_end-w, -1): # don't want to be limited to w window for length of rising
+				# for i in range(ix_end-1, 0, -1):
+					b = s[i]
+					# print(i)
+					# print(abs(s[ix_end] - b))
+					#print(abs(b-avg1))
+					if((abs(s[ix_end] - b) >= avgThresh)):
+						ix_start = i
 
-					if (ix_start > 0):
-						if (s[ix_start-1] > b):
-							break
+						if (ix_start > 0):
+							if (s[ix_start-1] > b):
+								break
+
+		else:
+			for i in range(len(s) - w):
+				a = s[w+i]
+				diff = abs(a-avg1)
+				if (diff >= avgThresh): 
+					ix_end = w+i#
+					break
+
+			if (ix_end > 0):
+				#for i in range(ix_end-1, ix_end-w, -1): # don't want to be limited to w window for length of rising
+				for i in range(ix_end-1, 0, -1):
+					b = s[i]
+					# print(i)
+					# print(abs(s[ix_end] - b))
+					#print(abs(b-avg1))
+					if((abs(s[ix_end] - b) >= avgThresh)):
+						ix_start = i
+						break
+
 	# print(ix_start)
 	# print(ix_end)
 	return ix_start, ix_end, avgThresh
+
+
 
 def actuatorSpeed(deltaFeedbackSignal, t_risingEdge):
 	# returns mm/s
@@ -249,12 +258,12 @@ def delayCrossCorrelation(angle, positionMeasured, timeArr):
     
 		n = len(a)
 		c = signal.correlate(a, p, mode='same') / np.sqrt(signal.correlate(a, a, mode='same')[int(n/2)] * signal.correlate(p, p, mode='same')[int(n/2)])
-		maxCorr.append(timeArr[i+np.argmax(c)] - timeArr[i])
+		maxCorr.append(timeArr[i+np.argmin(c)] - timeArr[i])
 		#maxCorr.append(np.argmax(c))
 
 	t_d = np.mean(maxCorr)
 
-	idx_peaksPositionMeasured, _ = signal.find_peaks(np.asarray(positionMeasured), height=(6,25), distance=n_window)
+	idx_peaksPositionMeasured, _ = signal.find_peaks(np.asarray(positionMeasured), height=(0,25), distance=n_window)
 	idx_peaksPositionMeasured = idx_peaksPositionMeasured.tolist()
 	t_peaksPositionMeasured = list(itemgetter(*idx_peaksPositionMeasured)(timeArr))
 
@@ -282,18 +291,18 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
 def delayPeakToPeak(angle, positionMeasured, timeArr):
 	n_window = findNWindow(timeArr)
 
-	max_peaksPositionMeasured = signal.argrelextrema(np.asarray(positionMeasured), np.greater)
-	min_peaksPositionMeasured = signal.argrelextrema(np.asarray(positionMeasured), np.less)
-	#idx_peaksPositionMeasured, _ = signal.find_peaks(np.asarray(positionMeasured), height=(0,25), distance=n_window)
-	idx_peaksPositionMeasured = max_peaksPositionMeasured[0].tolist() + min_peaksPositionMeasured[0].tolist()
+	# max_peaksPositionMeasured = signal.argrelextrema(np.asarray(positionMeasured), np.greater)
+	# min_peaksPositionMeasured = signal.argrelextrema(np.asarray(positionMeasured), np.less)
+	idx_peaksPositionMeasured, _ = signal.find_peaks(np.asarray(positionMeasured), height=(0,25), distance=n_window)
+	# idx_peaksPositionMeasured = max_peaksPositionMeasured[0].tolist() + min_peaksPositionMeasured[0].tolist()
 
 	t_peaksPositionMeasured = list(itemgetter(*idx_peaksPositionMeasured)(timeArr))
 	#print(t_peaksPositionMeasured)
 
-	max_peaksAngle = signal.argrelextrema(np.asarray(angle), np.greater)
-	min_peaksAngle = signal.argrelextrema(np.asarray(angle), np.less)
-	#idx_peaksAngle, _ = signal.find_peaks(np.asarray(angle), height=(0,180), distance=n_window)
-	idx_peaksAngle = max_peaksAngle[0].tolist() + min_peaksAngle[0].tolist()
+	# max_peaksAngle = signal.argrelextrema(np.asarray(angle), np.greater)
+	# min_peaksAngle = signal.argrelextrema(np.asarray(angle), np.less)
+	idx_peaksAngle, _ = signal.find_peaks(np.asarray(angle), height=(-40,250), distance=n_window)
+	# idx_peaksAngle = max_peaksAngle[0].tolist() + min_peaksAngle[0].tolist()
 
 	t_peaksAngle = list(itemgetter(*idx_peaksAngle)(timeArr))
 	#print(t_peaksAngle)
@@ -357,6 +366,8 @@ def plot_timingActuatorAll(s, p, fileName, time, command, position, force, actua
 
 
 def plot_timingActuatorWindow(s, p, fileName, time, command, measured, i_startC, i_endC, i_startM, i_endM, measureDelay_force):
+	#plt.ion()
+
 	fig, ax1 = plt.subplots()
 	ax2 = ax1.twinx()
 	plt.suptitle("Window of Timing Data " + fileName[:-4], name='Arial', weight='bold')
@@ -394,7 +405,7 @@ def plot_timingActuatorWindow(s, p, fileName, time, command, measured, i_startC,
 
 def plot_timingActuatorAnalysis(s, p, fileName, t_delay, t_risingEdge, speed, command, xaxis_time):
 	fig, ax1 = plt.subplots()
-	ax2 = ax1.twinx()
+	#ax2 = ax1.twinx()
 	plt.suptitle("Timing Analysis " + fileName[:-4], name='Arial', weight='bold')
 	if (xaxis_time): ax1.set_xlabel("Time", name='Arial') # switch
 	else: ax1.set_xlabel("Actuator Extension (mm)", name='Arial') # switch
@@ -404,7 +415,7 @@ def plot_timingActuatorAnalysis(s, p, fileName, t_delay, t_risingEdge, speed, co
 	ax1.set_ylabel("Time (ms)", name='Arial')
 	#ax1.plot(command, t_delay, 'powderblue', command, t_risingEdge, 'c')
 	ax1.scatter(command, t_delay, c='powderblue')
-	ax1.scatter(command, t_risingEdge, c='c')
+	#ax1.scatter(command, t_risingEdge, c='c')
 	ax1.set_ylim(0,1200)
 
 	# ax2.set_ylabel("Speed (mm/s)", name='Arial',) 
@@ -419,7 +430,7 @@ def plot_timingActuatorAnalysis(s, p, fileName, t_delay, t_risingEdge, speed, co
 
 
 
-def plot_NoDelay(s, p, fileName, time, angle, force, device1_positionMeasured, device1_positionCommand):
+def plot_System(s, p, fileName, time, angle, force, device1_positionMeasured, device1_positionCommand):
 	fig, ax1 = plt.subplots()
 	fig.subplots_adjust(right=0.75)
 
@@ -432,12 +443,12 @@ def plot_NoDelay(s, p, fileName, time, angle, force, device1_positionMeasured, d
 	plt.yticks(name='Arial')
 
 	# temporary!!
-	# ax1.set_ylabel("Angle (degrees)", name='Arial')
-	# l1 = ax1.plot(time, angle, 'b', linewidth=1.75, label='Angle')
-	# ax1.yaxis.label.set_color('b')
-	# ax1.tick_params(axis='y', color='b')
-	# #ax1.set_ylim(30,180)
-	# ax3.spines['left'].set_color('b')
+	ax1.set_ylabel("Angle (degrees)", name='Arial')
+	l1 = ax1.plot(time, angle, 'b', linewidth=1.75, label='Angle')
+	ax1.yaxis.label.set_color('b')
+	ax1.tick_params(axis='y', color='b')
+	#ax1.set_ylim(30,180)
+	ax3.spines['left'].set_color('b')
 
 	ax2.set_ylabel("Force (N)", name='Arial',)
 	l2 = ax2.plot(time, force, 'r', linewidth=1.75, label='Force')
@@ -465,7 +476,7 @@ def plot_NoDelay(s, p, fileName, time, angle, force, device1_positionMeasured, d
 	plt.show()
 	
 
-def plot_SingleTactor(s, p, fileName, time, angle, force, device1_positionMeasured, t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured):
+def plot_SystemWithDelay(s, p, fileName, time, angle, force, device1_positionMeasured, t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured):
 	fig, ax1 = plt.subplots()
 	fig.subplots_adjust(right=0.75)
 
@@ -502,8 +513,8 @@ def plot_SingleTactor(s, p, fileName, time, angle, force, device1_positionMeasur
 	# #l4 = ax2.plot(time, device1_positionCommand, color='orange', linewidth=1.75, label='Actuator Position (Command)')
 	for d in t_peakDelays:
 		ax1.axvspan(d[0], d[1], color='teal', alpha=0.5)
-	ax1.plot(time, angle,'bD',markevery=idx_peaksAngle)
-	ax3.plot(time, device1_positionMeasured,'gD',markevery=idx_peaksPositionMeasured)
+	ax1.plot(time, angle,'bD',markevery=idx_peaksAngle.tolist())
+	ax3.plot(time, device1_positionMeasured,'gD',markevery=idx_peaksPositionMeasured.tolist())
 	plt.title("Time Delay = %.2f ms" % (t_d*1000), name='Arial')
 
 	l_all = l1+l2+l3#+l4

@@ -12,8 +12,8 @@ import skFunctions as sk
 import skPilotGraphics as skG
 import random
 
-t = 1
-nTrials = 0
+# t = 1
+# nTrials = 0
 sc = turtle.Screen()
 
 # Initialize GUI
@@ -26,7 +26,7 @@ fileName = str(datetime.datetime.now())[0:16] # default name is date and time
 fileName = ((fileName.replace('/', '_')).replace(' ', '_')).replace(':','-')
 p = CONST.PATH_LAPTOP +fileName+'/'
 if not (os.path.exists(p)):
-	os.makedirs(p)
+	#os.makedirs(p)
 	print("New directory created: %s" % fileName)
 mcu = serial.Serial(port=CONST.PORT_NAME, baudrate=CONST.BAUD_RATE, timeout=.1)
 

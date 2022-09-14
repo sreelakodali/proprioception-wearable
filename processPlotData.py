@@ -17,7 +17,7 @@ import constants as CONST
 if (CONST.DATASRC_SD):
 
 	# Find the most recent data file on SD card
-	newestFile = max([CONST.PATH+d for d in os.listdir(CONST.PATH) if (d.startswith('raw') and d.endswith('.csv'))], key=os.path.getctime)
+	newestFile = max([CONST.PATH_SD+d for d in os.listdir(CONST.PATH_SD) if (d.startswith('raw') and d.endswith('.csv'))], key=os.path.getctime)
 	print(newestFile)
 	print("Newest SD data found: %s" % newestFile)
 
@@ -34,6 +34,7 @@ if (CONST.DATASRC_SD):
 # Find the most recent data directory
 allSubdirs = [CONST.PATH_LAPTOP+d for d in os.listdir(CONST.PATH_LAPTOP) if os.path.isdir(os.path.join(CONST.PATH_LAPTOP, d))]
 p = max(allSubdirs, key=os.path.getctime) + '/'
+print(p)
 fileName = [f for f in os.listdir(p) if (f.startswith('processed') and f.endswith('.csv'))]
 fileName = fileName[0]
 print("Newest data found: %s" % fileName)
@@ -67,6 +68,19 @@ if fileName.startswith('raw_'):
 	print("Newly processed data is in: %s" % fileName)
 
 
+# fileSrc = "MOST_RECENT"
+# opts, args = getopt.getopt(sys.argv[1:],"",["fileSrc"])
+
+
+# for opt, arg in opts:
+
+# 	if opt == "--fileSrc":
+# 		fileSrc = arg
+# 		if (arg == 'MOST_RECENT'):
+# 			fileSrcRecent = True
+# 		else:
+# 			fileSrcRecent = False
+
 # Read in processsed data and plot data
 data = pd.read_csv(p + fileName, delimiter = ",").astype(float)
 time = data['time'].tolist()
@@ -81,12 +95,12 @@ force  = data['force'].tolist()
 # t_diff = sk.evaluatePilotPerformance(time, trial, targetAngle)
 # #print(t_diff)
 # sk.plot_pilotResults(t_diff)
-# t_dCC, t_peakDelaysCC, idx_peaksAngleCC, idx_peaksPositionMeasuredCC = sk.delayCrossCorrelation(angle, device1_positionMeasured, time)
-# print("Time delay between signals (cross correlation): " + str(t_dCC*1000) + " ms")
+t_dCC, t_peakDelaysCC, idx_peaksAngleCC, idx_peaksPositionMeasuredCC = sk.delayCrossCorrelation(angle, device1_positionMeasured, time)
+print("Time delay between signals (cross correlation): " + str(t_dCC*1000) + " ms")
 
-# # t_dPP, t_peakDelaysPP, idx_peaksAnglePP, idx_peaksPositionMeasuredPP = sk.delayPeakToPeak(angle, device1_positionMeasured, time)
-# # print("Time delay between signals (peak to peak): " + str(t_dPP*1000) + " ms")
-# # #print(t_peakDelaysPP)
+t_dPP, t_peakDelaysPP, idx_peaksAnglePP, idx_peaksPositionMeasuredPP = sk.delayPeakToPeak(angle, device1_positionMeasured, time)
+print("Time delay between signals (peak to peak): " + str(t_dPP*1000) + " ms")
+#print(t_peakDelaysPP)
 
 # t_dCC_command, _ , _ , _ = sk.delayCrossCorrelation(device1_positionCommand, device1_positionMeasured, time)
 # print("Time delay between signals (cross correlation): " + str(t_dCC_command*1000) + " ms")
@@ -96,8 +110,9 @@ force  = data['force'].tolist()
 # #print(t_peakDelaysPP)
 
 # plot
-x=9
-y=45
-sk.plot_NoDelay(0, p, fileName, time[x:y], angle[x:y], force[x:y], device1_positionMeasured[x:y], device1_positionCommand[x:y])
-#sk.plot_SingleTactor(0, p, fileName, time, angle, force, device1_positionMeasured, t_dCC, t_peakDelaysCC, idx_peaksAngleCC, idx_peaksPositionMeasuredCC)
+# x=9
+# y=90
+# sk.plot_System(0, p, fileName, time[x:y], angle[x:y], force[x:y], device1_positionMeasured[x:y], device1_positionCommand[x:y])
+sk.plot_System(0, p, fileName, time, angle, force, device1_positionMeasured, device1_positionCommand)
+sk.plot_SystemWithDelay(0, p, fileName, time, angle, force, device1_positionMeasured, t_dCC, t_peakDelaysCC, idx_peaksAngleCC, idx_peaksPositionMeasuredCC)
 #sk.plot_TwoTactor(0, p, fileName, time, angle, force, device1_positionMeasured, t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured)
