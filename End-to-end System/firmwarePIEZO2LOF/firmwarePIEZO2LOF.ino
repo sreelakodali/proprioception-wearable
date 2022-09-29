@@ -486,7 +486,7 @@ void calibrationMaxDeepPressure() {
           if (serialON) {
             Serial.println("ZERO FORCE:");
             Serial.println(zeroForce);
-            Serial.println("PAIN FORCE:");
+            Serial.println("UPPER LIMIT FORCE:");
             Serial.println(painForce);
           }
           break; 

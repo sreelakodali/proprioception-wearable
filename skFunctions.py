@@ -3,6 +3,7 @@
 
 import numpy as np
 import math
+import os
 from scipy import signal
 import constants as CONST
 from operator import itemgetter
@@ -10,9 +11,16 @@ import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib import pyplot as plt
 from scipy.signal import lfilter, lfilter_zi, filtfilt, butter
-import constants as CONST
 import random
+import sys
 
+# if calibrated user study, get constants from new file
+# print("Use values from recent user calibration?")
+# calibratedUserValues = input()
+
+# if (int(calibratedUserValues)):
+# 	sys.path.append('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/Pilot2/2022-09-19_11-03_subjectrachel')
+# 	import constantsCalibrated as CONST
 
 ## CALIBRATION
 # zero force
@@ -21,6 +29,9 @@ import random
 
 ## FUNCTIONS ##
 # Offloading computation that isn't needed real-time to computer
+
+def getCreationTime(path):
+    return os.stat(path).st_birthtime
 
 # Mapping float value x in different range 
 def mapFloat(x, in_min, in_max, out_min, out_max):
@@ -32,17 +43,18 @@ def millisToSeconds(s):
 
 # Computing angle from flex sensor data
 def computeAngle(data):
-	a = 180 - float(data)/64.0 #float(data)
-	return a
+	#a = 180 - float(data)/64.0 #float(data)
+	#return a
 	#if a > 90: return a
 	#else: return a - 0.2*(90-a)
 	 
-	#mapFloat(data, CONST.ANGLE_DATA_MIN, CONST.ANGLE_DATA_MAX, CONST.ANGLE_MIN, CONST.ANGLE_MAX)
+	return mapFloat(data, CONST.ANGLE_DATA_MIN, CONST.ANGLE_DATA_MAX, CONST.ANGLE_MIN, CONST.ANGLE_MAX) # NEEDS CALIBRATED VAL
 
 # Servo command (degrees) --> actuator position (mm)
 def commandToPosition(c):
 	return mapFloat(c, CONST.ACTUATOR_COMMAND_MIN, CONST.ACTUATOR_COMMAND_MAX, CONST.ACTUATOR_POSITION_MIN, CONST.ACTUATOR_POSITION_MAX)
 	#return 0.22*c - 10.7
+	# I guess could be a precomputed look up table lol
 
 def commandToPosition_Actuator2(c):
 	return mapFloat(180-c, 139, 46, 0, 20)
@@ -50,17 +62,17 @@ def commandToPosition_Actuator2(c):
 
 # Feedback signal from actuator (1/1024th of V) to actuator position (mm)
 def feedbackToPosition(f):
-	return mapFloat(f, CONST.ACTUATOR_FEEDBACK_MIN, CONST.ACTUATOR_FEEDBACK_MAX, CONST.ACTUATOR_POSITION_MAX, CONST.ACTUATOR_POSITION_MIN)
+	return mapFloat(f, CONST.ACTUATOR_FEEDBACK_MIN, CONST.ACTUATOR_FEEDBACK_MAX, CONST.ACTUATOR_POSITION_MAX, CONST.ACTUATOR_POSITION_MIN) # NEEDS CALIBRATED VAL
 
 # delta change in feedback signal results in how much change in actuator position in mm
 # slope of the previous function
 # returns mm
 def delta_feedbackToPosition(delta):
-	return delta*CONST.ACTUATOR_POSITION_MAX/(CONST.ACTUATOR_FEEDBACK_MAX-CONST.ACTUATOR_FEEDBACK_MIN)
+	return delta*CONST.ACTUATOR_POSITION_MAX/(CONST.ACTUATOR_FEEDBACK_MAX-CONST.ACTUATOR_FEEDBACK_MIN) # NEEDS CALIBRATED VAL
 
 # Function 5: Digital value from force sensor --> force measurement (N)
 def computeForce(data):
-	return round(((data - 255) * (45.0)/512) - CONST.ZERO_FORCE, 2) #(data - 256) * (45.0)/511 
+	return round(((data - 255) * (45.0)/512) - CONST.ZERO_FORCE, 2) #(data - 256) * (45.0)/511 # NEEDS CALIBRATED VAL
 	#changed bc uncalibrated
 
 dataFunc = {'time':millisToSeconds, 'flex sensor':computeAngle,'actuator position, command':commandToPosition, \

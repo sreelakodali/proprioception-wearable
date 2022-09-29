@@ -2,6 +2,9 @@
 # Written by: Sreela Kodali (kodali@stanford.edu) 
 
 import csv
+#import time
+#import sys
+#from stat import S_ISREG, ST_CTIME, ST_MODE
 import os
 import datetime
 import shutil
@@ -33,7 +36,7 @@ if (CONST.DATASRC_SD):
 
 # Find the most recent data directory
 allSubdirs = [CONST.PATH_LAPTOP+d for d in os.listdir(CONST.PATH_LAPTOP) if os.path.isdir(os.path.join(CONST.PATH_LAPTOP, d))]
-p = max(allSubdirs, key=os.path.getctime) + '/'
+p = max(allSubdirs, key=sk.getCreationTime) + '/'
 print(p)
 fileName = [f for f in os.listdir(p) if (f.startswith('processed') and f.endswith('.csv'))]
 fileName = fileName[0]
@@ -92,15 +95,15 @@ force  = data['force'].tolist()
 # trial = data['Trial Number'].tolist()
 # targetAngle  = data['Target Angle'].tolist()
 
-# t_diff = sk.evaluatePilotPerformance(time, trial, targetAngle)
-# #print(t_diff)
-# sk.plot_pilotResults(t_diff)
-t_dCC, t_peakDelaysCC, idx_peaksAngleCC, idx_peaksPositionMeasuredCC = sk.delayCrossCorrelation(angle, device1_positionMeasured, time)
-print("Time delay between signals (cross correlation): " + str(t_dCC*1000) + " ms")
+# # t_diff = sk.evaluatePilotPerformance(time, trial, targetAngle)
+# # #print(t_diff)
+# # sk.plot_pilotResults(t_diff)
+# t_dCC, t_peakDelaysCC, idx_peaksAngleCC, idx_peaksPositionMeasuredCC = sk.delayCrossCorrelation(angle, device1_positionMeasured, time)
+# print("Time delay between signals (cross correlation): " + str(t_dCC*1000) + " ms")
 
-t_dPP, t_peakDelaysPP, idx_peaksAnglePP, idx_peaksPositionMeasuredPP = sk.delayPeakToPeak(angle, device1_positionMeasured, time)
-print("Time delay between signals (peak to peak): " + str(t_dPP*1000) + " ms")
-#print(t_peakDelaysPP)
+# t_dPP, t_peakDelaysPP, idx_peaksAnglePP, idx_peaksPositionMeasuredPP = sk.delayPeakToPeak(angle, device1_positionMeasured, time)
+# print("Time delay between signals (peak to peak): " + str(t_dPP*1000) + " ms")
+# #print(t_peakDelaysPP)
 
 # t_dCC_command, _ , _ , _ = sk.delayCrossCorrelation(device1_positionCommand, device1_positionMeasured, time)
 # print("Time delay between signals (cross correlation): " + str(t_dCC_command*1000) + " ms")
@@ -114,5 +117,5 @@ print("Time delay between signals (peak to peak): " + str(t_dPP*1000) + " ms")
 # y=90
 # sk.plot_System(0, p, fileName, time[x:y], angle[x:y], force[x:y], device1_positionMeasured[x:y], device1_positionCommand[x:y])
 sk.plot_System(0, p, fileName, time, angle, force, device1_positionMeasured, device1_positionCommand)
-sk.plot_SystemWithDelay(0, p, fileName, time, angle, force, device1_positionMeasured, t_dCC, t_peakDelaysCC, idx_peaksAngleCC, idx_peaksPositionMeasuredCC)
+# sk.plot_SystemWithDelay(0, p, fileName, time, angle, force, device1_positionMeasured, t_dCC, t_peakDelaysCC, idx_peaksAngleCC, idx_peaksPositionMeasuredCC)
 #sk.plot_TwoTactor(0, p, fileName, time, angle, force, device1_positionMeasured, t_d, t_peakDelays, idx_peaksAngle, idx_peaksPositionMeasured)
