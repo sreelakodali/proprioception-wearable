@@ -14,7 +14,7 @@ from scipy.signal import lfilter, lfilter_zi, filtfilt, butter
 import random
 import sys
 
-# if calibrated user study, get constants from new file
+# # if calibrated user study, get constants from new file
 # print("Use values from recent user calibration?")
 # calibratedUserValues = input()
 

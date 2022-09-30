@@ -28,121 +28,132 @@ if not (os.path.exists(p)):
 	os.makedirs(p)
 	print("New directory created: %s" % fileName)
 
-# mcu = serial.Serial(port=CONST.PORT_NAME, baudrate=CONST.BAUD_RATE, timeout=.1)
-#g = open(p + 'calibrationData' + '.py', 'w+', encoding='UTF8')
+mcu = serial.Serial(port=CONST.PORT_NAME, baudrate=CONST.BAUD_RATE, timeout=.1)
 
-shutil.copy2(os.path.join('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/','constants.py'),p)
-os.rename(p+'constants.py',p+'constantsCalibrated.py')
-g = open(p + 'constantsCalibrated' + '.py', 'a', encoding='UTF8')
+# add current constants file's birthtime to its file name, copy it, add it to the archive
+t_oldConst = str(datetime.datetime.fromtimestamp(sk.getCreationTime(CONST.PATH_HOME+'constants.py')))[0:16]
+t_oldConst = ((t_oldConst.replace('/', '_')).replace(' ', '_')).replace(':','-')
+shutil.copy2(os.path.join(CONST.PATH_HOME,'constants.py'),os.path.join(CONST.PATH_HOME+'constantsArchive/',t_oldConst+'constants.py'))
+
+# create new constants file. write calibration values to new file
+shutil.copy2(os.path.join(CONST.PATH_HOME,'constantsCalibrationTemplate.py'),p)
+os.rename(p+'constantsCalibrationTemplate.py',p+'constantsCalibrated.py')
+#g = open(p + 'calibrationData' + '.py', 'w+', encoding='UTF8')
+g = open(p + 'constantsCalibrated.py', 'a', encoding='UTF8')
 
 g.write("#" + fileName + "\n")
 print("Created calibration file for subject and copied constants. Press button to begin calibration.")
-# #writer = csv.writer(f)
 
-# # Read in calibration parameters and save in file
-# i = 0
-# #endTime = datetime.datetime.now() + datetime.timedelta(seconds=120)
-# #while (datetime.datetime.now() < endTime):
-# while (i <= 5):
+# Read in calibration parameters and save in file
+i = 0
+#endTime = datetime.datetime.now() + datetime.timedelta(seconds=120)
+#while (datetime.datetime.now() < endTime):
+while (i <= 5):
 
-# 	value = (mcu.readline()).decode()
-# 	value = value.strip()
+	value = (mcu.readline()).decode()
+	value = value.strip()
 
-# 	if (value):
-# 		print(value)
+	if (value):
+		print(value)
 
-# 		if ("Begin flex sensor calibration" in value):
-# 			break
+		if ("Begin flex sensor calibration" in value):
+			break
 
-# 		if (value.isnumeric()):
+		if (value.isnumeric()):
 
-# 			if (i == 0):
-# 				g.write("ACTUATOR_FEEDBACK_MAX = " + value + "\n")
-# 			elif (i == 1):
-# 				g.write("ACTUATOR_FEEDBACK_MIN = " + value + "\n")
-# 			elif (i == 2):
-# 				g.write("ZERO_FORCE = " + value + "\n")
-# 			elif (i == 3):
-# 				g.write("USER_MAX_FORCE_DATA = " + value + "\n")
-# 			elif (i == 4):
-# 				g.write("USER_MAX_ACTUATOR_COMMAND = " + value + "\n")
-# 			i = i + 1
-# 			#value = int(value)
-# 			#f.write(value+"\n")
+			if (i == 0):
+				g.write("ACTUATOR_FEEDBACK_MAX = " + value + "\n")
+			elif (i == 1):
+				g.write("ACTUATOR_FEEDBACK_MIN = " + value + "\n")
+			elif (i == 2):
+				g.write("ZERO_FORCE = " + value + "\n")
+			elif (i == 3):
+				g.write("USER_MAX_FORCE_DATA = " + value + "\n")
+			elif (i == 4):
+				g.write("USER_MAX_ACTUATOR_COMMAND = " + value + "\n")
+			i = i + 1
+			#value = int(value)
+			#f.write(value+"\n")
 
-# # now for flex arm
-# dataFunc = {'time':sk.millisToSeconds, 'flex sensor':sk.computeAngle,'actuator position, command':sk.commandToPosition, \
-# 			'actuator position, measured':sk.feedbackToPosition, 'force':sk.computeForce}
 
-# # first just read the values
-# min_AngleData = 500;
-# max_AngleData = 500;
-# endTime = datetime.datetime.now() + datetime.timedelta(seconds=10)
-# while (datetime.datetime.now() < endTime):
-# 	value = mcu.readline()
-# 	value = str(value, "utf-8").split(",")
+# first just read the values
+min_AngleData = 500;
+max_AngleData = 500;
+endTime = datetime.datetime.now() + datetime.timedelta(seconds=10)
+while (datetime.datetime.now() < endTime):
+	value = mcu.readline()
+	value = str(value, "utf-8").split(",")
 
-# 	# if valid data packet, convert to right units and write in csv
-# 	if (len(value) == len(dataFunc)):
-
-# 		#newRow = sk.processNewRow(value, 0)
-# 		#serialAngle = newRow[1]
-# 		#s = "Measured=" + str(serialAngle)
-# 		#print(value)
-# 		print(value)
-# 		value = int(value[1])
+	# if valid data packet, convert to right units and write in csv
+	if (len(value) == len(dataFunc)):
+		print(value)
+		value = int(value[1])
 		
-# 		if (value < min_AngleData): min_AngleData = value
-# 		if (value > max_AngleData): max_AngleData = value
+		if (value < min_AngleData): min_AngleData = value
+		if (value > max_AngleData): max_AngleData = value
 
-# g.write("ANGLE_DATA_MIN = " + str(min_AngleData) + "\n")
-# g.write("ANGLE_DATA_MAX = " + str(max_AngleData) + "\n")
-# i = i + 2
-
-# # then see if calibrated
-# sc = turtle.Screen()
-# sc.tracer(0)
-# sc.title("SerialArm")
-# skG.initializeSerial()
-
-# endTime = datetime.datetime.now() + datetime.timedelta(seconds=10)
-# while (datetime.datetime.now() < endTime):
-# 	value = mcu.readline()
-# 	value = str(value, "utf-8").split(",")
-
-# 	# if valid data packet, convert to right units and write in csv
-# 	if (len(value) == len(dataFunc)):
-# 		data = int(value[1])
-# 		serialAngle = sk.mapFloat(data, min_AngleData, max_AngleData, CONST.ANGLE_MIN, CONST.ANGLE_MAX)
-# 		s = "Measured=" + str(serialAngle)
-# 		print(s)
-# 		turtle.undo()
-# 		turtle.undo()
-# 		skG.drawForearm(sc,serialAngle, skG.COLOR_SERIAL)
-
-# 	# if (not(CONST.TRANSFER_RAW)):
-# 	# 	# if valid data packet, convert to right units and write in csv
-# 	# 	#print(len(value))
-# 	# 	if (len(value) == len(dataFunc)):
-# 	# 		newRow = sk.processNewRow(value, i)
-# 	# 		print(newRow)
-# 	# 		writer.writerow(newRow)
-# 	# 	i = i + 1
-
-# 	# else:
-# 	# 	print(value)
-# 		# writer.writerow(value)
-
-# sc.bye()
-
-# while (i == 7):
-# 	value = (mcu.readline()).decode()
-# 	value = value.strip()
-
-# 	if (value):
-# 		print(value)
-
-# 		if ("Calibrated" in value):
-# 			break
-
+g.write("ANGLE_DATA_MIN = " + str(min_AngleData) + "\n")
+g.write("ANGLE_DATA_MAX = " + str(max_AngleData) + "\n")
 g.close()
+
+i = i + 2
+
+# update constants file and reimport. then see if calibrated. 
+shutil.copy2(os.path.join(p + 'constantsCalibrated.py'),os.path.join(CONST.PATH_HOME,'constants.py'))
+import constants as CONST
+import skFunctions as sk
+
+# then with the calibrated values, overwrite the old constants file. maybe add it to the archive in case
+
+
+# now for flex arm
+dataFunc = {'time':sk.millisToSeconds, 'flex sensor':sk.computeAngle,'actuator position, command':sk.commandToPosition, \
+			'actuator position, measured':sk.feedbackToPosition, 'force':sk.computeForce}
+
+sc = turtle.Screen()
+sc.tracer(0)
+sc.title("SerialArm")
+skG.initializeSerial()
+
+endTime = datetime.datetime.now() + datetime.timedelta(seconds=10)
+while (datetime.datetime.now() < endTime):
+	value = mcu.readline()
+	value = str(value, "utf-8").split(",")
+
+	# if valid data packet, convert to right units and write in csv
+	if (len(value) == len(dataFunc)):
+		data = int(value[1])
+		serialAngle = sk.mapFloat(data, min_AngleData, max_AngleData, CONST.ANGLE_MIN, CONST.ANGLE_MAX)
+		s = "Measured=" + str(serialAngle)
+		print(s)
+		turtle.undo()
+		turtle.undo()
+		skG.drawForearm(sc,serialAngle, skG.COLOR_SERIAL)
+
+	# if (not(CONST.TRANSFER_RAW)):
+	# 	# if valid data packet, convert to right units and write in csv
+	# 	#print(len(value))
+	# 	if (len(value) == len(dataFunc)):
+	# 		newRow = sk.processNewRow(value, i)
+	# 		print(newRow)
+	# 		writer.writerow(newRow)
+	# 	i = i + 1
+
+	# else:
+	# 	print(value)
+		# writer.writerow(value)
+
+sc.bye()
+
+while (i == 7):
+	value = (mcu.readline()).decode()
+	value = value.strip()
+
+	if (value):
+		print(value)
+
+		if ("Calibrated" in value):
+			break
+
+#g.close()
+

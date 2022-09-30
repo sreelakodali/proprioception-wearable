@@ -37,7 +37,6 @@ if (CONST.DATASRC_SD):
 # Find the most recent data directory
 allSubdirs = [CONST.PATH_LAPTOP+d for d in os.listdir(CONST.PATH_LAPTOP) if os.path.isdir(os.path.join(CONST.PATH_LAPTOP, d))]
 p = max(allSubdirs, key=sk.getCreationTime) + '/'
-print(p)
 fileName = [f for f in os.listdir(p) if (f.startswith('processed') and f.endswith('.csv'))]
 fileName = fileName[0]
 print("Newest data found: %s" % fileName)

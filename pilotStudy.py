@@ -46,18 +46,22 @@ import constants as CONST
 # sc.title("Pilot Study")
 # skG.initializePilot()
 
+
 # Initialize Serial reading and data saving
-# fileName = str(datetime.datetime.now())[0:16] # default name is date and time
+
+# default name is date and time
+
+# fileName = str(datetime.datetime.now())[0:16] 
 # fileName = ((fileName.replace('/', '_')).replace(' ', '_')).replace(':','-')
 # p = CONST.PATH_LAPTOP +fileName+'/'
 # if not (os.path.exists(p)):
 # 	os.makedirs(p)
 # 	print("New directory created: %s" % fileName)
 
-
+# saving in most recent folder
 allSubdirs = [CONST.PATH_LAPTOP+d for d in os.listdir(CONST.PATH_LAPTOP) if os.path.isdir(os.path.join(CONST.PATH_LAPTOP, d))]
-p = max(allSubdirs, key=os.path.getctime) + '/'
-print(p)
+p = max(allSubdirs, key=sk.getCreationTime) + '/'
+print("Destination directory: %s" % p)
 
 
 # mcu = serial.Serial(port=CONST.PORT_NAME, baudrate=CONST.BAUD_RATE, timeout=.1)
