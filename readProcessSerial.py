@@ -5,6 +5,7 @@ import serial
 import datetime
 import csv
 import os
+import sys, getopt
 import numpy as np
 from scipy import signal
 import constants as CONST
@@ -26,8 +27,28 @@ writer = csv.writer(f)
 dataFunc = {'time':sk.millisToSeconds, 'flex sensor':sk.computeAngle,'actuator position, command':sk.commandToPosition, \
 			'actuator position, measured':sk.feedbackToPosition, 'force':sk.computeForce}
 
+
+plotOn = False
+savePlot = 0
+
+# if plot on
+
+opts, args = getopt.getopt(sys.argv[1:],"ps")
+
+for opt, arg in opts:
+	if opt == '-p':
+		plotOn = True
+		# create arrays to hold data
+		time = []
+		angle = []
+		device1_positionCommand = []
+		device1_positionMeasured = []
+		force = []
+	if opt == '-s':
+		savePlot = 1
+
+
 # Read in serial data and save in csv
-i = 0
 if (not(CONST.TRANSFER_RAW)): writer.writerow(list(dataFunc.keys()))
 endTime = datetime.datetime.now() + datetime.timedelta(seconds=CONST.RUNTIME_LENGTH)
 while (datetime.datetime.now() < endTime):
@@ -38,13 +59,21 @@ while (datetime.datetime.now() < endTime):
 		# if valid data packet, convert to right units and write in csv
 		#print(len(value))
 		if (len(value) == len(dataFunc)):
-			newRow = sk.processNewRow(value, i)
+			newRow = sk.processNewRow(dataFunc, value)
 			print(newRow)
 			writer.writerow(newRow)
-		i = i + 1
+			if (plotOn):
+				time.append(newRow[0])
+				angle.append(newRow[1])
+				device1_positionCommand.append(newRow[2])
+				device1_positionMeasured.append(newRow[3])
+				force.append(newRow[4])
 
 	else:
 		print(value)
 		writer.writerow(value)
 
 f.close()
+
+
+if (plotOn): sk.plot_System(savePlot, p, fileName, time, angle, force, device1_positionMeasured, device1_positionCommand)

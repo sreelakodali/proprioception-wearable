@@ -79,7 +79,7 @@ def computeForce(data):
 # 			'actuator position, measured':feedbackToPosition, 'force':computeForce}
 # columnNames = list(dataFunc.keys())
 
-def processNewRow(dataFunc, val, loopIncrement):
+def processNewRow(dataFunc, val):
 	columnNames = list(dataFunc.keys())
 	r = []
 	for key in dataFunc:

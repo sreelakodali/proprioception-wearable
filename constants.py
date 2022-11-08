@@ -26,7 +26,7 @@ RUNTIME_LENGTH_ARM = 1000 # seconds
 # DATA Collection
 PATH_SD =  '/Volumes/PIEZO2/'
 PATH_HOME = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/'
-PATH_LAPTOP = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/Pilot2/'
+PATH_LAPTOP = PATH_HOME + 'Data/Pilot2/'
 #PATH_LAPTOP = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/systemEvaluation/'
 #PATH_LAPTOP = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/timing/'
 PORT_NAME = "/dev/cu.usbmodem43098001"
@@ -43,8 +43,8 @@ N_CORR = 20000 # computing the delay
 
 #2022-09-19_11-03_subjectrachel
 ACTUATOR_FEEDBACK_MAX = 808
-# ACTUATOR_FEEDBACK_MIN = 96
-# ZERO_FORCE = 88
+ACTUATOR_FEEDBACK_MIN = 96
+ZERO_FORCE = 88
 ANGLE_DATA_MIN = 500
 ANGLE_DATA_MAX = 8290
 
