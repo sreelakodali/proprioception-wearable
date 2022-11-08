@@ -19,10 +19,10 @@
 //#define sreela_MAX 87 //dorsal forearm, maxforce without reaching max current
 
 // Pin Names
-#define position1_IN A7 // pin to measure position1_Measured
-#define position1_OUT 22 // pin to send position1_Command
+#define position1_IN A3 // pin to measure position1_Measured
+#define position1_OUT 9 // pin to send position1_Command
 #define button_IN 4 // pushbutton
-#define led_OUT 5 // led indicator
+#define led_OUT 6 // led indicator
 
 typedef enum { NONE, ZERO_FORCE, FLEX, MAX_PRESSURE, ACTUATOR  
 } CALIBRATION_OPTIONS;
@@ -49,7 +49,7 @@ int commandCount = 0;
 int cycleCount = 0;
 int bufferCount = 0;
 String buf = "";
-//bool powerOn;
+bool powerOn;
 
 // Actuator
 Servo actuator1;  // create servo object to control a servo
@@ -75,7 +75,7 @@ short zeroForce = 0;
 short detectionForce = 0;
 short painForce = 0;
 
-void setup() { 
+void setup() {
   Wire.begin(); // join i2c bus
 
   // start serial for output
@@ -105,6 +105,7 @@ void setup() {
 
   pinMode(button_IN, INPUT);
   pinMode(led_OUT, OUTPUT);
+  analogWrite(led_OUT, 30);
 
   if (capacitiveFlexSensor.begin() == false) {
     if (serialON) Serial.println(("No sensor detected. Check wiring. Freezing..."));
@@ -223,7 +224,7 @@ void runtime() {
     myTime = millis();
     // Read flex sensor
     if (capacitiveFlexSensor.available() == true) flexSensor = capacitiveFlexSensor.getX();
-
+    
     //myTime_1 = micros();
     
     // Map angle to actuator command
@@ -244,9 +245,12 @@ void runtime() {
 
     cycleCount = cycleCount + 1;
     // fix test code
-    //powerOn = (data >= 150);
+    powerOn = (data >= 150);
+    digitalWrite(led_OUT, powerOn);
+    if (powerOn) analogWrite(led_OUT, 255);//digitalWrite(led_OUT, HIGH);
+    else if (powerOn == 0) analogWrite(led_OUT, 30);
     //Serial.println((cycleCount == WRITE_COUNT) && powerOn);
-    //Serial.println(powerOn);
+//    Serial.println(powerOn);
 
     //myTime_4 = micros(); // after reading
     
@@ -287,9 +291,12 @@ void runtime_NoFeedback() {
     actuator1.write(position_MIN);
 
     cycleCount = cycleCount + 1;
-    //powerOn = (data >= 150);
+    powerOn = (data >= 150);
+    digitalWrite(led_OUT, powerOn);
+    if (powerOn) analogWrite(led_OUT, 255);//digitalWrite(led_OUT, HIGH);
+    else if (powerOn == 0) analogWrite(led_OUT, 30);
     //Serial.println((cycleCount == WRITE_COUNT) && powerOn);
-    //Serial.println(powerOn);
+//    Serial.println(powerOn);
     if ((cycleCount == WRITE_COUNT)) {
       writeOutData(myTime, flexSensor, position1_Command, position1_Measured, data);
       cycleCount = 0;
@@ -313,11 +320,11 @@ int sweep(int t_d) {
       myTime = millis();
       if (position1_Measured < minValue) minValue = position1_Measured;
 
-//      if (serialON) {
-//        dataString += (String(myTime) + "," + String(counter) + "," \
-//        + String(position1_Measured));
-//        Serial.println(dataString);
-//      }
+      if (serialON) {
+        dataString += (String(myTime) + "," + String(counter) + "," \
+        + String(position1_Measured));
+        Serial.println(dataString);
+      }
 
       if (extending == 1) {
         if (counter == (position_MAX)) {
@@ -428,9 +435,9 @@ void calibrationFlexSensor() {
   if (serialON) Serial.println("Please repeat this motion until researcher tells you to stop.");
   if (serialON) Serial.println("Press button once when you're ready to begin.");
   while(!(risingEdgeButton()));
-  if (serialON) Serial.println("Begin flex sensor calibration.");
+  if (serialON) Serial.println("Begin flex sensor calibration");
  
-  // record flex values for 10 seconds
+  // record flex values for 20 seconds
   startTime = millis();
   endTime = millis();
   while((endTime - startTime) < 20000) {
@@ -467,19 +474,7 @@ void calibrationMaxDeepPressure() {
       actuator1.write(counter);
       //if (serialON) Serial.println((data - 255) * (45.0)/512);
       if (risingEdgeButton()) {
-//        // Calibration Stage 2a
-//        // Click button if you detect the tactor. Detection Threshold stored
-//        if (buttonCount == 4) {
-//          user_position_MIN = counter;
-//          detectionForce = readDataFromSensor(I2C_ADDR);
-//          if (serialON) {
-//            Serial.println("DETECTION THRESHOLD:");
-//            Serial.println((detectionForce - 256) * (45.0)/511);
-//          }
-//        }
-        // Calibration Stage 2b
-        // Click button if feeling pain from tactor. Pain threshold stored
-        //else {
+
           user_position_MAX = counter - 2;
           painForce = readDataFromSensor(I2C_ADDR);
           actuator1.write(position_MIN);
@@ -490,14 +485,12 @@ void calibrationMaxDeepPressure() {
             Serial.println(painForce);
           }
           break; 
-        //} 
       }
       delay(250);
       counter = counter + 1;
   }
   actuator1.write(position_MIN);
   if (serialON) Serial.println("Calibration stage complete. Max actuator positions is:");
-  //if (serialON) Serial.println(user_position_MIN);
   if (serialON) Serial.println(user_position_MAX);
   if (serialON) Serial.println("Make sure to researcher records these values and press button to proceed.");
   while(!risingEdgeButton());

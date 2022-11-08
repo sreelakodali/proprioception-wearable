@@ -12,7 +12,7 @@ TRANSFER_RAW = False
 # ACTUATOR_FEEDBACK_MIN = 145
 # ANGLE_DATA_MIN = 0
 # ANGLE_DATA_MAX = 11600
-# ZERO_FORCE = 0.00
+ZERO_FORCE = 0.00
 
 # PILOT STUDY
 # SHOW_ARM = True
@@ -29,7 +29,7 @@ PATH_HOME = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/'
 PATH_LAPTOP = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/Pilot2/'
 #PATH_LAPTOP = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/systemEvaluation/'
 #PATH_LAPTOP = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/timing/'
-PORT_NAME = "/dev/cu.usbmodem71181201"
+PORT_NAME = "/dev/cu.usbmodem43098001"
 RUNTIME_LENGTH = 10 # seconds
 
 ## DATA PROCESSING CONSTANTS ##
@@ -43,8 +43,8 @@ N_CORR = 20000 # computing the delay
 
 #2022-09-19_11-03_subjectrachel
 ACTUATOR_FEEDBACK_MAX = 808
-ACTUATOR_FEEDBACK_MIN = 96
-ZERO_FORCE = 88
+# ACTUATOR_FEEDBACK_MIN = 96
+# ZERO_FORCE = 88
 ANGLE_DATA_MIN = 500
 ANGLE_DATA_MAX = 8290
 

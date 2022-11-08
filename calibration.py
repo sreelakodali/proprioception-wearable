@@ -85,12 +85,12 @@ while (datetime.datetime.now() < endTime):
 	value = str(value, "utf-8").split(",")
 
 	# if valid data packet, convert to right units and write in csv
-	if (len(value) == len(dataFunc)):
-		print(value)
-		value = int(value[1])
+	#if (len(value) == len(dataFunc)):
+	print(value)
+	value = int(value[1])
 		
-		if (value < min_AngleData): min_AngleData = value
-		if (value > max_AngleData): max_AngleData = value
+	if (value < min_AngleData): min_AngleData = value
+	if (value > max_AngleData): max_AngleData = value
 
 g.write("ANGLE_DATA_MIN = " + str(min_AngleData) + "\n")
 g.write("ANGLE_DATA_MAX = " + str(max_AngleData) + "\n")

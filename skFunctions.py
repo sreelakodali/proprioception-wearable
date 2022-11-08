@@ -75,11 +75,12 @@ def computeForce(data):
 	return round(((data - 255) * (45.0)/512) - CONST.ZERO_FORCE, 2) #(data - 256) * (45.0)/511 # NEEDS CALIBRATED VAL
 	#changed bc uncalibrated
 
-dataFunc = {'time':millisToSeconds, 'flex sensor':computeAngle,'actuator position, command':commandToPosition, \
-			'actuator position, measured':feedbackToPosition, 'force':computeForce}
-columnNames = list(dataFunc.keys())
+# dataFunc = {'time':millisToSeconds, 'flex sensor':computeAngle,'actuator position, command':commandToPosition, \
+# 			'actuator position, measured':feedbackToPosition, 'force':computeForce}
+# columnNames = list(dataFunc.keys())
 
-def processNewRow(val, loopIncrement):
+def processNewRow(dataFunc, val, loopIncrement):
+	columnNames = list(dataFunc.keys())
 	r = []
 	for key in dataFunc:
 		# if (key == 'flex sensor'):
@@ -103,6 +104,11 @@ def validPacket(val):
 
 def generateRandomTrials():
 	trialAngles = []
+	t = list(range(180,40,-15))
+	trialAngles.append(t)
+	trialAngles.append(t)
+	trialAngles.append(t)
+
 	for i in range (0,6):
 		t = list(range(40,180,15))
 	
@@ -122,6 +128,8 @@ def generateRandomTrials():
 		else: random.shuffle(t)
 		trialAngles = trialAngles + t
 	return trialAngles
+	
+
 
 def findNWindow(timeArr):
 	i = 1
@@ -438,6 +446,25 @@ def plot_timingActuatorAnalysis(s, p, fileName, t_delay, t_risingEdge, speed, co
 	plt.grid(True)
 	#ax1.legend(l_all, labels, loc=0)
 	if s==1: plt.savefig(p +"fig_"+fileName[:-4])
+	plt.show()
+
+
+def plot_Force(s, p, fileName, time, force):
+	fig, ax1 = plt.subplots()
+	plt.suptitle("Real-time Data " + fileName, name='Arial', weight='bold')
+	ax1.set_xlabel("Time (s)", name='Arial')
+	plt.xticks(name='Arial')
+	plt.yticks(name='Arial')
+
+	ax1.set_ylabel("Force (N)", name='Arial',)
+	l1 = ax1.plot(time, force, 'r', linewidth=1.75, label='Force')
+	ax1.yaxis.label.set_color('r')
+	ax1.tick_params(axis='y', color='r')
+	ax1.set_ylim(0,25)
+
+	plt.grid(True)
+	#ax1.legend(l_all, labels, loc=0)
+	if s==1: plt.savefig(p +"fig_"+fileName)
 	plt.show()
 
 
