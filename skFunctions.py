@@ -43,12 +43,14 @@ def millisToSeconds(s):
 
 # Computing angle from flex sensor data
 def computeAngle(data):
+	a = 180 - data
+	return a
 	#a = 180 - float(data)/64.0 #float(data)
 	#return a
 	#if a > 90: return a
 	#else: return a - 0.2*(90-a)
 	 
-	return mapFloat(data, CONST.ANGLE_DATA_MIN, CONST.ANGLE_DATA_MAX, CONST.ANGLE_MIN, CONST.ANGLE_MAX) # NEEDS CALIBRATED VAL
+	#return mapFloat(data, CONST.ANGLE_DATA_MIN, CONST.ANGLE_DATA_MAX, CONST.ANGLE_MIN, CONST.ANGLE_MAX) # NEEDS CALIBRATED VAL
 
 # Servo command (degrees) --> actuator position (mm)
 def commandToPosition(c):

@@ -1,0 +1,1 @@
+i've activated the filters for the flex sensor and am reading a float and the data is still noisy, so it must be the sensor :/

@@ -1,0 +1,1 @@
+old wire, new sensor, new board. still high noise regardless of wire or board

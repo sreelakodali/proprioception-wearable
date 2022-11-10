@@ -16,40 +16,45 @@
 #define flexCapacitiveSensor_MAX 8000//11600
 #define position_MIN 64//46//46 //139 new
 #define position_MAX 139//130 // 47 new
-//#define sreela_MAX 87 //dorsal forearm, maxforce without reaching max current
 
 // Pin Names
 #define position1_IN A3 // pin to measure position1_Measured
 #define position1_OUT 9 // pin to send position1_Command
 #define button_IN 4 // pushbutton
 #define led_OUT 6 // led indicator
+#define CHIP_SELECT 10 // SD card writing
+
+// Set these before
+const bool serialON = true;
+const int actuatorType = 1;
+//const CALIBRATION_OPTIONS calibrationMode = ACTUATOR;
+const bool fastMapON = true;
+const bool sdWriteON = !(serialON);
+const int WRITE_COUNT = 100; // typically 2000, for every n runtime cycles, write out data
+
+// CALIBRATION
+int user_position_MIN = position_MIN;
+int user_position_MAX = position_MAX;
+int user_flex_MIN = flexCapacitiveSensor_MIN;
+int user_flex_MAX = flexCapacitiveSensor_MAX;
+
+const byte I2C_ADDR = 0x04; // force sensor
+//const int CHIP_SELECT = 10; // SD card writing
 
 typedef enum { NONE, ZERO_FORCE, FLEX, MAX_PRESSURE, ACTUATOR  
 } CALIBRATION_OPTIONS;
 
-// Parameters
+int cycleCount = 0; //keeps track of cycle so knows when to send serial data
+bool powerOn; // checks if 12V on
 
-int ACTUATOR_FEEDBACK_MAX = 500;
-int ACTUATOR_FEEDBACK_MIN = 500;
-
-const bool serialON = true;
-const int actuatorType = 1;
-const CALIBRATION_OPTIONS calibrationMode = ACTUATOR;
-const bool fastMapON = false;
-const bool sdWriteON = !(serialON);
-int user_position_MIN = position_MIN;
-int user_position_MAX = position_MAX;
-
-const int WRITE_COUNT = 100; // typically 2000, for every n runtime cycles, write out data
-const int COMMAND_COUNT = 400000;
-const byte I2C_ADDR = 0x04; // force sensor
-const int CHIP_SELECT = 10; // SD card writing
+// SD Card Batching
 const int BUFFER_SIZE = 25; // how many datastrings until sd card write within 512 buffer
-int commandCount = 0;
-int cycleCount = 0;
-int bufferCount = 0;
 String buf = "";
-bool powerOn;
+int bufferCount = 0;
+
+// Characterizing Actuators
+//const int COMMAND_COUNT = 400000; //for slow sweep of actuator position
+//int commandCount = 0;
 
 // Actuator
 Servo actuator1;  // create servo object to control a servo
@@ -57,11 +62,12 @@ int position1_Command = 0;    // variable to store the servo command
 int position1_Measured = 0;
 
 // Flex sensor
-int16_t flexSensor = 0; // variable to store sensor value
+//int16_t flexSensor = 0; // variable to store sensor value
 ADS capacitiveFlexSensor;
 
 // floating point
-float flexSensorFloat = 0;
+// int flexSensor = 0;
+float flexSensor = 0.0;
 FastMap mapper;
 
 // Push Button
@@ -69,13 +75,10 @@ int buttonState = 0;
 int oldButtonState = 0;
 int buttonCount = 0;
 
-// Calibration
-short zeroForce = 0;
-
-short detectionForce = 0;
-short painForce = 0;
-
 void setup() {
+  
+  CALIBRATION_OPTIONS mode;
+  
   Wire.begin(); // join i2c bus
 
   // start serial for output
@@ -97,7 +100,7 @@ void setup() {
     //    if (serialON) Serial.println("Removed old data");
   }
   
-  if (fastMapON) mapper.init(175, 40, position_MIN, position_MAX);
+  if (fastMapON) mapper.init(180, 40, position_MIN, position_MAX);
 
   // attach servo and put in minimum position
   actuator1.attach(position1_OUT); 
@@ -106,28 +109,40 @@ void setup() {
   pinMode(button_IN, INPUT);
   pinMode(led_OUT, OUTPUT);
   analogWrite(led_OUT, 30);
+  buttonCount = 0;
 
-  if (capacitiveFlexSensor.begin() == false) {
-    if (serialON) Serial.println(("No sensor detected. Check wiring. Freezing..."));
-    while (1);
+//  if (capacitiveFlexSensor.begin() == false) {
+//    if (serialON) Serial.println(("No sensor detected. Check wiring. Freezing..."));
+//    while (1);
+//  }
+
+  if (serialON) Serial.println("Actuator and flex sensor connected. Entering calibration mode. Close serial monitor and start calibration.py");
+  //while(!risingEdgeButton());
+  
+  while(1){
+    if (Serial.available() > 0) {
+      //mode = CALIBRATION_OPTIONS(Serial.parseInt(););
+      mode = CALIBRATION_OPTIONS(Serial.read() - '0');
+      Serial.println(mode);
+      calibration(mode);
+    }
   }
 
-  if (serialON) Serial.println("Ready. Close serial monitor, start calibration.py, and press button when ready.");
+  if (serialON) Serial.println("Calibrated. Click button to enter runtime");
   while(!risingEdgeButton());
-  calibration(NONE);
-  buttonCount = 0;
 }
 
 void loop() {
   if(buttonCount % 2 == 1) runtime();
   else runtime_NoFeedback();
-//  sweep2();
 }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // SUPPORTING FUNCTIONS //
 //////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 void testLed () {
   digitalWrite(led_OUT, HIGH);   // turn the LED on (HIGH is the voltage level)
@@ -228,7 +243,7 @@ void runtime() {
     //myTime_1 = micros();
     
     // Map angle to actuator command
-    if (fastMapON) position1_Command = mapper.map(flexSensorFloat);
+    if (fastMapON) position1_Command = mapper.map(int(flexSensor));
     else position1_Command = map(flexSensor, flexCapacitiveSensor_MIN, flexCapacitiveSensor_MAX, position_MIN, position_MAX);
     if(position1_Command > position_MAX) position1_Command = position_MAX;
     if(position1_Command < position_MIN) position1_Command = position_MIN;
@@ -278,7 +293,7 @@ void runtime_NoFeedback() {
     if (capacitiveFlexSensor.available() == true) flexSensor = capacitiveFlexSensor.getX();
     
     // Map angle to actuator command
-    if (fastMapON) position1_Command = mapper.map(flexSensor);
+    if (fastMapON) position1_Command = mapper.map(int(flexSensor));
     else position1_Command = map(flexSensor, flexCapacitiveSensor_MIN, flexCapacitiveSensor_MAX, position_MIN, position_MAX);
     if(position1_Command > position_MAX) position1_Command = position_MAX;
     if(position1_Command < position_MIN) position1_Command = position_MIN;
@@ -345,48 +360,51 @@ int sweep(int t_d) {
 }
 
 
-// Measuring Actuator Position
-void sweep2() {
-    unsigned long myTime_1;
-    unsigned long myTime_2;
-    short data;
-    int c = user_position_MIN;
-
-    while (c <= user_position_MAX) {
-      String dataString = "";
-
-      commandCount = commandCount + 1;
-      cycleCount = cycleCount + 1;
-
-      myTime_1 = micros();
-
-      //if (risingEdgeButton()) {
-      if (commandCount == COMMAND_COUNT) {
-        if (actuatorType == 1) {
-          actuator1.write(c);  
-        } else {
-          actuator1.write(180-c);
-        }
-        c = c + 1;
-        commandCount = 0;
-      }
-
-      myTime_2 = micros();
-
-      if (cycleCount == WRITE_COUNT) {
-        position1_Measured = analogRead(position1_IN);
-        data = readDataFromSensor(I2C_ADDR);
-        if (serialON) {
-          dataString = (String(myTime_1) + "," + String(myTime_2) + "," + String(c) + "," + String(data) + "," + String(position1_Measured) + ",");
-          Serial.println(dataString);
-        }
-        cycleCount = 0;
-      }
-
-    }
-}
+// Measuring Actuator Position. Slow ladder step
+//void sweep2() {
+//    unsigned long myTime_1;
+//    unsigned long myTime_2;
+//    short data;
+//    int c = user_position_MIN;
+//
+//    while (c <= user_position_MAX) {
+//      String dataString = "";
+//
+//      commandCount = commandCount + 1;
+//      cycleCount = cycleCount + 1;
+//
+//      myTime_1 = micros();
+//
+//      //if (risingEdgeButton()) {
+//      if (commandCount == COMMAND_COUNT) {
+//        if (actuatorType == 1) {
+//          actuator1.write(c);  
+//        } else {
+//          actuator1.write(180-c);
+//        }
+//        c = c + 1;
+//        commandCount = 0;
+//      }
+//
+//      myTime_2 = micros();
+//
+//      if (cycleCount == WRITE_COUNT) {
+//        position1_Measured = analogRead(position1_IN);
+//        data = readDataFromSensor(I2C_ADDR);
+//        if (serialON) {
+//          dataString = (String(myTime_1) + "," + String(myTime_2) + "," + String(c) + "," + String(data) + "," + String(position1_Measured) + ",");
+//          Serial.println(dataString);
+//        }
+//        cycleCount = 0;
+//      }
+//
+//    }
+//}
 
 void calibrationActuatorFeedback() {
+  int ACTUATOR_FEEDBACK_MAX = 500;
+  int ACTUATOR_FEEDBACK_MIN = 500;
+  
      // Calibration: Sweep and record the actuator position feedback positions
   actuator1.write(position_MIN);
   if (serialON) Serial.println("-------------------------------------------");
@@ -404,6 +422,8 @@ void calibrationActuatorFeedback() {
 }
 
 void calibrationZeroForce() {
+  short zeroForce = 0;
+  
   // Calibration Stage: Get the zero force of the device
   actuator1.write(position_MIN);
   if (serialON) Serial.println("-------------------------------------------");
@@ -451,6 +471,8 @@ void calibrationFlexSensor() {
 void calibrationMaxDeepPressure() {
    int counter = position_MIN;
    short data;
+   short maxForce = 0;
+   short zeroForce = 0;
 
    if (serialON) Serial.println("-------------------------------------------");
    if (serialON) Serial.println("CALIBRATION: MAX PRESSURE ");
@@ -476,13 +498,13 @@ void calibrationMaxDeepPressure() {
       if (risingEdgeButton()) {
 
           user_position_MAX = counter - 2;
-          painForce = readDataFromSensor(I2C_ADDR);
+          maxForce = readDataFromSensor(I2C_ADDR);
           actuator1.write(position_MIN);
           if (serialON) {
             Serial.println("ZERO FORCE:");
             Serial.println(zeroForce);
             Serial.println("UPPER LIMIT FORCE:");
-            Serial.println(painForce);
+            Serial.println(maxForce);
           }
           break; 
       }
@@ -504,11 +526,8 @@ void calibration(CALIBRATION_OPTIONS mode) {
   if (actuatorType == 1) actuator1.write(position_MIN);  
   else actuator1.write(180-position_MIN);
 
-  for (int i = 0; i < mode; i++) {
-      switch (mode - i) {
-//        case ZERO_FORCE:
-//          calibrationZeroForce();
-//          break;
+  //for (int i = 0; i < mode; i++) {
+      switch (mode) {
         case FLEX:
           calibrationFlexSensor();
           break;
@@ -522,9 +541,9 @@ void calibration(CALIBRATION_OPTIONS mode) {
           break;
       }
       delay(50);
-  }
-  if (serialON) Serial.println("Calibrated. Please click the button to move on.");
-  while(!(risingEdgeButton()));
+  //}
+  //if (serialON) Serial.println("Calibrated. Please click the button to move on.");
+  //while(!(risingEdgeButton()));
 }
 
 bool risingEdgeButton() {
