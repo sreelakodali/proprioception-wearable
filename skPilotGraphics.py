@@ -83,6 +83,21 @@ def initializePilot():
 	drawUpperArm()
 	penup()
 
+def initializeCalibrationWindow():
+	hideturtle()
+	color(COLOR, COLOR)
+	pensize(PEN_SIZE)
+	penup()
+	goto(-350,300)
+	write("Calibration: Actuator", move=False, font=("Arial",48, "normal"))
+	goto(-350,200)
+	write("Please don't wear the actuator. Make sure", move=False, font=("Arial",32, "normal"))
+	goto(-350,150)
+	write("power is on and click screen when ready.", move=False, font=("Arial",32, "normal"))
+	# # drawing initial arm
+	# drawUpperArm()
+	penup()
+
 def initializeSerial():
 	hideturtle()
 	color(COLOR_SERIAL, COLOR_SERIAL)
