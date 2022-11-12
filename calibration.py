@@ -19,35 +19,45 @@ import random
 import skCalibrationFunctions as skC
 
 #CALIBRATION_OPTIONS = Enum('CALIBRATION_OPTIONS', ['NONE', 'ZERO_FORCE', 'FLEX', 'MAX_PRESSURE', 'ACTUATOR'])
-
 CALIBRATION_OPTIONS = {'NONE': 0, 'ZERO_FORCE': 1, 'FLEX': 2, 'MAX_PRESSURE': 3, 'ACTUATOR':4}
-opts, args = getopt.getopt(sys.argv[1:],"",["mode="])
+
+# this probably can be added to same dictionary, multiple values in a list
+#CALIBRATION_FUNCTIONS = {'NONE': 0, 'ZERO_FORCE': 1, 'FLEX': 2, 'MAX_PRESSURE': 3, 'ACTUATOR':calibrateActuator2}
 mcu = serial.Serial(port=CONST.PORT_NAME, baudrate=CONST.BAUD_RATE, timeout=.1)
 
+opts, args = getopt.getopt(sys.argv[1:],"",["mode="])
 for opt, arg in opts:
 	if opt == "--mode": calibrationMode = (CALIBRATION_OPTIONS[arg])
 	
-# Default mode
-g = skC.calibrateNewSubject();
-#lineCount = 0
-
+#----------------------------------------------------------------
 def calibrateActuator2(x,y):
 	global mcu, g, CALIBRATION_OPTIONS
-
 	mcu.write(str(CALIBRATION_OPTIONS['ACTUATOR']).encode())
 	skC.calibrateActuator(mcu, g)
 
+#----------------------------------------------------------------
+
+# Default mode
+g = skC.calibrateNewSubject();
+lineCount = 0
 
 sc = turtle.Screen()
 sc.tracer(0)
 sc.title("Calibration")
-skG.initializeCalibrationWindow()
+skG.initializeCalibrationWindow1()
 sc.onscreenclick(calibrateActuator2)
 turtle.listen()
+skG.initializeCalibrationWindow2()
+
+#ideally moving towards somehting like this
+# for x in CALIBRATION_OPTION.keys():
+# 	skG.initializeCalibrationWindow(x)
+# 	sc.onscreenclick(calibrateActuator2)
+# 	turtle.listen()
+# turtle.done()
 
 
-
-turtle.mainloop()
+turtle.done()
 
 
 # pressure = True

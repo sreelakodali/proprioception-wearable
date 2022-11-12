@@ -508,14 +508,14 @@ void calibrationMaxDeepPressure() {
    short maxForce = 0;
    short zeroForce = 0;
 
-   Serial.println("-------------------------------------------");
-   Serial.println("CALIBRATION: MAX PRESSURE ");
-   Serial.println("-------------------------------------------");
-   Serial.println("Instructions: Please wear the device. Make sure power is on. The actuator will extend into your arm and apply a deep pressure.");
-   Serial.println("During this stage, please click the button once to indicate when it is too uncomfortable.");
-   Serial.println("When you're ready to begin calibration stage, press the button.");
-
-   while(!(risingEdgeButton()));
+//   Serial.println("-------------------------------------------");
+//   Serial.println("CALIBRATION: MAX PRESSURE ");
+//   Serial.println("-------------------------------------------");
+//   Serial.println("Instructions: Please wear the device. Make sure power is on. The actuator will extend into your arm and apply a deep pressure.");
+//   Serial.println("During this stage, please click the button once to indicate when it is too uncomfortable.");
+//   Serial.println("When you're ready to begin calibration stage, press the button.");
+//
+//   while(!(risingEdgeButton()));
 
    Serial.println("Calibration Stage beginning...");
 
