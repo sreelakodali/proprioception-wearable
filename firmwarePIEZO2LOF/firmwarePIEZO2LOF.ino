@@ -72,7 +72,7 @@ void setup() {
   initializeSystem();
   analogWrite(led_OUT, 30);
   Serial.println("Actuator and flex sensor connected. Entering calibration mode. Close serial monitor and start calibration.py");
-  calibration();
+  //calibration();
   Serial.println("Calibrated. Click button to enter runtime");
   while(!risingEdgeButton());
 }

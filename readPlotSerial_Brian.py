@@ -30,22 +30,23 @@ writer = csv.writer(f)
 # dataFunc = {'time':sk.millisToSeconds, 'flex sensor':sk.computeAngle,'dutyCycle command':sk.commandToPosition, \
 # 			'force':sk.computeForce}
 
-dataFunc = {'time':bv.millisToSeconds,'force':bv.computeForce}
+dataFunc = {'time':bv.millisToSeconds,'force':bv.computeForce, 'command':bv.command}
 
 # Read in serial data and save in csv
 # fig = plt.figure()
 # ax = fig.add_subplot(1, 1, 1)
 time = []
 force = []
+command = []
 writer.writerow(list(dataFunc.keys()))
 
 endTime = datetime.datetime.now() + datetime.timedelta(seconds=CONST.RUNTIME_LENGTH)
 while (datetime.datetime.now() < endTime):
-	bv.readData(mcu, f, writer, dataFunc, time, force)
+	bv.readData(mcu, f, writer, dataFunc, time, force, command)
 
 # if you want to plot and not save the figure, change the 1 to 0 in following command
 # Example: bv.plot_Force(0, p, fileName, time, force)
-bv.plot_Force(1, p, fileName, time, force)
+bv.plot_ForceCommand(1, p, fileName, time, force, command)
 
 # ani = animation.FuncAnimation(fig, bv.animate, fargs=(mcu, f, writer, dataFunc, time, force, ax), interval=500)
 # plt.show()
