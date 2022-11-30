@@ -12,6 +12,10 @@ import turtle
 import skPilotGraphics as skG
 import random
 
+CALIBRATION_TEXT_ACTUATOR = ["Calibration: Actuator","Please don't wear the actuator. Make sure","power is on and click screen when ready."] 
+CALIBRATION_TEXT_MAX_PRESSURE = ["Calibration: Max Pressure", "Please wear the device. Make sure power.", "is on. The actuator will extend into your", "arm and apply a deep pressure. During this stage,", "please click the button once to indicate", "when it is too uncomfortable. Click to begin."]
+CALIBRATION_TEXT = {'ACTUATOR':CALIBRATION_TEXT_ACTUATOR, 'MAX_PRESSURE': CALIBRATION_TEXT_MAX_PRESSURE, 'FLEX': 2, 'ZERO_FORCE': 1, 'NONE': 0}
+
 def calibrateActuator(mcu, g):
 	lineCount = 0
 	while (lineCount < 2):

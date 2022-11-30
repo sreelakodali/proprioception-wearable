@@ -72,7 +72,7 @@ void setup() {
   initializeSystem();
   analogWrite(led_OUT, 30);
   Serial.println("Actuator and flex sensor connected. Entering calibration mode. Close serial monitor and start calibration.py");
-  //calibration();
+  calibration();
   Serial.println("Calibrated. Click button to enter runtime");
   while(!risingEdgeButton());
 }
@@ -109,8 +109,8 @@ void initializeActuator() {
 
 void initializeFlexSensor() {
     if (capacitiveFlexSensor.begin() == false) {
-    Serial.println(("No sensor detected. Check wiring. Freezing..."));
-    while (1);
+      Serial.println(("No sensor detected. Check wiring. Freezing..."));
+      while (1);
   }
 }
 
@@ -234,7 +234,7 @@ void runtime() {
     //myTime_1 = micros();
     
     // Map angle to actuator command
-    if (fastMapON) position1_Command = mapper.map(int(flexSensor));
+    if (fastMapON) position1_Command = mapper.map(flexSensor);
     else position1_Command = map(flexSensor, flexCapacitiveSensor_MIN, flexCapacitiveSensor_MAX, position_MIN, position_MAX);
     if(position1_Command > position_MAX) position1_Command = position_MAX;
     if(position1_Command < position_MIN) position1_Command = position_MIN;

@@ -83,42 +83,64 @@ def initializePilot():
 	drawUpperArm()
 	penup()
 
-def initializeCalibrationWindow1():
+def initializeCalibrationWindow(arr):
 	hideturtle()
 	color(COLOR, COLOR)
 	pensize(PEN_SIZE)
 	penup()
-	goto(-350,300)
-	write("Calibration: Actuator", move=False, font=("Arial",48, "normal"))
-	goto(-350,200)
-	write("Please don't wear the actuator. Make sure", move=False, font=("Arial",32, "normal"))
-	goto(-350,150)
-	write("power is on and click screen when ready.", move=False, font=("Arial",32, "normal"))
-	# # drawing initial arm
-	# drawUpperArm()
+
+	for i in range(len(arr)):
+		if i == 0:
+			goto(-350,300)
+			write(arr[i], move=False, font=("Arial",48, "normal"))
+		else:
+			goto(-350,200-(i-1)*50)
+			write(arr[i], move=False, font=("Arial",32, "normal"))
+
+	# goto(-350,200)
+	# write("Please don't wear the actuator. Make sure", move=False, font=("Arial",32, "normal"))
+	# goto(-350,150)
+	# write("power is on and click screen when ready.", move=False, font=("Arial",32, "normal"))
+	# # # drawing initial arm
+	# # drawUpperArm()
 	penup()
 
-def initializeCalibrationWindow2():
-	hideturtle()
-	color(COLOR, COLOR)
-	pensize(PEN_SIZE)
-	penup()
-	goto(-350,300)
-	write("Calibration: Max Pressure", move=False, font=("Arial",48, "normal"))
-	goto(-350,200)
-	write("Please wear the device. Make sure power.", move=False, font=("Arial",32, "normal"))
-	goto(-350,150)
-	write("is on. The actuator will extend into your", move=False, font=("Arial",32, "normal"))
-	goto(-350,100)
-	write("arm and apply a deep pressure. During this stage,", move=False, font=("Arial",32, "normal"))
-	goto(-350,50)
-	write("please click the button once to indicate", move=False, font=("Arial",32, "normal"))
-	goto(-350,0)
-	write("when it is too uncomfortable. Click to begin.", move=False, font=("Arial",32, "normal"))
+# def initializeCalibrationWindow1():
+# 	hideturtle()
+# 	color(COLOR, COLOR)
+# 	pensize(PEN_SIZE)
+# 	penup()
+# 	goto(-350,300)
+# 	write("Calibration: Actuator", move=False, font=("Arial",48, "normal"))
+# 	goto(-350,200)
+# 	write("Please don't wear the actuator. Make sure", move=False, font=("Arial",32, "normal"))
+# 	goto(-350,150)
+# 	write("power is on and click screen when ready.", move=False, font=("Arial",32, "normal"))
+# 	# # drawing initial arm
+# 	# drawUpperArm()
+# 	penup()
 
-	# # drawing initial arm
-	# drawUpperArm()
-	penup()
+# def initializeCalibrationWindow2():
+# 	hideturtle()
+# 	color(COLOR, COLOR)
+# 	pensize(PEN_SIZE)
+# 	penup()
+# 	goto(-350,300)
+# 	write("Calibration: Max Pressure", move=False, font=("Arial",48, "normal"))
+# 	goto(-350,200)
+# 	write("Please wear the device. Make sure power.", move=False, font=("Arial",32, "normal"))
+# 	goto(-350,150)
+# 	write("is on. The actuator will extend into your", move=False, font=("Arial",32, "normal"))
+# 	goto(-350,100)
+# 	write("arm and apply a deep pressure. During this stage,", move=False, font=("Arial",32, "normal"))
+# 	goto(-350,50)
+# 	write("please click the button once to indicate", move=False, font=("Arial",32, "normal"))
+# 	goto(-350,0)
+# 	write("when it is too uncomfortable. Click to begin.", move=False, font=("Arial",32, "normal"))
+
+# 	# # drawing initial arm
+# 	# drawUpperArm()
+# 	penup()
 
 def initializeSerial():
 	hideturtle()
@@ -194,5 +216,32 @@ def erase(screen, c):
 	seth(0)
 	color(COLOR, COLOR)
 	drawUpperArm()
+	update()
+
+def erase2(screen, c):
+	#screen.tracer(1,10)
+	#showturtle()
+	screen.tracer(0)
+	begin_fill()
+	color(c, c)
+	penup()
+	goto(-350,400)
+	pendown()
+	seth(180)
+	backward(700)
+	right(90)
+	backward(700)
+	right(90)
+	backward(700)
+	right(90)
+	backward(700)
+	# right(90)
+	# backward(350)
+	# right(90)
+	# backward(470)
+	end_fill()
+	penup()
+	seth(0)
+	color(COLOR, COLOR)
 	update()
 
