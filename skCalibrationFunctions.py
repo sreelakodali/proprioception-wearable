@@ -12,9 +12,13 @@ import turtle
 import skPilotGraphics as skG
 import random
 
+CALIBRATION_TEXT_INTRO = ["Welcome! Let's begin calibration."]
 CALIBRATION_TEXT_ACTUATOR = ["Calibration: Actuator","Please don't wear the actuator. Make sure","power is on and click screen when ready."] 
-CALIBRATION_TEXT_MAX_PRESSURE = ["Calibration: Max Pressure", "Please wear the device. Make sure power.", "is on. The actuator will extend into your", "arm and apply a deep pressure. During this stage,", "please click the button once to indicate", "when it is too uncomfortable. Click to begin."]
-CALIBRATION_TEXT = {'ACTUATOR':CALIBRATION_TEXT_ACTUATOR, 'MAX_PRESSURE': CALIBRATION_TEXT_MAX_PRESSURE, 'FLEX': 2, 'ZERO_FORCE': 1, 'NONE': 0}
+CALIBRATION_TEXT_MAX_PRESSURE = ["Calibration: Max Pressure", "Please wear the device.", "The actuator will extend into your arm and apply", "pressure. When it is too uncomfortable, click", "anywhere on the screen and the actuator will", "retract. We will do this at least 3 times.", " ", "Click CALIBRATE to begin each round and", "DONE once you've completed at least 3 rounds.", "Calibrate", "Done"]
+CALIBRATION_TEXT_FLEX =["Calibration: Flex Sensor", "Please wear the device.", "Extend your arm, palm up. Then slowly bend your", "elbow and slowly extend it again. Please repeat", "this a few times.", " ", "Ready? Click to begin."]
+CALIBRATION_TEXT_ZERO = ["Calibration complete!"]
+
+CALIBRATION_TEXT = {'ACTUATOR':CALIBRATION_TEXT_ACTUATOR, 'MAX_PRESSURE': CALIBRATION_TEXT_MAX_PRESSURE, 'NONE': CALIBRATION_TEXT_ZERO}# 'FLEX': CALIBRATION_TEXT_FLEX, 'ZERO_FORCE': 1, 'NONE': 0}
 
 def calibrateActuator(mcu, g):
 	lineCount = 0
@@ -36,8 +40,13 @@ def calibrateActuator(mcu, g):
 
 def calibrateMaxPressure(mcu, g):
 	lineCount = 0
+
+	mcu.write(str(5).encode())
+
 	while (lineCount < 3):
 		value = (mcu.readline()).decode()
+
+		
 		value = value.strip()
 
 		if (value):
@@ -52,6 +61,9 @@ def calibrateMaxPressure(mcu, g):
 					g.write("USER_MAX_ACTUATOR_COMMAND = " + value + "\n")
 				lineCount = lineCount + 1
 
+
+def calibrateDone(mcu, g):
+	g.close()
 
 def calibrateNewSubject():
 	# Wait for subject input
@@ -79,6 +91,6 @@ def calibrateNewSubject():
 	g = open(p + 'constantsCalibrated.py', 'a', encoding='UTF8')
 
 	g.write("#" + fileName + "\n")
-	print("Created calibration file for subject and copied constants. Press button to begin calibration.")
+	print("Created calibration file for subject and copied constants. Click screen to begin calibration.")
 
 	return g

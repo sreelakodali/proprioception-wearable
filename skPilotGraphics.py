@@ -3,12 +3,21 @@
 
 from turtle import *
 
-COLOR = '#51A0DC'
-COLOR_SERIAL = '#A8F3A3'
+# color blind safe palette: https://lospec.com/palette-list/ibm-color-blind-safe
+
+COLOR = '#648FFF' #'#51A0DC'
+COLOR_SERIAL= '#FFB000' #yellow, # light green'#A8F3A3'
+COLOR_GREEN = '#44AA99'
+COLOR_ORANGE = '#FE6100'
+COLOR_PINK = '#DC267F'
+COLOR_PURPLE = '#785EF0'
+COLOR_BUTTON = COLOR_PURPLE
 ELBOW_SIZE = 100
 PEN_SIZE = 50
 ARM_LENGTH = 300
 HAND_SIZE = 120
+BUTTON_HEIGHT = 60
+BUTTON_WIDTH = 165
 
 def setForearm(screen, angle, time):
 	drawForearm(screen, angle)
@@ -83,7 +92,35 @@ def initializePilot():
 	drawUpperArm()
 	penup()
 
-def initializeCalibrationWindow(arr):
+def erase2(screen, c):
+	#screen.tracer(1,10)
+	#showturtle()
+	screen.tracer(0)
+	begin_fill()
+	color(c, c)
+	penup()
+	goto(-350,400)
+	pendown()
+	seth(180)
+	backward(700)
+	right(90)
+	backward(700)
+	right(90)
+	backward(700)
+	right(90)
+	backward(700)
+	# right(90)
+	# backward(350)
+	# right(90)
+	# backward(470)
+	end_fill()
+	penup()
+	seth(0)
+	color(COLOR, COLOR)
+	update()
+
+def initializeCalibrationWindow(sc, arr):
+	erase2(sc,'white')
 	hideturtle()
 	color(COLOR, COLOR)
 	pensize(PEN_SIZE)
@@ -93,54 +130,59 @@ def initializeCalibrationWindow(arr):
 		if i == 0:
 			goto(-350,300)
 			write(arr[i], move=False, font=("Arial",48, "normal"))
+		elif arr[i] == "Calibrate":
+			color(COLOR_BUTTON)
+			goto(-332,-240)
+			write(arr[i], move=False, font=("Arial",32, "normal"))
+			color(COLOR, COLOR)
+		elif arr[i] == "Done":
+			color(COLOR_BUTTON)
+			goto(165,-240)
+			write(arr[i], move=False, font=("Arial",32, "normal"))
+			color(COLOR, COLOR)
 		else:
 			goto(-350,200-(i-1)*50)
 			write(arr[i], move=False, font=("Arial",32, "normal"))
-
-	# goto(-350,200)
-	# write("Please don't wear the actuator. Make sure", move=False, font=("Arial",32, "normal"))
-	# goto(-350,150)
-	# write("power is on and click screen when ready.", move=False, font=("Arial",32, "normal"))
-	# # # drawing initial arm
-	# # drawUpperArm()
 	penup()
 
-# def initializeCalibrationWindow1():
-# 	hideturtle()
-# 	color(COLOR, COLOR)
-# 	pensize(PEN_SIZE)
-# 	penup()
-# 	goto(-350,300)
-# 	write("Calibration: Actuator", move=False, font=("Arial",48, "normal"))
-# 	goto(-350,200)
-# 	write("Please don't wear the actuator. Make sure", move=False, font=("Arial",32, "normal"))
-# 	goto(-350,150)
-# 	write("power is on and click screen when ready.", move=False, font=("Arial",32, "normal"))
-# 	# # drawing initial arm
-# 	# drawUpperArm()
-# 	penup()
+def buttons(screen):
+	screen.tracer(0)
+	#begin_fill()
+	pensize(8)
+	color(COLOR_BUTTON)
+	penup()
+	goto(-350,-195)
+	pendown()
+	seth(180)
+	backward(BUTTON_WIDTH)
+	right(90)
+	backward(BUTTON_HEIGHT)
+	right(90)
+	backward(BUTTON_WIDTH)
+	right(90)
+	backward(BUTTON_HEIGHT)
+	# right(90)
+	# backward(350)
+	# right(90)
+	# backward(470)
+	#end_fill()
+	penup()
+	goto(120,-195)
+	pendown()
+	seth(180)
+	backward(BUTTON_WIDTH)
+	right(90)
+	backward(BUTTON_HEIGHT)
+	right(90)
+	backward(BUTTON_WIDTH)
+	right(90)
+	backward(BUTTON_HEIGHT)
+	penup()
+	seth(0)
+	color(COLOR, COLOR)
+	pensize(PEN_SIZE)
+	update()
 
-# def initializeCalibrationWindow2():
-# 	hideturtle()
-# 	color(COLOR, COLOR)
-# 	pensize(PEN_SIZE)
-# 	penup()
-# 	goto(-350,300)
-# 	write("Calibration: Max Pressure", move=False, font=("Arial",48, "normal"))
-# 	goto(-350,200)
-# 	write("Please wear the device. Make sure power.", move=False, font=("Arial",32, "normal"))
-# 	goto(-350,150)
-# 	write("is on. The actuator will extend into your", move=False, font=("Arial",32, "normal"))
-# 	goto(-350,100)
-# 	write("arm and apply a deep pressure. During this stage,", move=False, font=("Arial",32, "normal"))
-# 	goto(-350,50)
-# 	write("please click the button once to indicate", move=False, font=("Arial",32, "normal"))
-# 	goto(-350,0)
-# 	write("when it is too uncomfortable. Click to begin.", move=False, font=("Arial",32, "normal"))
-
-# 	# # drawing initial arm
-# 	# drawUpperArm()
-# 	penup()
 
 def initializeSerial():
 	hideturtle()
@@ -218,30 +260,5 @@ def erase(screen, c):
 	drawUpperArm()
 	update()
 
-def erase2(screen, c):
-	#screen.tracer(1,10)
-	#showturtle()
-	screen.tracer(0)
-	begin_fill()
-	color(c, c)
-	penup()
-	goto(-350,400)
-	pendown()
-	seth(180)
-	backward(700)
-	right(90)
-	backward(700)
-	right(90)
-	backward(700)
-	right(90)
-	backward(700)
-	# right(90)
-	# backward(350)
-	# right(90)
-	# backward(470)
-	end_fill()
-	penup()
-	seth(0)
-	color(COLOR, COLOR)
-	update()
+
 

@@ -18,48 +18,88 @@ import random
 import skCalibrationFunctions as skC
 import time
 
-CALIBRATION_OPTIONS = {'ACTUATOR':4, 'MAX_PRESSURE': 3, 'FLEX': 2, 'ZERO_FORCE': 1, 'NONE': 0}
-CALIBRATION_FUNCTIONS = {'ACTUATOR':skC.calibrateActuator, 'MAX_PRESSURE': skC.calibrateMaxPressure, 'FLEX': 2, 'ZERO_FORCE': 1, 'NONE': 0}
+#CALIBRATION_OPTIONS = {'ACTUATOR':4, 'MAX_PRESSURE': 3, 'FLEX': 2, 'ZERO_FORCE': 1, 'NONE': 0}
+CALIBRATION_OPTIONS = {'ACTUATOR':4, 'MAX_PRESSURE': 3, 'NONE': 0}
+CALIBRATION_FUNCTIONS = {'ACTUATOR':skC.calibrateActuator, 'MAX_PRESSURE': skC.calibrateMaxPressure, 'FLEX': 2, 'ZERO_FORCE': 1, 'NONE': skC.calibrateDone}
 
 opts, args = getopt.getopt(sys.argv[1:],"",["mode="])
 for opt, arg in opts:
 	if opt == "--mode": calibrationMode = (CALIBRATION_OPTIONS[arg])
 
 mcu = serial.Serial(port=CONST.PORT_NAME, baudrate=CONST.BAUD_RATE, timeout=.1)
-click = False
-sc = turtle.Screen()
-sc.tracer(0)
-sc.title("Calibration")
+click = 0
+lineCount = 0
+skipClickForNewText = 0
 
 #----------------------------------------------------------------
 def on_click(x, y):
-    global click
-    click = True
+	global click
+
+	# print(x)
+	# print(y)
+
+	# Repeat button
+	if ((x < -190) and (x > -355) and (y > -250) and (y < -195)):
+		click = 2
+	# Done button
+	elif((x < 280) and (x > 117) and (y > -250) and (y < -195)):
+		click = 3
+	else: click = 1
 
 def waitforclick():
     global click
     turtle.update()
-    click = False
+    click = 0
     while not click:
         turtle.update()
-        #time.sleep(.1)
-    click = False
+        time.sleep(.2)
+    oldClick = click
+    click = 0
+    return oldClick
 #----------------------------------------------------------------
 
-turtle.onscreenclick(on_click)
-turtle.update()
+
 
 # Default mode
-g = skC.calibrateNewSubject();
-lineCount = 0
+# actuator, welcome, please wear device, max+zero, flex
 
-for x in CALIBRATION_OPTIONS.keys():
-	waitforclick()
-	print(x)
-	skG.erase2(sc,'white')
-	skG.initializeCalibrationWindow(skC.CALIBRATION_TEXT[x])
-	mcu.write(str(CALIBRATION_OPTIONS[x]).encode())
-	CALIBRATION_FUNCTIONS[x](mcu,g)
+g = skC.calibrateNewSubject();
+
+sc = turtle.Screen()
+sc.tracer(0)
+sc.title("Calibration")
+turtle.onscreenclick(on_click, btn=1)
+turtle.update()
+
+
+skG.initializeCalibrationWindow(sc, skC.CALIBRATION_TEXT_INTRO)
+for i in CALIBRATION_OPTIONS.keys():
+
+	if not(skipClickForNewText): btn = waitforclick()
+	else: skipClickForNewText = 0
+	skG.initializeCalibrationWindow(sc, skC.CALIBRATION_TEXT[i])
+	if i == 'MAX_PRESSURE':
+		skG.buttons(sc)
+		while(True):	
+			btn = waitforclick()
+			#print(btn)
+
+			if (btn == 3): # done
+				skipClickForNewText = 1
+				break
+
+			elif (btn == 2): # calibrate
+				print(i)
+				mcu.write(str(CALIBRATION_OPTIONS[i]).encode())
+
+			elif (btn == 1):
+				CALIBRATION_FUNCTIONS[i](mcu,g)
+
+	else:
+		waitforclick()
+		print(i)
+		mcu.write(str(CALIBRATION_OPTIONS[i]).encode())
+		CALIBRATION_FUNCTIONS[i](mcu,g)
 
 
 
