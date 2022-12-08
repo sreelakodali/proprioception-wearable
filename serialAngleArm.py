@@ -40,7 +40,7 @@ while (datetime.datetime.now() < endTime):
 
 	# if valid data packet, convert to right units and write in csv
 	if (len(value) == len(dataFunc)):
-		newRow = sk.processNewRow(value, 0)
+		newRow = sk.processNewRow(dataFunc, value)
 		serialAngle = newRow[1]
 		s = "Measured=" + str(serialAngle)
 		print(s)

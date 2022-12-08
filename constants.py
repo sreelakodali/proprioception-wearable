@@ -5,7 +5,7 @@
 
 BAUD_RATE = 4608000
 DATASRC_SD = False
-TRANSFER_RAW = False
+TRANSFER_RAW = True#False
 
 # Calibration
 # ACTUATOR_FEEDBACK_MAX = 988
@@ -30,7 +30,7 @@ PATH_LAPTOP = PATH_HOME + 'Data/Pilot2/'
 #PATH_LAPTOP = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/systemEvaluation/'
 #PATH_LAPTOP = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/timing/'
 PORT_NAME = "/dev/cu.usbmodem43098001"
-RUNTIME_LENGTH = 10 # seconds
+RUNTIME_LENGTH = 60 # seconds
 
 ## DATA PROCESSING CONSTANTS ##
 ANGLE_MIN = 180

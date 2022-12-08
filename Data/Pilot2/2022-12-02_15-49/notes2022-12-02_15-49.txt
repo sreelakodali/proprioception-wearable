@@ -1,0 +1,2 @@
+new sensor with board, long wire. write count=50
+freq=43.47Hz

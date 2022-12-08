@@ -1,0 +1,4 @@
+new sensor with board, long wire. write count=5. with actuator and delay10ms
+
+freq = 18.5Hz
+noise = 10Hz

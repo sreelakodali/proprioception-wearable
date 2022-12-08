@@ -470,6 +470,44 @@ def plot_Force(s, p, fileName, time, force):
 	if s==1: plt.savefig(p +"fig_"+fileName)
 	plt.show()
 
+def plot_Angle(s, p, fileName, time, angle):
+	fig, ax1 = plt.subplots()
+	plt.suptitle("Real-time Data " + fileName, name='Arial', weight='bold')
+	ax1.set_xlabel("Time (s)", name='Arial')
+	plt.xticks(name='Arial')
+	plt.yticks(name='Arial')
+
+	ax1.set_ylabel("Angle (degrees)", name='Arial',)
+	l1 = ax1.plot(time, angle, 'b', linewidth=1.75, label='Force')
+	ax1.yaxis.label.set_color('b')
+	ax1.tick_params(axis='y', color='b')
+	ax1.set_ylim(-50,200)
+
+	plt.grid(True)
+	#ax1.legend(l_all, labels, loc=0)
+	if s==1: plt.savefig(p +"fig_"+fileName)
+	plt.show()
+
+
+def plot_Noise(s, p, fileName, time, fftSensor):
+	fig, ax1 = plt.subplots()
+	plt.suptitle("Real-time Data " + fileName, name='Arial', weight='bold')
+	ax1.set_xlabel("Frequency (Hz)", name='Arial')
+	plt.xticks(name='Arial')
+	plt.yticks(name='Arial')
+
+	ax1.set_ylabel("Val", name='Arial',)
+	#l1 = ax1.plot(time, fftSensor)
+	l1 = ax1.scatter(time, fftSensor)
+	#ax1.yaxis.label.set_color('r')
+	ax1.tick_params(axis='y')
+	#ax1.set_xlim(0,200)
+	#ax1.set_ylim(0,25)
+
+	plt.grid(True)
+	#ax1.legend(l_all, labels, loc=0)
+	if s==1: plt.savefig(p +"fig_"+fileName)
+	plt.show()
 
 
 def plot_System(s, p, fileName, time, angle, force, device1_positionMeasured, device1_positionCommand):

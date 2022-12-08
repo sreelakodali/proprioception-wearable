@@ -1,0 +1,3 @@
+new sensor with board, long wire. write count=50 with actuator
+freq=37Hz
+noise =20Hz

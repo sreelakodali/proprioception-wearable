@@ -30,10 +30,11 @@ dataFunc = {'time':sk.millisToSeconds, 'flex sensor':sk.computeAngle,'actuator p
 
 plotOn = False
 savePlot = 0
+noiseAnalysis = ' '
 
 # if plot on
 
-opts, args = getopt.getopt(sys.argv[1:],"ps")
+opts, args = getopt.getopt(sys.argv[1:],"ps",["txt=","noise="])
 
 for opt, arg in opts:
 	if opt == '-p':
@@ -44,9 +45,16 @@ for opt, arg in opts:
 		device1_positionCommand = []
 		device1_positionMeasured = []
 		force = []
-	if opt == '-s':
+	elif opt == '-s':
 		savePlot = 1
 
+	elif opt == '--txt':
+		g = open(p + "notes" + fileName + '.txt', 'w+', encoding='UTF8', newline='')
+		g.write(str(arg))
+		g.close()
+
+	elif opt == '--noise':
+		noiseAnalysis = arg
 
 # Read in serial data and save in csv
 if (not(CONST.TRANSFER_RAW)): writer.writerow(list(dataFunc.keys()))
@@ -77,3 +85,11 @@ f.close()
 
 
 if (plotOn): sk.plot_System(savePlot, p, fileName, time, angle, force, device1_positionMeasured, device1_positionCommand)
+if (noiseAnalysis in ('FLEX', 'flex', 'flexSensor', 'angle')):
+	from scipy.fft import fft, ifft, fftfreq
+
+	N = len(angle)
+	timeLength = time[-1]-time[0]
+	yF = fft(angle)
+	xF = fftfreq(N,(timeLength/N))
+	sk.plot_Noise(savePlot, p, fileName, xF, np.abs(yF))

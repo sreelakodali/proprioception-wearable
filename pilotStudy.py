@@ -55,12 +55,12 @@ skG.initializePilot()
 # Initialize Serial reading and data saving
 
 # default name is date and time
-# fileName = str(datetime.datetime.now())[0:16] 
-# fileName = ((fileName.replace('/', '_')).replace(' ', '_')).replace(':','-')
-# p = CONST.PATH_LAPTOP +fileName+'/'
-# if not (os.path.exists(p)):
-# 	os.makedirs(p)
-# 	print("New directory created: %s" % fileName)
+fileName = str(datetime.datetime.now())[0:16] 
+fileName = ((fileName.replace('/', '_')).replace(' ', '_')).replace(':','-')
+p = CONST.PATH_LAPTOP +fileName+'/'
+if not (os.path.exists(p)):
+	os.makedirs(p)
+	print("New directory created: %s" % fileName)
 
 # saving in most recent folder
 allSubdirs = [CONST.PATH_LAPTOP+d for d in os.listdir(CONST.PATH_LAPTOP) if os.path.isdir(os.path.join(CONST.PATH_LAPTOP, d))]
@@ -98,7 +98,7 @@ while (nTrials < N_TOTAL_TRIALS):
 	# if valid data packet, convert to right units and write in csv
 	if (len(value) == len(dataFunc)):
 
-		newRow = sk.processNewRow(value, nTrials)
+		newRow = sk.processNewRow(dataFunc, value)
 		print(newRow)
 		serialAngle = newRow[1]
 
