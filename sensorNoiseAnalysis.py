@@ -42,6 +42,7 @@ def main(argv):
 
 	idx_td = []
 	noise = []
+	fs = []
 	for x in unique:
 		idx_list = [idx for idx, val in enumerate(t_d) if val == x]
 		idx_td.append(min(idx_list))
@@ -49,7 +50,7 @@ def main(argv):
 	idx_td.append(len(t_d)-1)
 	# #print(angle)
 
-	sk.plot_Angle(0, p, p, time, angle)
+	#sk.plot_Angle(0, p, p, time, angle)
 
 	for i in range((len(idx_td))-1):
 		t_dSplit = t_d[idx_td[i]:idx_td[i+1]]
@@ -62,6 +63,7 @@ def main(argv):
 		# print(N)
 		# print(timeLength)
 		print(N/timeLength)
+		fs.append(N/timeLength)
 		print(1000*timeLength/N)
 
 		yF = fft(angleSplit)
@@ -69,13 +71,13 @@ def main(argv):
 		noise.append(max(xF))
 
 		# #print(np.abs(angleF))
-		sk.plot_Angle(1, p, p, timeSplit, angleSplit)
+		#sk.plot_Angle(1, p, p, timeSplit, angleSplit)
 		# #sk.plot_System(0, p, p, time, angle, force, device1_positionMeasured, device1_positionCommand)
-		sk.plot_Noise(1, p, p, xF, np.abs(yF))
+		#sk.plot_Noise(1, p, p, xF, np.abs(yF))
 		# #sk.plot_Noise(0, p, p, xF, 2.0/N * np.abs(yf[0:N//2])
 
 	# print(unique)
 	# print(noise)
-	sk.plot_Angle(0, p, p, unique, noise)
+	sk.plot_Noise(1, p, p, unique, noise)
 if __name__ == "__main__":
 	main(sys.argv[1:])

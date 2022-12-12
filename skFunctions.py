@@ -492,11 +492,11 @@ def plot_Angle(s, p, fileName, time, angle):
 def plot_Noise(s, p, fileName, time, fftSensor):
 	fig, ax1 = plt.subplots()
 	plt.suptitle("Real-time Data " + fileName, name='Arial', weight='bold')
-	ax1.set_xlabel("Frequency (Hz)", name='Arial')
+	ax1.set_xlabel("Time Delay in Loop (ms)", name='Arial')
 	plt.xticks(name='Arial')
 	plt.yticks(name='Arial')
 
-	ax1.set_ylabel("Val", name='Arial',)
+	ax1.set_ylabel("Max Noise Power", name='Arial',)
 	#l1 = ax1.plot(time, fftSensor)
 	l1 = ax1.scatter(time, fftSensor)
 	#ax1.yaxis.label.set_color('r')

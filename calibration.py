@@ -70,14 +70,14 @@ sc.tracer(0)
 sc.title("Calibration")
 turtle.onscreenclick(on_click, btn=1)
 turtle.update()
-
-
 skG.initializeCalibrationWindow(sc, skC.CALIBRATION_TEXT_INTRO)
+
 for i in CALIBRATION_OPTIONS.keys():
 
 	if not(skipClickForNewText): btn = waitforclick()
 	else: skipClickForNewText = 0
 	skG.initializeCalibrationWindow(sc, skC.CALIBRATION_TEXT[i])
+	
 	if i == 'MAX_PRESSURE':
 		skG.buttons(sc)
 		while(True):	

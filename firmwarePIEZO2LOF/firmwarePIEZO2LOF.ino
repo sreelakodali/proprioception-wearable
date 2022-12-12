@@ -31,15 +31,15 @@ const int actuatorType = 1; // 1 indicates either the original actuator or Tom's
 const bool fastMapON = false; // set true if reading flex value as a float and doing mapFloat
 const bool sdWriteON = !(serialON); // if outputting data via serial, no need to write to SD card
 const int WRITE_COUNT = 100; // typically 2000, for every n runtime cycles, write out data
-int T_CYCLE = 1; // help sets minimum time length per cycle FIX Why doesn't work with 0
+int T_CYCLE = 10; // help sets minimum time length per cycle FIX Why doesn't work with 0
 //////////////////////////////////////////////////////////////////////////////////////////
-const int N_SAMPLE = 4000;//1750;
-const int T_MAX = 35;
-const int T_INC = 5;
-const int N_BUFF = 5000;//2000;
-bool save = false;
-float t_data[N_SAMPLE][3];
-int i = 0;
+//const int N_SAMPLE = 4000;//1750;
+//const int T_MAX = 35;
+//const int T_INC = 5;
+//const int N_BUFF = 5000;//2000;
+//bool save = false;
+//float t_data[N_SAMPLE][3];
+//int i = 0;
 
 const byte I2C_ADDR = 0x04; // force sensor
 int user_position_MIN = position_MIN;  // --- CALIBRATION --- //
@@ -82,10 +82,10 @@ void setup() {
   Serial.println("Actuator and flex sensor connected. Entering calibration mode. Close serial monitor and start calibration.py");
   //calibration(); // FIX: how do I leave calibration?
   if (fastMapON) mapper.init(0, 180, user_position_MIN, user_position_MAX);
-  while(!risingEdgeButton()) {
-    runtime();
-  }
-  cycleCount = 0;
+//  while(!risingEdgeButton()) {
+//    runtime();
+//  }
+//  cycleCount = 0;
   Serial.println("Calibrated. Entering runtime");
   //while(!risingEdgeButton());
 }
