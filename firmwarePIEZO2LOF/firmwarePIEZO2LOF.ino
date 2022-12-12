@@ -30,22 +30,15 @@ const bool serialON = true; // sets if device will write data to serial
 const int actuatorType = 1; // 1 indicates either the original actuator or Tom's, 2 is the additional one we ordered
 const bool fastMapON = false; // set true if reading flex value as a float and doing mapFloat
 const bool sdWriteON = !(serialON); // if outputting data via serial, no need to write to SD card
-const int WRITE_COUNT = 100; // typically 2000, for every n runtime cycles, write out data
+const int WRITE_COUNT = 25;//100; // typically 2000, for every n runtime cycles, write out data
 int T_CYCLE = 10; // help sets minimum time length per cycle FIX Why doesn't work with 0
 //////////////////////////////////////////////////////////////////////////////////////////
-//const int N_SAMPLE = 4000;//1750;
-//const int T_MAX = 35;
-//const int T_INC = 5;
-//const int N_BUFF = 5000;//2000;
-//bool save = false;
-//float t_data[N_SAMPLE][3];
-//int i = 0;
 
 const byte I2C_ADDR = 0x04; // force sensor
 int user_position_MIN = position_MIN;  // --- CALIBRATION --- //
 int user_position_MAX = position_MAX;
-int user_flex_MIN = flexCapacitiveSensor_MIN;
-int user_flex_MAX = flexCapacitiveSensor_MAX;
+float user_flex_MIN = flexCapacitiveSensor_MIN;
+float user_flex_MAX = flexCapacitiveSensor_MAX;
 
 typedef enum { NONE, ZERO_FORCE, FLEX, MAX_PRESSURE, ACTUATOR  
 } CALIBRATION_OPTIONS;
@@ -78,54 +71,18 @@ int buttonCount = 0;
 
 void setup() {
   initializeSystem();
-  //analogWrite(led_OUT, 30);
+  analogWrite(led_OUT, 30);
   Serial.println("Actuator and flex sensor connected. Entering calibration mode. Close serial monitor and start calibration.py");
-  //calibration(); // FIX: how do I leave calibration?
+  calibration();
   if (fastMapON) mapper.init(0, 180, user_position_MIN, user_position_MAX);
-//  while(!risingEdgeButton()) {
-//    runtime();
-//  }
-//  cycleCount = 0;
   Serial.println("Calibrated. Entering runtime");
   //while(!risingEdgeButton());
 }
 
 
 void loop() {
-//  if(buttonCount % 2 == 0) runtime();
-//  else runtime_NoFeedback();
-
-//  for (int i = 0; i < (N_SAMPLE+N_BUFF)*x; i++) {
-//
-//    //N_BUFF --> N_BUFF + N_SAMPLE
-//    // 2*NBUFF + N_SAMPLE --> 2*NBUFF + 2*N_SAMPLE
-//    // 3
-//  }
-  
-  if (cycleCount >= N_BUFF) save = true;
-  else save = false;
-  runtime();
-
-  if (cycleCount > (N_BUFF + N_SAMPLE)) {
-    T_CYCLE = T_CYCLE + T_INC;
-    cycleCount = 0;
-    i = i + 1;
-       for (int j = 0; j < (N_SAMPLE); j++) {
-      Serial.print(t_data[j][0]);
-      Serial.print(", ");
-      Serial.print(t_data[j][1]);
-      Serial.print(", ");
-      Serial.println(t_data[j][2]);
-//      Serial.print(", ");
-//      Serial.println(t_data[j][3]);
-    }
-
-    if (T_CYCLE > T_MAX) {
-          // print array
-       Serial.println("Fín");
-      while (1);
-    }
-  }
+  if(buttonCount % 2 == 0) runtime(true);
+  else runtime(false);
 }
 
 
@@ -272,36 +229,28 @@ void safety() {
     }
 }
 
-void runtime() {
+void runtime(bool feedback) {
     short data;
     unsigned long myTime;
-//    unsigned long myTime_1;
-//    unsigned long myTime_2;
-//    unsigned long myTime_3;
-//    unsigned long myTime_4;
-    //unsigned long myTime_5;
 
     // time for the beginning of the loop
-    //myTime = micros();
-    myTime = micros();
+    myTime = millis();
     // Read flex sensor
     if (capacitiveFlexSensor.available() == true) flexSensor = capacitiveFlexSensor.getX();
-    //Serial.println(flexSensor);
     //myTime_1 = micros();
     
      // Map angle to actuator command
-//         Serial.println(user_flex_MIN);
-//    Serial.println(user_flex_MAX);
     if (fastMapON) position1_Command = mapper.map(flexSensor);
     else position1_Command = map(int(flexSensor), 0, 180, user_position_MIN, user_position_MAX); // FIX: why does fastmap on and off change the outcome. And why does map not work when 0,180 vs user_MIN user MAX
     //FIX WHY does fast map on cause actuator to move to extremes only
     if(position1_Command > position_MAX) position1_Command = position_MAX;
-    if(position1_Command < position_MIN) position1_Command = position_MIN;
+    else if(position1_Command < position_MIN) position1_Command = position_MIN;
 
     //myTime_2 = micros(); // after computation
     
     // Send command to actuator
-    actuator1.write(position1_Command);
+    if (feedback) actuator1.write(position1_Command);
+    else actuator1.write(position_MIN);
 
     //myTime_3 = micros(); // after sending to servo
     
@@ -309,44 +258,29 @@ void runtime() {
     position1_Measured = analogRead(position1_IN);
 
     cycleCount = cycleCount + 1;
-    // fix test code
-//    powerOn = (data >= 150);
-//    digitalWrite(led_OUT, powerOn);
-//    if (powerOn) analogWrite(led_OUT, 255);//digitalWrite(led_OUT, HIGH);
-//    else if (powerOn == 0) analogWrite(led_OUT, 30);
-    //Serial.println((cycleCount == WRITE_COUNT) && powerOn);
-//    Serial.println(powerOn);
 
     //myTime_4 = micros(); // after reading
     
-//    if ((cycleCount == WRITE_COUNT)) {
-//      data = readDataFromSensor(I2C_ADDR);
-//      //writeOutDataBatching(myTime, flexSensor, position1_Command, position1_Measured, data, myTime_1, myTime_2, myTime_3, myTime_4);
-//      writeOutData(myTime, flexSensor, position1_Command, position1_Measured, data);
-//      cycleCount = 0;
-//    }
+    if ((cycleCount == WRITE_COUNT)) {
+      data = readDataFromSensor(I2C_ADDR);
+      powerOn = (data >= 150);
+      if (powerOn) analogWrite(led_OUT, 255);
+      else analogWrite(led_OUT, 30);
+      //writeOutDataBatching(myTime, flexSensor, position1_Command, position1_Measured, data, myTime_1, myTime_2, myTime_3, myTime_4);
+      writeOutData(myTime, flexSensor, position1_Command, position1_Measured, data);
+      cycleCount = 0;
+    }
 
 
     risingEdgeButton();
     if (T_CYCLE > 0) delay(T_CYCLE);
 
     //myTime_5 = micros(); // after data write out
-    if (save) {
-      // t_data[i*(N_SAMPLE) + cycleCount - N_BUFF - 1][0] = T_CYCLE;
-      t_data[cycleCount - N_BUFF - 1][0] = T_CYCLE;
-      t_data[cycleCount - N_BUFF - 1][1] = myTime;
-      t_data[cycleCount - N_BUFF - 1][2] = flexSensor;
-//      t_data[cycleCount - N_BUFF - 1][3] = myTime_5;
-    }
-    
-    
-    //Serial.println(myTime_5);
 }
 
 void runtime_NoFeedback() {
     short data;
     unsigned long myTime;
-    String dataString = "";
     
     // time for the beginning of the loop
     myTime = millis();
@@ -356,63 +290,29 @@ void runtime_NoFeedback() {
     
     // Map angle to actuator command
     if (fastMapON) position1_Command = mapper.map(flexSensor);
-    else position1_Command = map(flexSensor, user_flex_MIN, user_flex_MAX, user_position_MIN, user_position_MAX);
+    else position1_Command = map(int(flexSensor), 0, 180, user_position_MIN, user_position_MAX); // FIX: why does fastmap on and off change the outcome. And why does map not work when 0,180 vs user_MIN user MAX
+    //FIX WHY does fast map on cause actuator to move to extremes only
     if(position1_Command > position_MAX) position1_Command = position_MAX;
-    if(position1_Command < position_MIN) position1_Command = position_MIN;
-    
-    // Measure force and actuator position
-    data = readDataFromSensor(I2C_ADDR);
-    position1_Measured = analogRead(position1_IN);
+    else if(position1_Command < position_MIN) position1_Command = position_MIN;
 
     // Send command to actuator
     actuator1.write(position_MIN);
-
-    cycleCount = cycleCount + 1;
-    powerOn = (data >= 150);
-//    digitalWrite(led_OUT, powerOn);
-//    if (powerOn) analogWrite(led_OUT, 255);//digitalWrite(led_OUT, HIGH);
-//    else if (powerOn == 0) analogWrite(led_OUT, 30);
-    if ((cycleCount == WRITE_COUNT)) {
-      writeOutData(myTime, flexSensor, position1_Command, position1_Measured, data);
-      cycleCount = 0;
-    }
-    risingEdgeButton();
-    delay(T_CYCLE);
-}
-
-void readAngle() {
-    short data;
-    unsigned long myTime;
-    String dataString = "";
     
-    // time for the beginning of the loop
-    myTime = millis();
-    //Serial.println("aqui");
-    // Read flex sensor
-    if (capacitiveFlexSensor.available() == true) flexSensor = capacitiveFlexSensor.getX();
-    //Serial.println("aqui");
-    // Map angle to actuator command
-//    if (fastMapON) position1_Command = mapper.map(int(flexSensor));
-//    else position1_Command = map(flexSensor, flexCapacitiveSensor_MIN, flexCapacitiveSensor_MAX, position_MIN, position_MAX);
-//    if(position1_Command > position_MAX) position1_Command = position_MAX;
-//    if(position1_Command < position_MIN) position1_Command = position_MIN;
-    //Serial.println("ahoy");
     // Measure force and actuator position
-    data = readDataFromSensor(I2C_ADDR);
     position1_Measured = analogRead(position1_IN);
 
-    // Send command to actuator
-//    actuator1.write(position_MIN);
-
     cycleCount = cycleCount + 1;
-    powerOn = (data >= 150);
-    if (powerOn) analogWrite(led_OUT, 255);//digitalWrite(led_OUT, HIGH);
-    else if (powerOn == 0) analogWrite(led_OUT, 30);
+    
     if ((cycleCount == WRITE_COUNT)) {
+      data = readDataFromSensor(I2C_ADDR);
+      powerOn = (data >= 150);
+      if (powerOn) analogWrite(led_OUT, 255);
+      else analogWrite(led_OUT, 30);
       writeOutData(myTime, flexSensor, position1_Command, position1_Measured, data);
       cycleCount = 0;
     }
     risingEdgeButton();
+    if (T_CYCLE > 0) delay(T_CYCLE);
 }
 
 // sweeping actuator position, increasing and decreasing. infinite loop.
@@ -541,7 +441,7 @@ void calibrationZeroForce() {
 void calibrationFlexSensor() {
   unsigned long startTime;
   unsigned long endTime;
-  //unsigned long TIME_LENGTH = 30000;
+  unsigned long TIME_LENGTH = 30000;
 
   actuator1.write(position_MIN);
 //  Serial.println("-------------------------------------------");
@@ -555,29 +455,48 @@ void calibrationFlexSensor() {
 //  Serial.println("Press button once when you're ready to begin.");
 //  while(!(risingEdgeButton()));
 //  Serial.println("Begin flex sensor calibration");
+
+    // use the initial value as baseline. otherwise user_flex is set at 0 180 default
+    if (capacitiveFlexSensor.available() == true) user_flex_MIN = capacitiveFlexSensor.getX();
+    user_flex_MAX = user_flex_MIN;
+    Serial.println(user_flex_MIN);
+    delay(2*T_CYCLE);
  
-  // record flex values for 20 seconds
-  //startTime = millis();
-  //endTime = millis();
-//  Serial.println(endTime-startTime);
-//  Serial.println((endTime - startTime) < 20000);
-  while(!(risingEdgeButton())) {
-    //Serial.println("here");
-    readAngle();
-    //endTime = millis();
-    //Serial.println("also here");
+  // record flex values for x seconds
+  startTime = millis();
+  endTime = millis();
+
+  while((endTime - startTime) < TIME_LENGTH) {
+    if (capacitiveFlexSensor.available() == true) flexSensor = capacitiveFlexSensor.getX();
+    if (flexSensor < user_flex_MIN) user_flex_MIN = flexSensor;
+    else if (flexSensor > user_flex_MAX) user_flex_MAX = flexSensor;
+    Serial.println(flexSensor);
+    endTime = millis();
+    delay(2*T_CYCLE);
   }
 
+  startTime = millis();
+  endTime = millis();
+  while((endTime - startTime) < TIME_LENGTH) {
+    if (capacitiveFlexSensor.available() == true) flexSensor = capacitiveFlexSensor.getX();
+    Serial.println(flexSensor);
+    endTime = millis();
+    delay(2*T_CYCLE);
+  }
+//  Serial.println(user_flex_MIN);
+//  Serial.println(user_flex_MAX);
+  
+  
   // send signal fix
   
   // Serial.println("Calibration stage complete. Researcher will record values and will let you know when to press the button to move on.");
   //while(!risingEdgeButton());
 }
 
-void calibrationMaxDeepPressure() {
+int calibrationMaxDeepPressure() {
    int counter = position_MIN;
    int x;
-   short data;
+   //short data;
    short maxForce = 0;
    short zeroForce = 0;
 
@@ -598,7 +517,7 @@ void calibrationMaxDeepPressure() {
    // Calibration Stage: Get the detection and pain thresholds
     while (counter <= position_MAX) {
        // Measure force and actuator position
-      data = readDataFromSensor(I2C_ADDR);
+      //data = readDataFromSensor(I2C_ADDR);
       position1_Measured = analogRead(position1_IN);
       // Send command to actuator
       actuator1.write(counter);
@@ -625,12 +544,17 @@ void calibrationMaxDeepPressure() {
   Serial.println(user_position_MAX);
 //  Serial.println("Make sure to researcher records these values and press button to proceed.");
 //  while(!risingEdgeButton());
+  return user_position_MAX;
 }
 
 /* Calibration */
 void calibration() {
   CALIBRATION_OPTIONS mode;
   bool calibrationComplete = false;
+  int nMaxPressure = 0;
+  int sum = 0;
+  int user_position_MAX_arr[10];
+  
   // Reset position of actuator
   if (actuatorType == 1) actuator1.write(position_MIN);  
   else actuator1.write(180-position_MIN);
@@ -643,7 +567,12 @@ void calibration() {
           calibrationFlexSensor();
           break;
         case MAX_PRESSURE:
-          calibrationMaxDeepPressure();
+          user_position_MAX_arr[nMaxPressure] = calibrationMaxDeepPressure();
+          nMaxPressure = nMaxPressure + 1;
+          for (int i = 0; i< nMaxPressure; i++) {
+            sum = sum + user_position_MAX_arr[i];
+          }
+          user_position_MAX = sum/nMaxPressure;
           break;
         case ACTUATOR:
           calibrationActuatorFeedback();
