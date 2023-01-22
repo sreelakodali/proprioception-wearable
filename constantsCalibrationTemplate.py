@@ -11,14 +11,14 @@ PATH_HOME = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/'
 PATH_LAPTOP = PATH_HOME + 'Data/Pilot2/'
 #PATH_LAPTOP = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/systemEvaluation/'
 #PATH_LAPTOP = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/Data/timing/'
-PORT_NAME = "/dev/cu.usbmodem71181201"
+PORT_NAME = "/dev/cu.usbmodem43098001"#"/dev/cu.usbmodem71181201"
 
 ## DATA PROCESSING CONSTANTS ##
 ANGLE_MIN = 180
 ANGLE_MAX = 40
 ACTUATOR_POSITION_MIN = 4.0 # I should measure this
 ACTUATOR_POSITION_MAX = 20.0
-ACTUATOR_COMMAND_MIN = 46  
+ACTUATOR_COMMAND_MIN = 64  
 ACTUATOR_COMMAND_MAX = 139#130
 
 # RUNTIME_LENGTH_ARM = 1000 # seconds #only for serialAngleArm.py

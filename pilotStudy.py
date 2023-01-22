@@ -21,8 +21,11 @@ import constants as CONST
 # Global Variables
 t = 10
 nTrials = 0
+N = 3
+M = 3
+A = 1
 sc = turtle.Screen()
-trialAngles = sk.generateRandomTrials() # Generate random trials
+trialAngles = sk.generateRandomTrials(N, M, A) # Generate random trials
 N_TOTAL_TRIALS = len(trialAngles)
 subjectAngleAttempts = []
 serialAngle = 0
@@ -32,10 +35,12 @@ def completeTrial(x,y):
 	# skG.deleteStar(sc)
 	global nTrials, subjectAngleAttempts, serialAngle
 	
+	currentAngle = serialAngle
 	# wait and hold the angle for 10 seconds
-	if (nTrials < 50):
-		skG.drawForearm(sc,serialAngle, skG.COLOR_SERIAL)
-		skG.delay(sc, 10000)
+	if (nTrials in windowVisual):
+		skG.drawForearm(sc,currentAngle, skG.COLOR_SERIAL)
+		turtle.update()
+		skG.delay(sc, 100)
 
 	# update
 	skG.erase(sc, 'white')
@@ -91,6 +96,18 @@ skG.updateTrialLabel(sc, nTrials)
 skG.delay(sc, t)
 skG.buffer('white')
 
+
+
+
+noVisual1 = list(range(20 + 10*(N + M + A), 30 + 10*(N + M + A)))
+realTimeVisual1 = list(range(30 + 10*(N + M + A), 40 + 10*(N + M + A)))
+noVisual2 = list(range(40 + 10*(N + M + A), 50 + 10*(N + M + A)))
+realTimeVisual2 = list(range(50 + 10*(N + M + A), 60 + 10*(N + M + A)))
+
+realTimeVisual = list(range(0,20)) + realTimeVisual1 + realTimeVisual2
+windowVisual = list(range(20, 20 + 10*(N + M + A)))
+noVisual = noVisual1 + noVisual2
+
 while (nTrials < N_TOTAL_TRIALS):
 	value = mcu.readline()
 	value = str(value, "utf-8").split(",")
@@ -108,11 +125,20 @@ while (nTrials < N_TOTAL_TRIALS):
 		newRow.append(trialAngles[nTrials])
 		writer.writerow(newRow)
 		print(s)
-		turtle.undo() # angle
-		turtle.undo() # dot
-		if (nTrials > 80):
+
+		# erase dot and angle
+		
+		# # erase dot and angle
+		# skG.erase3(sc,'blue') # FIX ME LATER: undo if runs too long idle, will undo everythig
+
+		if (nTrials in realTimeVisual):
+			turtle.undo() # angle
+			turtle.undo() # dot
 			skG.drawForearm(sc,serialAngle, skG.COLOR_SERIAL)
-		else: skG.drawForearm2(sc,serialAngle, 'white')
+		elif (nTrials in noVisual + windowVisual):
+			turtle.undo() # angle
+			turtle.undo() # dot
+			skG.drawForearm2(sc,serialAngle, 'white')
 
 		# if I click then done with trial, store angle and move onto next
 		sc.onscreenclick(completeTrial)

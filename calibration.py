@@ -17,14 +17,20 @@ import skPilotGraphics as skG
 import random
 import skCalibrationFunctions as skC
 import time
+import keyboard
 
-#CALIBRATION_OPTIONS = {'ACTUATOR':4, 'MAX_PRESSURE': 3, 'FLEX': 2, 'ZERO_FORCE': 1, 'NONE': 0}
-CALIBRATION_OPTIONS = {'ACTUATOR':4, 'MAX_PRESSURE': 3, 'FLEX': 2, 'NONE': 0}
+CALIBRATION_OPTIONS = {'ACTUATOR':4, 'MAX_PRESSURE': 3, 'FLEX': 2, 'ZERO_FORCE': 1, 'NONE': 0}
+#CALIBRATION_OPTIONS = {'MAX_PRESSURE': 3, 'FLEX': 2, 'NONE': 0}
 CALIBRATION_FUNCTIONS = {'ACTUATOR':skC.calibrateActuator, 'MAX_PRESSURE': skC.calibrateMaxPressure, 'FLEX': skC.calibrateFlexSensor, 'ZERO_FORCE': 1, 'NONE': skC.calibrateDone}
+
+calibrationSeq = CALIBRATION_OPTIONS.keys() # default
 
 opts, args = getopt.getopt(sys.argv[1:],"",["mode="])
 for opt, arg in opts:
-	if opt == "--mode": calibrationMode = (CALIBRATION_OPTIONS[arg])
+	if opt == "--mode":
+		calibrationSeq = (CALIBRATION_OPTIONS[arg])
+
+print(calibrationSeq)
 
 mcu = serial.Serial(port=CONST.PORT_NAME, baudrate=CONST.BAUD_RATE, timeout=.1)
 click = 0
@@ -72,7 +78,6 @@ turtle.onscreenclick(on_click, btn=1)
 turtle.update()
 skG.initializeCalibrationWindow(sc, skC.CALIBRATION_TEXT_INTRO)
 
-calibrationSeq = CALIBRATION_OPTIONS.keys()
 for i in calibrationSeq:
 
 	if not(skipClickForNewText): btn = waitforclick()
@@ -89,18 +94,21 @@ for i in calibrationSeq:
 		skG.buttons(sc)
 		while(True):	
 			btn = waitforclick()
-			print(btn)
+			#print(btn)
 			if (btn == 3): # done
 				skipClickForNewText = 1
 				break
 			elif (btn == 2): # calibrate
 				print(i)
 				mcu.write(str(CALIBRATION_OPTIONS[i]).encode())
-				if i in ['ACTUATOR', 'FLEX']:
+				if i =='ACTUATOR':
 					CALIBRATION_FUNCTIONS[i](mcu,p)
+				elif i == 'FLEX':
+					CALIBRATION_FUNCTIONS[i](mcu,p, sc)
 			elif (btn == 1):
 				if i == 'MAX_PRESSURE':
 					CALIBRATION_FUNCTIONS[i](mcu,p)
+	
 
 
 # while(1): 

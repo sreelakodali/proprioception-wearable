@@ -6,6 +6,7 @@ import shutil
 import datetime
 import constants as CONST
 import sys
+import importlib
 import csv
 import skFunctions as sk
 import turtle
@@ -61,7 +62,7 @@ def calibrateMaxPressure(mcu, p):
 				lineCount = lineCount + 1
 	g.close()
 
-def calibrateFlexSensor(mcu, p):
+def calibrateFlexSensor(mcu, p, sc):
 	TIME_LENGTH_READ = 30 #seconds
 	g = open(p + 'constantsCalibrated.py', 'a', encoding='UTF8')
 
@@ -69,53 +70,58 @@ def calibrateFlexSensor(mcu, p):
 	min_AngleData = 500;
 	max_AngleData = 500;
 
+	value = mcu.readline()
+	value = str(value, "utf-8").split(",")	
+	value = float(value[0])
+	min_AngleData = value
+	max_AngleData = value
+
+	endTime = datetime.datetime.now() + datetime.timedelta(seconds=TIME_LENGTH_READ)
+	while (datetime.datetime.now() < endTime):
+		value = mcu.readline()
+		value = str(value, "utf-8").split(",")
+		value = float(value[0])
+		print(value)
+			
+		if (value < min_AngleData): min_AngleData = value
+		if (value > max_AngleData): max_AngleData = value
+
+	g.write("ANGLE_DATA_MIN = " + str(min_AngleData) + "\n")
+	g.write("ANGLE_DATA_MAX = " + str(max_AngleData) + "\n")
+	g.close()
+
+	# # update constants file and reimport. then see if calibrated. 
+	shutil.copy2(os.path.join(p + 'constantsCalibrated.py'),os.path.join(CONST.PATH_HOME,'constants.py'))
+	
+
+	importlib.reload(CONST) #constants as 
+	importlib.reload(sk)
+
+	# # now for flex arm
+	dataFunc = {'time':sk.millisToSeconds, 'flex sensor':sk.computeAngle,'actuator position, command':sk.commandToPosition, \
+				'actuator position, measured':sk.feedbackToPosition, 'force':sk.computeForce}
+
+
+	skG.erase2(sc,'white')
+	skG.initializeSerial()
+
 	endTime = datetime.datetime.now() + datetime.timedelta(seconds=TIME_LENGTH_READ)
 	while (datetime.datetime.now() < endTime):
 		value = mcu.readline()
 		value = str(value, "utf-8").split(",")
 
 		# if valid data packet, convert to right units and write in csv
-		#if (len(value) == len(dataFunc)):
 		
-		value = int(value[0])
-		print(value)
-			
-	# 	if (value < min_AngleData): min_AngleData = value
-	# 	if (value > max_AngleData): max_AngleData = value
+		data = float(value[0])
+		serialAngle = sk.mapFloat(data, min_AngleData, max_AngleData, CONST.ANGLE_MIN, CONST.ANGLE_MAX)
+		s = "Measured=" + str(serialAngle)
+		print(s)
+		turtle.undo()
+		turtle.undo()
+		skG.drawForearm(sc,serialAngle, skG.COLOR_SERIAL)
 
-	# g.write("ANGLE_DATA_MIN = " + str(min_AngleData) + "\n")
-	# g.write("ANGLE_DATA_MAX = " + str(max_AngleData) + "\n")
-	g.close()
-
-	# # # update constants file and reimport. then see if calibrated. 
-	# shutil.copy2(os.path.join(p + 'constantsCalibrated.py'),os.path.join(CONST.PATH_HOME,'constants.py'))
-	# import constants as CONST
-	# import skFunctions as sk
-
-	# # now for flex arm
-	# dataFunc = {'time':sk.millisToSeconds, 'flex sensor':sk.computeAngle,'actuator position, command':sk.commandToPosition, \
-	# 			'actuator position, measured':sk.feedbackToPosition, 'force':sk.computeForce}
-
-	# sc2 = turtle.Screen()
-	# sc2.tracer(0)
-	# sc2.title("SerialArm")
-	# skG.initializeSerial()
-
-	# endTime = datetime.datetime.now() + datetime.timedelta(seconds=TIME_LENGTH_READ)
-	# while (datetime.datetime.now() < endTime):
-	# 	value = mcu.readline()
-	# 	value = str(value, "utf-8").split(",")
-
-	# 	# if valid data packet, convert to right units and write in csv
-	# 	if (len(value) == len(dataFunc)):
-	# 		data = int(value[1])
-	# 		serialAngle = sk.mapFloat(data, min_AngleData, max_AngleData, CONST.ANGLE_MIN, CONST.ANGLE_MAX)
-	# 		s = "Measured=" + str(serialAngle)
-	# 		print(s)
-	# 		turtle.undo()
-	# 		turtle.undo()
-	# 		skG.drawForearm(sc,serialAngle, skG.COLOR_SERIAL)
-	# sc2.bye()
+	skG.initializeCalibrationWindow(sc, CALIBRATION_TEXT['FLEX'])
+	skG.buttons(sc)
 
 
 def calibrateDone(mcu, p):

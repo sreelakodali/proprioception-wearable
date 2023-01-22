@@ -55,6 +55,7 @@ def computeAngle(data):
 
 # Servo command (degrees) --> actuator position (mm)
 def commandToPosition(c):
+	# FIX: double check this
 	return mapFloat(c, CONST.ACTUATOR_COMMAND_MIN, CONST.ACTUATOR_COMMAND_MAX, CONST.ACTUATOR_POSITION_MIN, CONST.ACTUATOR_POSITION_MAX)
 	#return 0.22*c - 10.7
 	# I guess could be a precomputed look up table lol
@@ -75,7 +76,7 @@ def delta_feedbackToPosition(delta):
 
 # Function 5: Digital value from force sensor --> force measurement (N)
 def computeForce(data):
-	return round(((data - 255) * (45.0)/512) - CONST.ZERO_FORCE, 2) #(data - 256) * (45.0)/511 # NEEDS CALIBRATED VAL
+	return round(((data - 255- CONST.ZERO_FORCE) * (45.0)/512), 2) #(data - 256) * (45.0)/511 # NEEDS CALIBRATED VAL
 	#changed bc uncalibrated
 
 # dataFunc = {'time':millisToSeconds, 'flex sensor':computeAngle,'actuator position, command':commandToPosition, \
@@ -86,16 +87,11 @@ def processNewRow(dataFunc, val):
 	columnNames = list(dataFunc.keys())
 	r = []
 	for key in dataFunc:
-		# if (key == 'flex sensor'):
-		# 	#print(float(val[columnNames.index(key)]))
-		# 	x = dataFunc[key](float(val[columnNames.index(key)]))
-		# 	r.append(x)
-		if (val[columnNames.index(key)].lstrip("-").rstrip().isnumeric()): # negatives removed otherwise seen as char
-			x = dataFunc[key](float(val[columnNames.index(key)]))
-			# old code, if serial flush pushes garbage
-			# if (loopIncrement < 20 and key == 'time' and x > 2):
-			# 	break
-			r.append(x)
+		x = dataFunc[key](float((val[columnNames.index(key)]).rstrip()))
+		# old code, if serial flush pushes garbage
+		# if (loopIncrement < 20 and key == 'time' and x > 2):
+		# 	break
+		r.append(x)
 	return r
 
 def validPacket(val):
@@ -105,31 +101,48 @@ def validPacket(val):
 			return True
 	return False
 
-def generateRandomTrials():
+def generateRandomTrials(N, M, A):
 	trialAngles = []
-	t = list(range(180,40,-15))
-	trialAngles.append(t)
-	trialAngles.append(t)
-	trialAngles.append(t)
+	t1 = list(range(180,40,-15))
 
-	for i in range (0,6):
+	# with visual w/o haptics, in order
+	trialAngles = trialAngles + t1
+
+	#with visual w/o haptics, randomized
+	t2 = list(range(180,40,-15))
+	random.shuffle(t2)
+	trialAngles = trialAngles + t2
+
+	# visual window for a second with haptics, in order
+	for i in range(0, N):
+		trialAngles = trialAngles + t1
+
+	# visual window for a second with haptics, some order + random
+	for i in range(0,M):
 		t = list(range(40,180,15))
-	
-		if i < 2:
-			r = [t.pop(random.randrange(len(t)))]
-			r.append(t.pop(random.randrange(len(t))))
-			half1 = t[:4]
-			half2 = t[4:]
+		r = [t.pop(random.randrange(len(t)))]
+		r.append(t.pop(random.randrange(len(t))))
+		half1 = t[:4]
+		half2 = t[4:]
 
-			x = random.randrange(2)
-			if (x == 0): half1.reverse()
-			else: half2.reverse()
-			x = random.randrange(2)
-			if (x == 0): t = half1 + half2 + r
-			else: t = half2 + half1 + r
-	
-		else: random.shuffle(t)
+		x = random.randrange(2)
+		if (x == 0): half1.reverse()
+		else: half2.reverse()
+		x = random.randrange(2)
+		if (x == 0): t = half1 + half2 + r
+		else: t = half2 + half1 + r
+
 		trialAngles = trialAngles + t
+
+	for i in range(0,A):
+		random.shuffle(t)
+		trialAngles = trialAngles + t
+
+	# test
+	for i in range(0,4):
+		random.shuffle(t)
+		trialAngles = trialAngles + t
+
 	return trialAngles
 	
 
