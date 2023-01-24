@@ -19,16 +19,22 @@ import skCalibrationFunctions as skC
 import time
 import keyboard
 
-CALIBRATION_OPTIONS = {'ACTUATOR':4, 'MAX_PRESSURE': 3, 'FLEX': 2, 'ZERO_FORCE': 1, 'NONE': 0}
-#CALIBRATION_OPTIONS = {'MAX_PRESSURE': 3, 'FLEX': 2, 'NONE': 0}
+CALIBRATION_OPTIONS = {'ACTUATOR':4, 'MAX_PRESSURE': 3, 'FLEX': 2, 'NONE': 0}
+CALIBRATION_OPTIONS2 = {'ACTUATOR':4, 'MAX_PRESSURE': 3, 'NONE': 0}
 CALIBRATION_FUNCTIONS = {'ACTUATOR':skC.calibrateActuator, 'MAX_PRESSURE': skC.calibrateMaxPressure, 'FLEX': skC.calibrateFlexSensor, 'ZERO_FORCE': 1, 'NONE': skC.calibrateDone}
 
 calibrationSeq = CALIBRATION_OPTIONS.keys() # default
 
-opts, args = getopt.getopt(sys.argv[1:],"",["mode="])
+opts, args = getopt.getopt(sys.argv[1:],"m",["mode=", "custom="])
 for opt, arg in opts:
-	if opt == "--mode":
-		calibrationSeq = (CALIBRATION_OPTIONS[arg])
+	if opt in ["-m", "--mode"]:
+		if arg == 'FLEX':
+			calibrationSeq = CALIBRATION_OPTIONS.keys()
+		if arg == 'KEY':
+			calibrationSeq = CALIBRATION_OPTIONS2.keys()
+			#calibrationSeq = (CALIBRATION_OPTIONS[arg])
+	elif opt == "--custom":
+		calibrationSeq = arg
 
 print(calibrationSeq)
 
@@ -109,41 +115,3 @@ for i in calibrationSeq:
 				if i == 'MAX_PRESSURE':
 					CALIBRATION_FUNCTIONS[i](mcu,p)
 	
-
-
-# while(1): 
-# 	msg = input()
-# 	mcu.write(bytes(msg,'utf-8'))
-
-# lineCount = 0
-# calibrationOn = True
-# calibrationMode = 
-# #endTime = datetime.datetime.now() + datetime.timedelta(seconds=120)
-# #while (datetime.datetime.now() < endTime):
-
-# # Read in calibration mode, then decide
-# while (calibrationOn):
-
-# 	value = (mcu.readline()).decode()
-# 	if (value.strip()): print(value)
-
-
-
-
-
-
-
-
-
-# while (lineCount == 7):
-# 	value = (mcu.readline()).decode()
-# 	value = value.strip()
-
-# 	if (value):
-# 		print(value)
-
-# 		if ("Calibrated" in value):
-# 			break
-
-# #g.close()
-

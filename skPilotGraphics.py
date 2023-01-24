@@ -35,6 +35,20 @@ def drawUpperArm():
 	right(180)
 	update()
 
+def drawUpperArm_Serial():
+	color(COLOR_SERIAL, COLOR_SERIAL)
+	goto(0,0)
+	penup()
+	goto(ARM_LENGTH,-(ARM_LENGTH)/2)
+	pendown()
+	backward(ARM_LENGTH)
+	dot(ELBOW_SIZE)
+	penup()
+	right(180)
+	color(COLOR, COLOR)
+	update()
+
+
 def drawForearm(screen, angle, c):
 	penup()
 	screen.tracer(0)
@@ -92,6 +106,22 @@ def initializePilot():
 	drawUpperArm()
 	penup()
 
+def initializeWindow(sc, arr):
+	erase2(sc,'white')
+	hideturtle()
+	color(COLOR, COLOR)
+	pensize(PEN_SIZE)
+	penup()
+
+	for i in range(len(arr)):
+		if i == 0:
+			goto(-350,300)
+			write(arr[i], move=False, font=("Arial",48, "normal"))
+		else:
+			goto(-350,230-(i-1)*50)
+			write(arr[i], move=False, font=("Arial",32, "normal"))
+	penup()
+
 def erase2(screen, c):
 	#screen.tracer(1,10)
 	#showturtle()
@@ -144,6 +174,8 @@ def initializeCalibrationWindow(sc, arr):
 			goto(-350,200-(i-1)*50)
 			write(arr[i], move=False, font=("Arial",32, "normal"))
 	penup()
+
+
 
 def buttons(screen):
 	screen.tracer(0)
@@ -288,4 +320,27 @@ def erase3(screen, c):
 	drawUpperArm()
 	update()
 
+def erase4(screen, c):
+	#screen.tracer(1,10)
+	#showturtle()
+	screen.tracer(0)
+	begin_fill()
+	color(c, c)
+	penup()
+	goto(-350,150)
+	pendown()
+	seth(180)
+	backward(700)
+	right(90)
+	backward(370)
+	right(90)
+	backward(700)
+	right(90)
+	backward(370)
+	end_fill()
+	penup()
+	seth(0)
+	color(COLOR, COLOR)
+	drawUpperArm()
+	update()
 

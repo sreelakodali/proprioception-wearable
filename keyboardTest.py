@@ -18,8 +18,11 @@ import random
 import skCalibrationFunctions as skC
 import time
 import keyboard
+import random
 
 mcu = serial.Serial(port=CONST.PORT_NAME, baudrate=CONST.BAUD_RATE, timeout=.1)
+dataFunc = {'time':sk.millisToSeconds, 'flex sensor':sk.computeAngle,'actuator position, command':sk.commandToPosition, \
+			'actuator position, measured':sk.feedbackToPosition, 'force':sk.computeForce}
 
 
 armAngle = 180
@@ -31,29 +34,25 @@ sc.title("keyboard Arm")
 skG.initializeSerial()
 
 
-
 while True:
+	value = mcu.readlines()
+
+	for i in value:
+		i = str(i, "utf-8").split(",")
+		if (len(i) == len(dataFunc)):
+			print(i)
+
 	k = keyboard.read_key()
 	if k == 'left':
-		armAngle = armAngle + 1
-	elif k == 'right':
-		armAngle = armAngle - 1
+		armAngle = armAngle + 1.5*random.randrange(10)
+		armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
 
-	if (armAngle > 180):
-		armAngle = 180
-	elif (armAngle < 30):
-		armAngle = 30
+	elif k == 'right':
+		armAngle = armAngle - 1.5*random.randrange(10)
+		armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
 
 	print(armAngle)
-
-	if (armAngle < 100):
-		print(str(0).encode())
-		mcu.write(str(0).encode())
-
-	print(str(armAngle).encode())
-	mcu.write(str(armAngle).encode())
-
-
+	
 	turtle.undo()
 	turtle.undo()
 	skG.drawForearm(sc,armAngle, skG.COLOR_SERIAL)

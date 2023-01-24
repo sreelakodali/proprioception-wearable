@@ -42,6 +42,9 @@ def mapFloat(x, in_min, in_max, out_min, out_max):
 def millisToSeconds(s):
 	return s/1000
 
+def doNothing(data):
+	return data
+
 # Computing angle from flex sensor data
 def computeAngle(data):
 	a = 180 - data
@@ -93,6 +96,19 @@ def processNewRow(dataFunc, val):
 		# 	break
 		r.append(x)
 	return r
+
+def sendAngle_PCToWearable(a, m):
+	a = int(a)
+	if (a > 180):
+		a = 180
+	elif (a < 30):
+		a = 30
+
+	if (a < 100):
+		m.write(str(0).encode())
+	m.write(str(a).encode())
+
+	return a
 
 def validPacket(val):
 	if (len(val) == len(dataFunc)):

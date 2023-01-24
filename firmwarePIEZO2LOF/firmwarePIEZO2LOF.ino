@@ -26,11 +26,12 @@
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // SET VALUES BEFORE
+const bool keyboardON = true;
 const bool serialON = true; // sets if device will write data to serial
 const int actuatorType = 1; // 1 indicates either the original actuator or Tom's, 2 is the additional one we ordered
 const bool fastMapON = false; // set true if reading flex value as a float and doing mapFloat
 const bool sdWriteON = !(serialON); // if outputting data via serial, no need to write to SD card
-const int WRITE_COUNT = 8;//100; // typically 2000, for every n runtime cycles, write out data
+int WRITE_COUNT = 8;//1/21/23: trying 30, lower bw to see if lower fine for keyboard control// //1/21/23: 8 for flex sensor, for every n runtime cycles, write out data
 int T_CYCLE = 15; // help sets minimum time length per cycle FIX Why doesn't work with 0
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -51,8 +52,8 @@ int position1_Command = 0;    // variable to store the servo command
 int position1_Measured = 0;
 
 ADS capacitiveFlexSensor;// ---- FLEX SENSOR -----
-//int16_t flexSensor = 0; 
-float flexSensor = 180;//0.0; // variable to store sensor value
+//int16_t flexSensor = 0;
+float flexSensor = 0.0; // variable to store sensor value
 FastMap mapper; // mapFloat efficiently
 
 int buttonState = 0; // ---- PUSHBUTTON --- //
@@ -73,7 +74,7 @@ void setup() {
   initializeSystem();
   analogWrite(led_OUT, 30);
   Serial.println("Actuator and flex sensor connected. Entering calibration mode. Close serial monitor and start calibration.py");
-//  calibration();
+  calibration();
   if (fastMapON) mapper.init(0, 180, user_position_MIN, user_position_MAX);
   Serial.println("Calibrated. Entering runtime");
   //while(!risingEdgeButton());
@@ -81,8 +82,14 @@ void setup() {
 
 
 void loop() {
-  if(buttonCount % 2 == 0) runtime_Keyboard(true);
-  else runtime_Keyboard(false);
+  if(buttonCount % 2 == 0) {
+    if (keyboardON) runtime_Keyboard(true);
+    else runtime(true);
+  }
+  else {
+    if (keyboardON) runtime_Keyboard(false);
+    else runtime(false);
+  }
 }
 
 
@@ -94,7 +101,11 @@ void initializeSystem() {
   initializeSerial(); // start serial for output
   initializeSDCard(); // initialize sd card
   initializeActuator(); // initialize actuator and set in min position
-  initializeFlexSensor(); // initialize flex sensor
+  if (!(keyboardON)) initializeFlexSensor(); // initialize flex sensor
+  else {
+    WRITE_COUNT = 30;
+    flexSensor = 180;
+  }
   initializeIO(); // initialize IO pins, i.e. button and led
 }
 
