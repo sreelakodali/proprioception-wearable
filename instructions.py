@@ -16,15 +16,19 @@ import random
 
 
 
-INTRO_TEXT_1 = ["Instructions", "This represents the elbow angle of an arm. This", "angle will change.", "", "", "", "", "", "", "", "", "", "Please click the blue key to continue."]
-INTRO_TEXT_2 = ["Instructions", "This orange arm is your virtual arm. You will", "control your virtual arm with the keypad.", "", "", "", "", "", "", "", "", "","Please click the blue key to continue."]
+#INTRO_TEXT_0 = ["Welcome!", "Thank you for participating in this study. Please", "click the blue key on the keypad to continue."]
+INTRO_TEXT_0 = ["Experimental Setup", "Please click the blue key on the keypad to", "continue."]
+INTRO_TEXT_1 = ["Experimental Setup", "This is an arm and represents the elbow bent at", "an angle. The arm's elbow angle will change.", "", "", "", "", "", "", "", "", "", "Please click the blue key to continue."]
+INTRO_TEXT_2 = ["Experimental Setup", "This orange arm is your virtual arm. You will", "control your virtual arm with the keypad.", "", "", "", "", "", "", "", "", "","Please click the blue key to continue."]
 # Your goal is to match your arm to this angle.
-INTRO_TEXT_3 = ["Instructions", "To extend your virtual arm, click the <- key. To", "flex your virtual arm, click the -> key.", "", "", "", "", "", "", "", "", "","Please click the blue key to continue."]
-INTRO_TEXT_4 = ["Instructions", "Try using the <- and -> keys to move your virtual", "arm.", "", "", "", "", "", "", "", "", "","Please click the blue key to continue."]
-INTRO_TEXT_5 = ["Instructions", "Your goal is to match your virtual arm with a given", "target angle shown in blue. Try it out."]
-INTRO_TEXT_6 = ["Done Fín", "woohoo"]
-INTRO_TEXT = [INTRO_TEXT_1,INTRO_TEXT_2, INTRO_TEXT_3, INTRO_TEXT_4, INTRO_TEXT_5, INTRO_TEXT_6]
-INTRO_TEXT_0 = ["Welcome!", "Thank you for participating in this study. Please", "click the blue key on the keypad to continue."]
+INTRO_TEXT_3 = ["Experimental Setup", "To extend your virtual arm, click the <- key. To", "flex your virtual arm, click the -> key.", "", "", "", "", "", "", "", "", "","Please click the blue key to continue."]
+INTRO_TEXT_4 = ["Experimental Setup", "Try <- and -> keys to move your virtual arm. You", "may receive haptic feedback as the arm moves.", "", "", "", "", "", "", "", "", "","Please click the blue key to continue."]
+INTRO_TEXT_5 = ["Experimental Setup", "Your goal is to match your virtual arm with a given", "target angle shown in blue. Try it out.","", "", "", "", "", "", "", "", "When you align your virtual arm with the target", "angle, click the blue key to proceed."]
+INTRO_TEXT_6 = ["Experimental Setup", "Virtual Arm", "Target Angle", "Haptic Device", "Arm Rest", "", "", "", "", "", "", "Please click the blue key to continue."]
+INTRO_TEXT_7 = ["Questions?", "", "", "", "", "", "", "", "", "", "", "Please click the blue key to continue."]
+INTRO_TEXT_8 = ["Done Fín", "woohoo"]
+INTRO_TEXT = [INTRO_TEXT_0, INTRO_TEXT_1,INTRO_TEXT_2, INTRO_TEXT_3, INTRO_TEXT_4, INTRO_TEXT_5, INTRO_TEXT_6, INTRO_TEXT_7, INTRO_TEXT_8]
+
 
 
 i = 0
@@ -34,12 +38,11 @@ sc = turtle.Screen()
 sc.tracer(0)
 sc.title("Introduction")
 
-skG.initializeWindow(sc, INTRO_TEXT_0)
+skG.initializeWindow(sc, ["Proprioception"])
 
 tr = turtle.Turtle()
 sc.addshape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/keypad.gif')
-tr.shape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/keypad.gif')
-turtle.update()
+sc.addshape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/setup.gif')
 
 for txt in INTRO_TEXT:
 
@@ -48,27 +51,49 @@ for txt in INTRO_TEXT:
 	else:
 		skipClickForNewText = 0
 
+	print(i)
 	i = i + 1
-	skG.initializeWindow(sc, txt)
-
-	if (i == 1):
-		skG.drawUpperArm()
-		skG.drawForearm(sc,120, skG.COLOR)
-	if (i == 2):
-		skG.drawUpperArm_Serial()
-		skG.drawForearm(sc,120, skG.COLOR_SERIAL)
-	if (i == 3):
+	if (i == 7):
+		skG.initializeWindow_MultiColor(sc,txt, 0)
+		tr.shape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/setup.gif')
+		tr.goto(100,0)
 		tr.stamp()
 		turtle.update()
-	if (i == 4):
+	else:
+		skG.initializeWindow(sc, txt)
+
+	if (i == 1):
+		tr.shape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/keypad.gif')
+		turtle.update()
+
+	elif (i == 2):
+		skG.drawUpperArm()
+		skG.drawForearm(sc,120, skG.COLOR)
+	elif (i == 3):
+		skG.drawUpperArm_Serial()
+		skG.drawForearm(sc,120, skG.COLOR_SERIAL)
+	elif (i == 4):
+		tr.stamp()
+		turtle.update()
+	elif (i == 5):
 		skG.drawUpperArm_Serial()
 		skG.drawForearm(sc,armAngle, skG.COLOR_SERIAL)
 		while True:
 			k = keyboard.read_key()
 			if k == 'left':
-				armAngle = armAngle + 1.5*(random.randrange(10) + 1)
+				if (random.randrange(2)):
+					inc = 3
+				else:
+					inc = 1
+				print(inc)
+				armAngle = armAngle + inc #1.5*(random.randrange(10) + 1)
 			elif k == 'right':
-				armAngle = armAngle - 1.5*(random.randrange(10) + 1)
+				if (random.randrange(2)):
+					inc = 3
+				else:
+					inc = 1
+				print(inc)
+				armAngle = armAngle - inc #- 1.5*(random.randrange(10) + 1)
 
 			elif k == 'up':
 				skipClickForNewText = 1
@@ -83,10 +108,10 @@ for txt in INTRO_TEXT:
 			turtle.undo() # dot
 			skG.drawForearm(sc,armAngle, skG.COLOR_SERIAL)
 
-	if (i == 5):
+	elif (i == 6):
 		armAngle = 180
 		test = [180, 165, 150, 135, 120, 60, 45]
-		print(test)
+		#print(test)
 		skG.drawUpperArm()
 		skG.drawForearm(sc,armAngle, skG.COLOR_SERIAL)
 

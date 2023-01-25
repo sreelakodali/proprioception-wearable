@@ -55,8 +55,7 @@ def completeTrial(x,y):
 
 # Initialize GUI
 sc.tracer(0)
-sc.title("Pilot Study")
-skG.initializePilot()
+sc.title("Experiment Study")
 armAngle = 180
 
 
@@ -94,14 +93,6 @@ columnNames.append('Target Angle')
 writer.writerow(columnNames)
 
 # Read in serial data and save in csv
-skG.drawForearm(sc,trialAngles[nTrials], skG.COLOR)
-skG.updateTrialLabel(sc, nTrials)
-skG.delay(sc, t)
-skG.buffer('white')
-
-
-
-
 noVisual1 = list(range(20 + 10*(N + M + A), 30 + 10*(N + M + A)))
 realTimeVisual1 = list(range(30 + 10*(N + M + A), 40 + 10*(N + M + A)))
 noVisual2 = list(range(40 + 10*(N + M + A), 50 + 10*(N + M + A)))
@@ -111,8 +102,31 @@ realTimeVisual = list(range(0,20)) + realTimeVisual1 + realTimeVisual2
 windowVisual = list(range(20, 20 + 10*(N + M + A)))
 noVisual = noVisual1 + noVisual2
 
-while (nTrials < N_TOTAL_TRIALS):
 
+nInfoSlides = 4
+# initial instructions
+sc.addshape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/keypad.gif')
+sc.addshape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/setup.gif')
+#skG.initializeWindow(sc, ["Experiment", "Task: Match virtual arm's elbow angle with target", "angle. Use <- and -> keys to move virtual arm.", "", "First there will be a learning phase",  " followed  by a test phase.", "", "", "", "", "", "", "Please click the blue key to continue."])
+skG.initializeWindow_MultiColor(sc, ["Experiment", "Task: Match virtual arm's elbow angle with target", "angle. Use <- and -> keys to move virtual arm.", "", "Target Angle", "Virtual Arm", "Haptic Device", "Arm Rest", "", "", "", "", "Please click the blue key to continue."], 1)
+tr = turtle.Turtle()
+tr.goto(100,-50)
+tr.shape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/setup.gif')
+turtle.update()
+keyboard.wait('up')
+
+skG.initializeWindow(sc, ["Experiment: Learning Part 1 of 2", "Explore: Move virtual arm and observe haptic", "feedback. Virtual arm is shown in orange.", "", "", "", "", "", "", "", "", "", "Please click the blue key to continue."])
+keyboard.wait('up')
+
+skG.initializePilot(sc)
+skG.drawForearm(sc,trialAngles[nTrials], skG.COLOR)
+skG.updateTrialLabel(sc, nTrials)
+skG.delay(sc, t)
+skG.buffer('white')
+
+ 
+
+while (nTrials < N_TOTAL_TRIALS):
 
 	value = mcu.readlines()
 	for i in value:
@@ -138,14 +152,25 @@ while (nTrials < N_TOTAL_TRIALS):
 
 	k = keyboard.read_key()
 	if k == 'left':
-		armAngle = armAngle + 1.5*(random.randrange(10) + 1)
+		if (random.randrange(2)):
+			inc = 3
+		else:
+			inc = 1
+		print(inc)
+
+		armAngle = armAngle + inc#1.5*(random.randrange(10) + 1)
 		armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
 
 	elif k == 'right':
-		armAngle = armAngle - 1.5*(random.randrange(10) + 1)
+		if (random.randrange(2)):
+			inc = 3
+		else:
+			inc = 1
+		print(inc)
+		armAngle = armAngle - inc#1.5*(random.randrange(10) + 1)
 		armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
 
-	elif k == '+':
+	elif k == 'up':
 		completeTrial(0,0)
 
 

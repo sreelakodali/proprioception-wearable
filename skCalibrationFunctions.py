@@ -44,7 +44,7 @@ def calibrateActuator(mcu, p):
 def calibrateMaxPressure(mcu, p):
 	lineCount = 0
 	g = open(p + 'constantsCalibrated.py', 'a', encoding='UTF8')
-	mcu.write(str(5).encode())
+	mcu.write(str(5).encode()) # letting teensy know that max pressure reached
 	while (lineCount < 3):
 		value = (mcu.readline()).decode()
 		value = value.strip()

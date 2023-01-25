@@ -19,6 +19,14 @@ import skCalibrationFunctions as skC
 import time
 import keyboard
 
+
+# calibration commands for teensy
+# 5 = for max pressure calibration, reached max pressure
+# 4 = start actuator calibration
+# 3 = start max pressure calibration
+# 2 = start flex calibration
+# 0 = done with calibration
+
 CALIBRATION_OPTIONS = {'ACTUATOR':4, 'MAX_PRESSURE': 3, 'FLEX': 2, 'NONE': 0}
 CALIBRATION_OPTIONS2 = {'ACTUATOR':4, 'MAX_PRESSURE': 3, 'NONE': 0}
 CALIBRATION_FUNCTIONS = {'ACTUATOR':skC.calibrateActuator, 'MAX_PRESSURE': skC.calibrateMaxPressure, 'FLEX': skC.calibrateFlexSensor, 'ZERO_FORCE': 1, 'NONE': skC.calibrateDone}
@@ -58,16 +66,24 @@ def on_click(x, y):
 		click = 3
 	else: click = 1
 
-def waitforclick():
-    global click
-    turtle.update()
-    click = 0
-    while not click:
-        turtle.update()
-        time.sleep(.2)
-    oldClick = click
-    click = 0
-    return oldClick
+def waitforclick(maxPressure):
+	global click, mcu
+	turtle.update()
+	click = 0
+	while not click:
+
+		if (maxPressure):
+			value = (mcu.readline()).decode()
+			value = value.strip()
+
+			if (value):
+				print(value)
+
+		turtle.update()
+		time.sleep(.2)
+	oldClick = click
+	click = 0
+	return oldClick
 #----------------------------------------------------------------
 
 
@@ -86,20 +102,25 @@ skG.initializeCalibrationWindow(sc, skC.CALIBRATION_TEXT_INTRO)
 
 for i in calibrationSeq:
 
-	if not(skipClickForNewText): btn = waitforclick()
+	if not(skipClickForNewText): btn = waitforclick(0)
 	else: skipClickForNewText = 0
 	skG.initializeCalibrationWindow(sc, skC.CALIBRATION_TEXT[i])
 
 	if i == 'NONE':
-		waitforclick()
+		waitforclick(0)
 		print(i)
 		mcu.write(str(CALIBRATION_OPTIONS[i]).encode())
 		CALIBRATION_FUNCTIONS[i](mcu,p)
 
 	else:	
 		skG.buttons(sc)
-		while(True):	
-			btn = waitforclick()
+		while(True):
+
+			if (i == 'MAX_PRESSURE'):
+				btn = waitforclick(1)
+			else: btn = waitforclick(0)
+
+			#btn = waitforclick()
 			#print(btn)
 			if (btn == 3): # done
 				skipClickForNewText = 1
@@ -111,7 +132,7 @@ for i in calibrationSeq:
 					CALIBRATION_FUNCTIONS[i](mcu,p)
 				elif i == 'FLEX':
 					CALIBRATION_FUNCTIONS[i](mcu,p, sc)
-			elif (btn == 1):
+			elif (btn == 1): # clicking anywhere else on the screen
 				if i == 'MAX_PRESSURE':
 					CALIBRATION_FUNCTIONS[i](mcu,p)
 	

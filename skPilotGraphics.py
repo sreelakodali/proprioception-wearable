@@ -11,6 +11,9 @@ COLOR_GREEN = '#44AA99'
 COLOR_ORANGE = '#FE6100'
 COLOR_PINK = '#DC267F'
 COLOR_PURPLE = '#785EF0'
+COLOR_BLACK = '#000000'
+COLORS1 = [COLOR, COLOR_SERIAL, COLOR_PINK, COLOR_BLACK]
+COLORS2 = [COLOR, COLOR, COLOR, COLOR, COLOR_SERIAL, COLOR_PINK, COLOR_BLACK]
 COLOR_BUTTON = COLOR_PURPLE
 ELBOW_SIZE = 100
 PEN_SIZE = 50
@@ -93,7 +96,8 @@ def removeTrialLabel(screen):
 	dot(50, 'white')
 	#goto(325,300)
 
-def initializePilot():
+def initializePilot(sc):
+	erase2(sc,'white')
 	hideturtle()
 	color(COLOR, COLOR)
 	pensize(PEN_SIZE)
@@ -120,6 +124,34 @@ def initializeWindow(sc, arr):
 		else:
 			goto(-350,230-(i-1)*50)
 			write(arr[i], move=False, font=("Arial",32, "normal"))
+	penup()
+
+def initializeWindow_MultiColor(sc, arr, c):
+	erase2(sc,'white')
+	hideturtle()
+	color(COLOR, COLOR)
+	pensize(PEN_SIZE)
+	penup()
+
+	if (c == 0):
+		colorArr = COLORS1
+	else:
+		colorArr = COLORS2
+
+	for i in range(len(arr)):
+		if i == 0:
+			goto(-350,300)
+			write(arr[i], move=False, font=("Arial",48, "normal"))
+		elif (i < (len(colorArr)+1)):
+			color(colorArr[i-1], colorArr[i-1])
+			goto(-350,230-(i-1)*50)
+			write(arr[i], move=False, font=("Arial",32, "normal"))
+		else:
+			color(COLOR, COLOR)
+			goto(-350,230-(i-1)*50)
+			write(arr[i], move=False, font=("Arial",32, "normal"))
+
+	color(COLOR, COLOR)
 	penup()
 
 def erase2(screen, c):
@@ -332,11 +364,11 @@ def erase4(screen, c):
 	seth(180)
 	backward(700)
 	right(90)
-	backward(370)
+	backward(350)
 	right(90)
 	backward(700)
 	right(90)
-	backward(370)
+	backward(350)
 	end_fill()
 	penup()
 	seth(0)

@@ -556,7 +556,8 @@ void calibrationFlexSensor() {
 int calibrationMaxDeepPressure() {
    int counter = position_MIN;
    int x;
-   //short data;
+   short data;
+   String dataString;
    short maxForce = 0;
    short zeroForce = 0;
 
@@ -577,10 +578,14 @@ int calibrationMaxDeepPressure() {
    // Calibration Stage: Get the detection and pain thresholds
     while (counter <= position_MAX) {
        // Measure force and actuator position
-      //data = readDataFromSensor(I2C_ADDR);
+      dataString = "";
+      data = readDataFromSensor(I2C_ADDR);
       position1_Measured = analogRead(position1_IN);
       // Send command to actuator
       actuator1.write(counter);
+      dataString += (String(counter) + "," + String((data - 255) * (45.0)/512));
+      Serial.println(dataString);
+        
       //if (serialON) Serial.println((data - 255) * (45.0)/512);
       if (Serial.available() > 0) x = (Serial.read() - '0');
 //      Serial.println(x);
