@@ -14,7 +14,7 @@
 // Constants
 #define flexCapacitiveSensor_MIN 0//-2000//0
 #define flexCapacitiveSensor_MAX 180//8000//11600
-#define keyAngle_MIN 30
+#define keyAngle_MIN 40
 #define keyAngle_MAX 180
 #define position_MIN 64//46//46 //139 new
 #define position_MAX 139//130 // 47 new

@@ -102,8 +102,8 @@ def sendAngle_PCToWearable(a, m):
 	a = int(a)
 	if (a > 180):
 		a = 180
-	elif (a < 30):
-		a = 30
+	elif (a < 40):
+		a = 40
 
 	if (a < 100):
 		m.write(str(0).encode())
@@ -117,6 +117,40 @@ def validPacket(val):
 		if (forceData > 100): 
 			return True
 	return False
+
+def generateAngles(txt, N, M, A):
+	t1 = list(range(180,40,-15))
+	trialAngles = []
+	for i in range(0, N):
+		trialAngles = trialAngles + t1
+
+	if txt in ['TARGET', 'PRACTICE', 'TEST']:
+		for i in range(0,M):
+			t = list(range(40,180,15))
+			r = [t.pop(random.randrange(len(t)))]
+			r.append(t.pop(random.randrange(len(t))))
+			half1 = t[:4]
+			half2 = t[4:]
+
+			x = random.randrange(2)
+			if (x == 0): half1.reverse()
+			else: half2.reverse()
+			x = random.randrange(2)
+			if (x == 0): t = half1 + half2 + r
+			else: t = half2 + half1 + r
+
+			trialAngles = trialAngles + t
+
+	if txt in ['PRACTICE', 'TEST']:
+		for i in range(0,A):
+			t2 = list(range(40,180,15))
+			random.shuffle(t2)
+			trialAngles = trialAngles + t2
+
+	return trialAngles
+
+	
+
 
 def generateRandomTrials(N, M, A):
 	trialAngles = []

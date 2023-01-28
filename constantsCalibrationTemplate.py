@@ -15,7 +15,7 @@ PORT_NAME = "/dev/cu.usbmodem43098001"#"/dev/cu.usbmodem71181201"
 
 ## DATA PROCESSING CONSTANTS ##
 ANGLE_MIN = 180
-ANGLE_MAX = 30 # 0 for FLEX_SENSOR
+ANGLE_MAX = 40 # 0 for FLEX_SENSOR
 ACTUATOR_POSITION_MIN = 4.0 # I should measure this
 ACTUATOR_POSITION_MAX = 20.0
 ACTUATOR_COMMAND_MIN = 64  
@@ -27,7 +27,7 @@ ACTUATOR_COMMAND_MAX = 139#130
 
 
 # ## DEFAULT CALIBRATION VALUES ##
-ANGLE_DATA_MIN = 30	# when using keyboard
+ANGLE_DATA_MIN = 40	# when using keyboard
 ANGLE_DATA_MAX = 180
 # ANGLE_DATA_MIN = 0   # when reading raw flex values
 # ANGLE_DATA_MAX = 11600
