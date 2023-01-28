@@ -15,6 +15,7 @@ from matplotlib import pyplot as plt
 from scipy.signal import lfilter, lfilter_zi, filtfilt, butter
 import random
 import sys
+import random
 
 # # if calibrated user study, get constants from new file
 # print("Use values from recent user calibration?")
@@ -161,6 +162,13 @@ def generateRandomTrials(N, M, A):
 
 	return trialAngles
 	
+
+def generateKeyboardInc():
+	if (random.randrange(2)):
+		inc = 3
+	else:
+		inc = 1
+	return inc
 
 
 def findNWindow(timeArr):

@@ -81,19 +81,15 @@ for txt in INTRO_TEXT:
 		while True:
 			k = keyboard.read_key()
 			if k == 'left':
-				if (random.randrange(2)):
-					inc = 3
-				else:
-					inc = 1
-				print(inc)
-				armAngle = armAngle + inc #1.5*(random.randrange(10) + 1)
+				
+				armAngle = armAngle + sk.generateKeyboardInc()
 			elif k == 'right':
 				if (random.randrange(2)):
 					inc = 3
 				else:
 					inc = 1
 				print(inc)
-				armAngle = armAngle - inc #- 1.5*(random.randrange(10) + 1)
+				armAngle = armAngle - sk.generateKeyboardInc()
 
 			elif k == 'up':
 				skipClickForNewText = 1

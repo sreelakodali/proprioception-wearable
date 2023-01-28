@@ -125,8 +125,11 @@ def calibrateFlexSensor(mcu, p, sc):
 
 
 def calibrateDone(mcu, p):
-	g = open(p + 'constantsCalibrated.py', 'a', encoding='UTF8')
-	g.close()
+	# g = open(p + 'constantsCalibrated.py', 'a', encoding='UTF8')
+	# g.close()
+	# copy over new calibration file to constants.py
+	shutil.copy2(os.path.join(p,'constantsCalibrated.py'),os.path.join(CONST.PATH_HOME,'constants.py'))
+
 
 def calibrateNewSubject():
 	# Wait for subject input
@@ -143,7 +146,7 @@ def calibrateNewSubject():
 		print("New directory created: %s" % fileName)
 
 	# add current constants file's birthtime to its file name, copy it, add it to the archive
-	t_oldConst = str(datetime.datetime.fromtimestamp(sk.getCreationTime(CONST.PATH_HOME+'constants.py')))[0:16]
+	t_oldConst = str(datetime.datetime.fromtimestamp(os.path.getmtime(CONST.PATH_HOME+'constants.py')))[0:16]
 	t_oldConst = ((t_oldConst.replace('/', '_')).replace(' ', '_')).replace(':','-')
 	print(t_oldConst)
 	shutil.copy2(os.path.join(CONST.PATH_HOME,'constants.py'),os.path.join(CONST.PATH_HOME+'constantsArchive/',t_oldConst+'_constants.py'))

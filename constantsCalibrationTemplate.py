@@ -15,7 +15,7 @@ PORT_NAME = "/dev/cu.usbmodem43098001"#"/dev/cu.usbmodem71181201"
 
 ## DATA PROCESSING CONSTANTS ##
 ANGLE_MIN = 180
-ANGLE_MAX = 40
+ANGLE_MAX = 30 # 0 for FLEX_SENSOR
 ACTUATOR_POSITION_MIN = 4.0 # I should measure this
 ACTUATOR_POSITION_MAX = 20.0
 ACTUATOR_COMMAND_MIN = 64  
@@ -25,9 +25,15 @@ ACTUATOR_COMMAND_MAX = 139#130
 # RUNTIME_LENGTH = 10 # seconds #for readProcessSerial.py
 # N_CORR = 20000 # computing the delay in processPlotData.py
 
+
 # ## DEFAULT CALIBRATION VALUES ##
+ANGLE_DATA_MIN = 30	# when using keyboard
+ANGLE_DATA_MAX = 180
+# ANGLE_DATA_MIN = 0   # when reading raw flex values
+# ANGLE_DATA_MAX = 11600
+# ANGLE_DATA_MIN = -25.48 # when calibrating flex sensor
+# ANGLE_DATA_MAX = 95.24
+
 # ACTUATOR_FEEDBACK_MAX = 988
 # ACTUATOR_FEEDBACK_MIN = 145
-# ANGLE_DATA_MIN = 0
-# ANGLE_DATA_MAX = 11600
 # ZERO_FORCE = 0.00

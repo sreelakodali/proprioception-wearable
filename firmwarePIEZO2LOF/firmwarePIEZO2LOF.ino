@@ -14,6 +14,8 @@
 // Constants
 #define flexCapacitiveSensor_MIN 0//-2000//0
 #define flexCapacitiveSensor_MAX 180//8000//11600
+#define keyAngle_MIN 30
+#define keyAngle_MAX 180
 #define position_MIN 64//46//46 //139 new
 #define position_MAX 139//130 // 47 new
 
@@ -300,7 +302,7 @@ void runtime_Keyboard(bool feedback) {
      
      // Map angle to actuator command
     if (fastMapON) position1_Command = mapper.map(flexSensor);
-    else position1_Command = map(int(flexSensor), 180, 30, user_position_MIN, user_position_MAX); // FIX: why does fastmap on and off change the outcome. And why does map not work when 0,180 vs user_MIN user MAX
+    else position1_Command = map(int(flexSensor), keyAngle_MAX, keyAngle_MIN, user_position_MIN, user_position_MAX); // FIX: why does fastmap on and off change the outcome. And why does map not work when 0,180 vs user_MIN user MAX
     //FIX WHY does fast map on cause actuator to move to extremes only
     if(position1_Command > position_MAX) position1_Command = position_MAX;
     else if(position1_Command < position_MIN) position1_Command = position_MIN;

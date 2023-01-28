@@ -103,20 +103,78 @@ windowVisual = list(range(20, 20 + 10*(N + M + A)))
 noVisual = noVisual1 + noVisual2
 
 
-nInfoSlides = 4
-# initial instructions
-sc.addshape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/keypad.gif')
-sc.addshape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/setup.gif')
+# STAGE 0: INTRODUCTION
+
+EXPERIMENT_TEXT_0 = ["Welcome!", "Let's begin the experiment", "", "", "", "", "", "", "", "", "", "", "Please click the blue key to continue."]
+EXPERIMENT_TEXT_1 = ["Experiment", "Task: Match virtual arm's elbow angle with target", "angle. Use <- and -> keys to move virtual arm.", "", "First there will be a learning phase followed by a",  "test phase.", "", "", "", "", "", "", "Please click the blue key to continue."]
+EXPERIMENT_TEXT_X = ["Experiment", "Task: Match virtual arm's elbow angle with target", "angle. Use <- and -> keys to move virtual arm.", "", "Target Angle", "Virtual Arm", "Haptic Device", "Arm Rest", "", "", "", "", "Please click the blue key to continue."]
+EXPERIMENT_TEXT_2 = ["Learning 1: Explore", "Move virtual arm with keypad and observe haptic", "feedback. Virtual arm will be shown in orange.", "", "Pay close attention to the haptic feedback and", "how that corresponds to where the virtual arm is.", "You will have 1 minute to explore.", "", "", "", "", "", "Please click the blue key to begin learning 1"]
+EXPERIMENT_TEXT = [EXPERIMENT_TEXT_0, EXPERIMENT_TEXT_1, EXPERIMENT_TEXT_2]
+
+
+for txt in EXPERIMENT_TEXT:
+	skG.initializeWindow(sc,txt)
+	keyboard.wait('up')
+
+# sc.addshape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/keypad.gif')
+# sc.addshape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/setup.gif')
+# skG.initializeWindow_MultiColor(sc, EXPERIMENT_TEXT_X, 1)
+# tr = turtle.Turtle()
+# tr.goto(100,-50)
+# tr.shape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/setup.gif')
+# turtle.update()
+# keyboard.wait('up')
 #skG.initializeWindow(sc, ["Experiment", "Task: Match virtual arm's elbow angle with target", "angle. Use <- and -> keys to move virtual arm.", "", "First there will be a learning phase",  " followed  by a test phase.", "", "", "", "", "", "", "Please click the blue key to continue."])
-skG.initializeWindow_MultiColor(sc, ["Experiment", "Task: Match virtual arm's elbow angle with target", "angle. Use <- and -> keys to move virtual arm.", "", "Target Angle", "Virtual Arm", "Haptic Device", "Arm Rest", "", "", "", "", "Please click the blue key to continue."], 1)
-tr = turtle.Turtle()
-tr.goto(100,-50)
-tr.shape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/setup.gif')
-turtle.update()
+
+# STAGE 1: LEARNING 1 EXPLORE
+EXPERIMENT_TEXT_3 = ["Learning 1: Explore", ""]
+EXPERIMENT_TEXT_4 = ["Learning 1: Explore", "Learning 1 complete.", "", "", "", "", "", "", "", "", "", "", "Please click the blue key to continue"]
+skG.initializeWindow(sc,EXPERIMENT_TEXT_3)
+skG.drawUpperArm_Serial()
+tLEARN1 = 60
+endTime = datetime.datetime.now() + datetime.timedelta(seconds=tLEARN1)
+while (datetime.datetime.now() < endTime):
+	value = mcu.readlines()
+
+	for i in value:
+		i = str(i, "utf-8").split(",")
+		if (len(i) == len(dataFunc)):
+			newRow = sk.processNewRow(dataFunc, i)		
+			# newRow.append(nTrials)
+			# newRow.append(trialAngles[nTrials])
+			# writer.writerow(newRow)	
+			print(newRow)                                                                                        
+	
+	turtle.undo() # angle
+	turtle.undo() # dot
+	skG.drawForearm(sc,armAngle, skG.COLOR_SERIAL)
+
+	k = keyboard.read_key()
+	if k == 'left':
+
+		armAngle = armAngle + sk.generateKeyboardInc()
+		armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
+
+	elif k == 'right':
+
+		armAngle = armAngle - sk.generateKeyboardInc()
+		armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
+
+	if (armAngle > 180):
+		armAngle = 180
+
+	if (armAngle < 30):
+		armAngle = 30
+
+skG.initializeWindow(sc,EXPERIMENT_TEXT_4)
 keyboard.wait('up')
 
-skG.initializeWindow(sc, ["Experiment: Learning Part 1 of 2", "Explore: Move virtual arm and observe haptic", "feedback. Virtual arm is shown in orange.", "", "", "", "", "", "", "", "", "", "Please click the blue key to continue."])
-keyboard.wait('up')
+# Stage 2: Learning 2 Intro to Targets
+
+
+# Stage 3: Learning 3 Pressure Per Target
+
+# Stage 4: Learning 4 Practice Test with Answers
 
 skG.initializePilot(sc)
 skG.drawForearm(sc,trialAngles[nTrials], skG.COLOR)
@@ -152,13 +210,8 @@ while (nTrials < N_TOTAL_TRIALS):
 
 	k = keyboard.read_key()
 	if k == 'left':
-		if (random.randrange(2)):
-			inc = 3
-		else:
-			inc = 1
-		print(inc)
 
-		armAngle = armAngle + inc#1.5*(random.randrange(10) + 1)
+		armAngle = armAngle + sk.generateKeyboardInc()
 		armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
 
 	elif k == 'right':
@@ -167,7 +220,7 @@ while (nTrials < N_TOTAL_TRIALS):
 		else:
 			inc = 1
 		print(inc)
-		armAngle = armAngle - inc#1.5*(random.randrange(10) + 1)
+		armAngle = armAngle - sk.generateKeyboardInc()
 		armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
 
 	elif k == 'up':
@@ -175,10 +228,11 @@ while (nTrials < N_TOTAL_TRIALS):
 
 
 
-	# if I click then done with trial, store angle and move onto next
+# 	# if I click then done with trial, store angle and move onto next
 
-	# sc.onscreenclick(completeTrial)
-	# turtle.listen()
+# 	# sc.onscreenclick(completeTrial)
+# 	# turtle.listen()
+
 f.close()
 f = open(p + "subjectAngleAttempts_" + fileName + '.csv', 'w+', encoding='UTF8', newline='')
 w = csv.writer(f)
