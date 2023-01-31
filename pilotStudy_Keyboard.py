@@ -23,19 +23,25 @@ import random
 # Global Variables
 t = 1
 nTrials = 0
-N = 1
-M = 1
-A = 1
+# N = 1
+# M = 1
+# A = 1
 sc = turtle.Screen()
-trialAngles = sk.generateRandomTrials(N, M, A) # Generate random trials
-N_TOTAL_TRIALS = len(trialAngles)
+nTargetAngles = sk.generateAngles('TARGET', 1, 1, 0)
+nHaptics = sk.generateAngles('HAPTICS',1,0,0)
+nPractice = sk.generateAngles('PRACTICE',1,1,2)
+nTest = sk.generateAngles('TEST',0,0,4)
+
+trialAngles = nTargetAngles + nHaptics + nPractice + nTest #sk.generateRandomTrials(N, M, A) # Generate random trials
+#N_TOTAL_TRIALS = len(trialAngles)
+
 subjectAngleAttempts = []
 armAngle = 180
 
 def completeTrial(x,y):
 	# skG.star(sc)
 	# skG.deleteStar(sc)
-	global nTrials, subjectAngleAttempts, armAngle
+	global nTrials, subjectAngleAttempts, armAngle, nPractice
 	
 	currentAngle = armAngle
 	# wait and hold the angle for 10 seconds
@@ -49,7 +55,7 @@ def completeTrial(x,y):
 	nTrials = nTrials + 1
 	subjectAngleAttempts.append(armAngle)
 	if nTrials < len(trialAngles):
-		skG.drawForearm(sc,trialAngles[nTrials], skG.COLOR) #FIX: should be nPractice
+		skG.drawForearm(sc,nPractice[nTrials], skG.COLOR) #FIX: should be nPractice
 		skG.updateTrialLabel(sc, nTrials)
 		skG.delay(sc, t)
 
@@ -63,36 +69,36 @@ armAngle = 180
 
 # Initialize Serial reading and data saving
 
-# # default name is date and time
-# fileName = str(datetime.datetime.now())[0:16] 
-# fileName = ((fileName.replace('/', '_')).replace(' ', '_')).replace(':','-')
-# p = CONST.PATH_LAPTOP +fileName+'/'
-# if not (os.path.exists(p)):
-# 	os.makedirs(p)
-# 	print("New directory created: %s" % fileName)
+# default name is date and time
+fileName = str(datetime.datetime.now())[0:16] 
+fileName = ((fileName.replace('/', '_')).replace(' ', '_')).replace(':','-')
+p = CONST.PATH_LAPTOP +fileName+'/'
+if not (os.path.exists(p)):
+	os.makedirs(p)
+	print("New directory created: %s" % fileName)
 
-# # saving in most recent folder
-# allSubdirs = [CONST.PATH_LAPTOP+d for d in os.listdir(CONST.PATH_LAPTOP) if os.path.isdir(os.path.join(CONST.PATH_LAPTOP, d))]
-# p = max(allSubdirs, key=sk.getCreationTime) + '/'
-# print("Destination directory: %s" % p)
+# saving in most recent folder
+allSubdirs = [CONST.PATH_LAPTOP+d for d in os.listdir(CONST.PATH_LAPTOP) if os.path.isdir(os.path.join(CONST.PATH_LAPTOP, d))]
+p = max(allSubdirs, key=sk.getCreationTime) + '/'
+print("Destination directory: %s" % p)
 
 
-# mcu = serial.Serial(port=CONST.PORT_NAME, baudrate=CONST.BAUD_RATE, timeout=.1)
-# f = open(p + "processed_" + fileName + '.csv', 'w+', encoding='UTF8', newline='')
-# g = open(p + "trialAngles_" + fileName + '.csv', 'w+', encoding='UTF8', newline='')
-# w = csv.writer(g)
-# for a in trialAngles:
-# 	w.writerow([a])
-# g.close()
-# print("Trial angles saved.")
-# writer = csv.writer(f)
-# dataFunc = {'time':sk.millisToSeconds, 'flex sensor':sk.doNothing,'actuator position, command':sk.commandToPosition, \
-# 			'actuator position, measured':sk.feedbackToPosition, 'force':sk.computeForce}
+mcu = serial.Serial(port=CONST.PORT_NAME, baudrate=CONST.BAUD_RATE, timeout=.1)
+f = open(p + "processed_" + fileName + '.csv', 'w+', encoding='UTF8', newline='')
+g = open(p + "targetAngles_" + fileName + '.csv', 'w+', encoding='UTF8', newline='')
+w = csv.writer(g)
+for a in trialAngles:
+	w.writerow([a])
+g.close()
+print("Trial angles saved.")
+writer = csv.writer(f)
+dataFunc = {'time':sk.millisToSeconds, 'flex sensor':sk.doNothing,'actuator position, command':sk.commandToPosition, \
+			'actuator position, measured':sk.feedbackToPosition, 'force':sk.computeForce}
 
-# columnNames = list(dataFunc.keys())
-# columnNames.append('Trial Number')
-# columnNames.append('Target Angle')
-# writer.writerow(columnNames)
+columnNames = list(dataFunc.keys())
+columnNames.append('"Trial Number"')
+columnNames.append('"Target Angle"')
+writer.writerow(columnNames)
 
 # # Read in serial data and save in csv
 # noVisual1 = list(range(20 + 10*(N + M + A), 30 + 10*(N + M + A)))
@@ -118,16 +124,6 @@ for txt in EXPERIMENT_TEXT:
 	skG.initializeWindow(sc,txt)
 	keyboard.wait('up')
 
-# sc.addshape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/keypad.gif')
-# sc.addshape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/setup.gif')
-# skG.initializeWindow_MultiColor(sc, EXPERIMENT_TEXT_X, 1)
-# tr = turtle.Turtle()
-# tr.goto(100,-50)
-# tr.shape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/setup.gif')
-# turtle.update()
-# keyboard.wait('up')
-#skG.initializeWindow(sc, ["Experiment", "Task: Match virtual arm's elbow angle with target", "angle. Use <- and -> keys to move virtual arm.", "", "First there will be a learning phase",  " followed  by a test phase.", "", "", "", "", "", "", "Please click the blue key to continue."])
-
 # STAGE 1: LEARNING 1 EXPLORE
 EXPERIMENT_TEXT_3 = ["Learning 1: Explore", ""]
 EXPERIMENT_TEXT_4 = ["Learning 1: Explore", "Learning 1 complete.", "", "", "", "", "", "", "", "", "", "", "Please click the blue key to continue"]
@@ -135,41 +131,42 @@ skG.initializeWindow(sc,EXPERIMENT_TEXT_3)
 skG.drawUpperArm_Serial()
 tLEARN1 = 60
 endTime = datetime.datetime.now() + datetime.timedelta(seconds=tLEARN1)
-# while (datetime.datetime.now() < endTime):
-# 	# value = mcu.readlines()
+while (datetime.datetime.now() < endTime):
+	value = mcu.readlines()
 
-# 	# for i in value:
-# 	# 	i = str(i, "utf-8").split(",")
-# 	# 	if (len(i) == len(dataFunc)):
-# 	# 		newRow = sk.processNewRow(dataFunc, i)		
-# 	# 		# newRow.append(nTrials)
-# 	# 		# newRow.append(trialAngles[nTrials])
-# 	# 		# writer.writerow(newRow)	
-# 	# 		print(newRow)                                                                                        
+	for i in value:
+		i = str(i, "utf-8").split(",")
+		if (len(i) == len(dataFunc)):
+			newRow = sk.processNewRow(dataFunc, i)		
+			newRow.append(nTrials)
+			newRow.append(nTrials)
+			writer.writerow(newRow)	
+			print(newRow)                                                                                        
 	
-# 	turtle.undo() # angle
-# 	turtle.undo() # dot
-# 	skG.drawForearm(sc,armAngle, skG.COLOR_SERIAL)
+	turtle.undo() # angle
+	turtle.undo() # dot
+	skG.drawForearm(sc,armAngle, skG.COLOR_SERIAL)
 
-# 	k = keyboard.read_key()
-# 	if k == 'left':
+	k = keyboard.read_key()
+	if k == 'left':
 
-# 		armAngle = armAngle + sk.generateKeyboardInc()
-# 		#armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
+		armAngle = armAngle + sk.generateKeyboardInc()
+		armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
 
-# 	elif k == 'right':
+	elif k == 'right':
 
-# 		armAngle = armAngle - sk.generateKeyboardInc()
-# 		#armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
+		armAngle = armAngle - sk.generateKeyboardInc()
+		armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
 
-# 	if (armAngle > 180):
-# 		armAngle = 180
+	if (armAngle > 180):
+		armAngle = 180
 
-# 	if (armAngle < 40):
-# 		armAngle = 40
+	if (armAngle < 40):
+		armAngle = 40
 
 skG.initializeWindow(sc,EXPERIMENT_TEXT_4)
 keyboard.wait('up')
+armAngle = 180
 
 
 # STAGE 2: LEARNING 2 INTRO TO TARGETS
@@ -181,7 +178,6 @@ skG.initializeWindow(sc,EXPERIMENT_TEXT_5)
 keyboard.wait('up')
 
 skG.initializeWindow(sc,EXPERIMENT_TEXT_6)
-nTargetAngles = sk.generateAngles('TARGET', 1, 1, 0)
 
 skG.drawUpperArm()
 skG.drawForearm(sc,nTargetAngles[nTrials], skG.COLOR)
@@ -191,15 +187,15 @@ skG.delay(sc, t)
 skG.buffer('white')
 while (nTrials < len(nTargetAngles)):
 
-	# value = mcu.readlines()
-	# for i in value:
-	# 	i = str(i, "utf-8").split(",")
-	# 	if (len(i) == len(dataFunc)):
-	# 		newRow = sk.processNewRow(dataFunc, i)		
-	# 		newRow.append(nTrials)
-	# 		newRow.append(nTargetAngles[nTrials])
-	# 		writer.writerow(newRow)	
-	# 		#print(i)
+	value = mcu.readlines()
+	for i in value:
+		i = str(i, "utf-8").split(",")
+		if (len(i) == len(dataFunc)):
+			newRow = sk.processNewRow(dataFunc, i)		
+			newRow.append(nTrials)
+			newRow.append(nTargetAngles[nTrials])
+			writer.writerow(newRow)	
+			print(newRow)
 
 	turtle.undo() # angle
 	turtle.undo() # dot
@@ -208,11 +204,11 @@ while (nTrials < len(nTargetAngles)):
 	k = keyboard.read_key()
 	if k == 'left':
 		armAngle = armAngle + sk.generateKeyboardInc()
-		#armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
+		armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
 
 	elif k == 'right':
 		armAngle = armAngle - sk.generateKeyboardInc()
-		#armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
+		armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
 
 	elif k == 'up':
 		skG.erase(sc, 'white')
@@ -229,10 +225,9 @@ while (nTrials < len(nTargetAngles)):
 	if (armAngle < 40):
 		armAngle = 40
 
-
-
 skG.initializeWindow(sc,EXPERIMENT_TEXT_7)
 keyboard.wait('up')
+armAngle = 180
 
 
 # STAGE 3: LEARNING 3 HAPTIC FEEDBACK PER TARGET
@@ -244,46 +239,47 @@ skG.initializeWindow(sc,EXPERIMENT_TEXT_8)
 keyboard.wait('up')
 
 skG.initializeWindow(sc,EXPERIMENT_TEXT_9)
-nHaptics = sk.generateAngles('HAPTICS',1,0,0)
 nTrials = 0
 tLEARN3 = 10
 
 skG.drawUpperArm()
 skG.drawForearm(sc,nHaptics[nTrials], skG.COLOR)
-#sk.sendAngle_PCToWearable(nHaptics[nTrials], mcu)
+sk.sendAngle_PCToWearable(nHaptics[nTrials], mcu)
 skG.initializeTrialLabel(sc,len(nHaptics))
 skG.updateTrialLabel(sc, nTrials)
 skG.delay(sc, t)
 endTime = datetime.datetime.now() + datetime.timedelta(seconds=tLEARN3)
 skG.buffer('white')
-# while (nTrials < len(nHaptics)):
+while (nTrials < len(nHaptics)):
 
-# 	# value = mcu.readlines()
-# 	# for i in value:
-# 	# 	i = str(i, "utf-8").split(",")
-# 	# 	if (len(i) == len(dataFunc)):
-# 	# 		newRow = sk.processNewRow(dataFunc, i)		
-# 	# 		newRow.append(nTrials)
-# 	# 		newRow.append(nHaptics[nTrials])
-# 	# 		writer.writerow(newRow)	
-# 	# 		#print(i)
+	value = mcu.readlines()
+	for i in value:
+		i = str(i, "utf-8").split(",")
+		if (len(i) == len(dataFunc)):
+			newRow = sk.processNewRow(dataFunc, i)		
+			newRow.append(nTrials)
+			newRow.append(nHaptics[nTrials])
+			writer.writerow(newRow)	
+			print(newRow)
 
-# 	if (datetime.datetime.now() > endTime):
-# 		skG.writeClickToContinue(sc)
-# 		k = keyboard.read_key()
-# 		if k == 'up':
-# 			skG.erase(sc, 'white')
-# 			nTrials = nTrials + 1
-# 			subjectAngleAttempts.append('0')
-# 			if nTrials < len(nHaptics):
-# 				skG.drawForearm(sc, nTargetAngles[nTrials], skG.COLOR)
-# 				#sk.sendAngle_PCToWearable(nHaptics[nTrials], mcu)
-# 				skG.updateTrialLabel(sc, nTrials)
-# 				endTime = datetime.datetime.now() + datetime.timedelta(seconds=tLEARN3)
-# 				skG.delay(sc, t)
+	if (datetime.datetime.now() > endTime):
+		skG.writeClickToContinue(sc)
+		k = keyboard.read_key()
+		if k == 'up':
+			skG.erase(sc, 'white')
+			nTrials = nTrials + 1
+			subjectAngleAttempts.append('0')
+			if nTrials < len(nHaptics):
+				skG.drawForearm(sc, nTargetAngles[nTrials], skG.COLOR)
+				sk.sendAngle_PCToWearable(nHaptics[nTrials], mcu)
+				skG.updateTrialLabel(sc, nTrials)
+				endTime = datetime.datetime.now() + datetime.timedelta(seconds=tLEARN3)
+				skG.delay(sc, t)
 
 skG.initializeWindow(sc,EXPERIMENT_TEXT_10)
 keyboard.wait('up')
+armAngle = 180
+
 
 # STAGE 4: LEARNING 4 Practice Test with Answers
 #EXPERIMENT_TEXT_11 = ["Learning 4: Practice", "Match your virtual arm with a target angle using", "ONLY haptic feedback. The virtual arm (orange)", "will NOT be visible. When you think your virtual", "arm is at the target angle, click the blue key and", "your virtual arm (orange line) will appear for 10", "seconds to show you how your attempt was. Then", "the next target angle will be shown.", "", "", "", "", "Please click the blue key to begin learning 4"]
@@ -294,7 +290,6 @@ skG.initializeWindow(sc,EXPERIMENT_TEXT_11)
 keyboard.wait('up')
 
 skG.initializeWindow(sc,EXPERIMENT_TEXT_12)
-nPractice = sk.generateAngles('PRACTICE',1,1,2)
 nTrials = 0
 skG.drawUpperArm()
 skG.drawForearm(sc,nPractice[nTrials], skG.COLOR)
@@ -309,44 +304,45 @@ skG.buffer('white')
 # skG.delay(sc, t)
 # skG.buffer('white')
 
-# while (nTrials < len(nPractice)):
+while (nTrials < len(nPractice)):
 
-# 	# value = mcu.readlines()
-# 	# for i in value:
-# 	# 	i = str(i, "utf-8").split(",")
-# 	# 	if (len(i) == len(dataFunc)):
-# 	# 		newRow = sk.processNewRow(dataFunc, i)		
-# 	# 		newRow.append(nTrials)
-# 	# 		newRow.append(nPractice[nTrials])
-# 	# 		writer.writerow(newRow)	
-# 	# 		#print(i)
+	value = mcu.readlines()
+	for i in value:
+		i = str(i, "utf-8").split(",")
+		if (len(i) == len(dataFunc)):
+			newRow = sk.processNewRow(dataFunc, i)		
+			newRow.append(nTrials)
+			newRow.append(nPractice[nTrials])
+			writer.writerow(newRow)	
+			print(newRow)
 
-# 	#s = "Measured=" + str(armAngle) + ", Target=" + str(trialAngles[nTrials])
+	#s = "Measured=" + str(armAngle) + ", Target=" + str(trialAngles[nTrials])
 	
-# 	turtle.undo() # angle
-# 	turtle.undo() # dot
-# 	skG.drawForearm2(sc,armAngle, 'white')
+	turtle.undo() # angle
+	turtle.undo() # dot
+	skG.drawForearm2(sc,armAngle, 'white')
 
-# 	k = keyboard.read_key()
-# 	if k == 'left':
-# 		armAngle = armAngle + sk.generateKeyboardInc()
-# 		#armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
+	k = keyboard.read_key()
+	if k == 'left':
+		armAngle = armAngle + sk.generateKeyboardInc()
+		armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
 
-# 	elif k == 'right':
-# 		armAngle = armAngle - sk.generateKeyboardInc()
-# 		#armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
+	elif k == 'right':
+		armAngle = armAngle - sk.generateKeyboardInc()
+		armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
 
-# 	elif k == 'up':
-# 		completeTrial(0,0)
+	elif k == 'up':
+		completeTrial(0,0)
 
-# 	if (armAngle > 180):
-# 		armAngle = 180
+	if (armAngle > 180):
+		armAngle = 180
 
-# 	if (armAngle < 40):
-# 		armAngle = 40
+	if (armAngle < 40):
+		armAngle = 40
 
 skG.initializeWindow(sc,EXPERIMENT_TEXT_13)
 keyboard.wait('up')
+armAngle = 180
 
 # STAGE 5: TEST
 EXPERIMENT_TEXT_14 = ["Experiment: Test", "Match your virtual arm with a target angle. You", "may (or may not) receive haptic feedback. The", "virtual arm (orange) may (or may not) be visible.", "", "When you think your virtual arm is at the target" , "angle, click the blue key and the next target angle", "will be shown.", "", "", "", "WAIT. Experimenter will tell you when to click the", "blue key to begin."]
@@ -357,7 +353,6 @@ skG.initializeWindow(sc,EXPERIMENT_TEXT_14)
 keyboard.wait('up')
 
 skG.initializeWindow(sc,EXPERIMENT_TEXT_15)
-nTest = sk.generateAngles('TEST',0,2,2)
 nTrials = 0
 skG.drawUpperArm()
 skG.drawForearm(sc,nTest[nTrials], skG.COLOR)
@@ -366,42 +361,51 @@ skG.updateTrialLabel(sc, nTrials)
 skG.delay(sc, t)
 skG.buffer('white')
 
+visualFeedback = list(range(10,20)) + list(range(30,40))
+
 while (nTrials < len(nTest)):
 
-	# value = mcu.readlines()
-	# for i in value:
-	# 	i = str(i, "utf-8").split(",")
-	# 	if (len(i) == len(dataFunc)):
-	# 		newRow = sk.processNewRow(dataFunc, i)		
-	# 		newRow.append(nTrials)
-	# 		newRow.append(nTest[nTrials])
-	# 		writer.writerow(newRow)	
-	# 		#print(i)
+	value = mcu.readlines()
+	for i in value:
+		i = str(i, "utf-8").split(",")
+		if (len(i) == len(dataFunc)):
+			newRow = sk.processNewRow(dataFunc, i)		
+			newRow.append(nTrials)
+			newRow.append(nTest[nTrials])
+			writer.writerow(newRow)	
+			print(newRow)
 
 
 	#s = "Measured=" + str(armAngle) + ", Target=" + str(trialAngles[nTrials])
 	
-	#if (nTrials in realTimeVisual):
-	if (1):
+	if (nTrials in visualFeedback):
 		turtle.undo() # angle
 		turtle.undo() # dot
 		skG.drawForearm(sc,armAngle, skG.COLOR_SERIAL)
 
 	#elif (nTrials in noVisual + windowVisual):
-		# turtle.undo() # angle
-		# turtle.undo() # dot
-		# skG.drawForearm2(sc,armAngle, 'white')
+	# else:
+	# 	turtle.undo() # angle
+	# 	turtle.undo() # dot
+	# 	skG.drawForearm2(sc,armAngle, 'white')
 
 	k = keyboard.read_key()
 	if k == 'left':
 		armAngle = armAngle + sk.generateKeyboardInc()
-		#armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
+		armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
 
 	elif k == 'right':
 		armAngle = armAngle - sk.generateKeyboardInc()
-		#armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
+		armAngle = sk.sendAngle_PCToWearable(armAngle, mcu)
 
 	elif k == 'up':
+		if (((nTrials+1) % 10) == 0):
+			skG.initializeWindow(sc,EXPERIMENT_TEXT_16)
+			keyboard.wait('up')
+			skG.erase3(sc, 'white')
+			skG.initializeTrialLabel(sc,len(nTest))
+
+
 		skG.erase(sc, 'white')
 		nTrials = nTrials + 1
 		subjectAngleAttempts.append(armAngle)
@@ -409,11 +413,6 @@ while (nTrials < len(nTest)):
 			skG.drawForearm(sc, nTest[nTrials], skG.COLOR)
 			skG.updateTrialLabel(sc, nTrials)
 			skG.delay(sc, t)
-
-			if ((nTrials % 10) == 0):
-				skG.initializeWindow(sc,EXPERIMENT_TEXT_16) # FIX
-				keyboard.wait('up')
-
 
 	if (armAngle > 180):
 		armAngle = 180

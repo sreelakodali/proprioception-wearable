@@ -17,7 +17,7 @@
 #define keyAngle_MIN 40
 #define keyAngle_MAX 180
 #define position_MIN 64//46//46 //139 new
-#define position_MAX 139//130 // 47 new
+#define position_MAX 107//139//130 // 47 new
 
 // Pin Names
 #define position1_IN A3 // pin to measure position1_Measured
