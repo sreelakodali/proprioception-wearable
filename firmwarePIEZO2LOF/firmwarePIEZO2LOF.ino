@@ -17,7 +17,7 @@
 #define keyAngle_MIN 40
 #define keyAngle_MAX 180
 #define position_MIN 64//46//46 //139 new
-#define position_MAX 107//139//130 // 47 new
+#define position_MAX 139//130 // 47 new
 
 // Pin Names
 #define position1_IN A3 // pin to measure position1_Measured
@@ -324,9 +324,12 @@ void runtime_Keyboard(bool feedback) {
     
     if ((cycleCount == WRITE_COUNT)) {
       data = readDataFromSensor(I2C_ADDR);
-      powerOn = (data >= 150);
-      if (powerOn) analogWrite(led_OUT, 255);
-      else analogWrite(led_OUT, 30);
+//      powerOn = (data >= 150);
+//      if (powerOn) analogWrite(led_OUT, 255);
+//      else {
+//        analogWrite(led_OUT, 30);
+//        Serial.println("OFF");
+//      }
       //writeOutDataBatching(myTime, flexSensor, position1_Command, position1_Measured, data, myTime_1, myTime_2, myTime_3, myTime_4);
       writeOutData(myTime, flexSensor, position1_Command, position1_Measured, data);
       cycleCount = 0;

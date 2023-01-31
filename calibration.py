@@ -73,6 +73,7 @@ def waitforclick(maxPressure):
 	while not click:
 
 		if (maxPressure):
+			print("here")
 			value = (mcu.readline()).decode()
 			value = value.strip()
 
