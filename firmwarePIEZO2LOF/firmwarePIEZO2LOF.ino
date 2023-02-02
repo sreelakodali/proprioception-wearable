@@ -16,7 +16,7 @@
 #define flexCapacitiveSensor_MAX 180//8000//11600
 #define keyAngle_MIN 40
 #define keyAngle_MAX 180
-#define position_MIN 64//46//46 //139 new
+#define position_MIN 47//64//46//46 //139 new
 #define position_MAX 139//130 // 47 new
 
 // Pin Names
@@ -304,8 +304,8 @@ void runtime_Keyboard(bool feedback) {
     if (fastMapON) position1_Command = mapper.map(flexSensor);
     else position1_Command = map(int(flexSensor), keyAngle_MAX, keyAngle_MIN, user_position_MIN, user_position_MAX); // FIX: why does fastmap on and off change the outcome. And why does map not work when 0,180 vs user_MIN user MAX
     //FIX WHY does fast map on cause actuator to move to extremes only
-    if(position1_Command > position_MAX) position1_Command = position_MAX;
-    else if(position1_Command < position_MIN) position1_Command = position_MIN;
+    if(position1_Command > position_MAX) position1_Command = user_position_MAX;
+    else if(position1_Command < position_MIN) position1_Command = user_position_MIN;
 
     //myTime_2 = micros(); // after computation
     
@@ -565,6 +565,8 @@ int calibrationMaxDeepPressure() {
    String dataString;
    short maxForce = 0;
    short zeroForce = 0;
+   short minForce = 0; // detection threshold
+   int nClicks = 0;
 
 //   Serial.println("-------------------------------------------");
 //   Serial.println("CALIBRATION: MAX PRESSURE ");
@@ -595,9 +597,22 @@ int calibrationMaxDeepPressure() {
       if (Serial.available() > 0) x = (Serial.read() - '0');
 //      Serial.println(x);
       if (risingEdgeButton() || (x == 5)) {
-          
+        nClicks = nClicks + 1;
+        x = 0;
+      }
+      if (nClicks == 1) {
+          //Serial.println("min detected!");
+          user_position_MIN = counter;
+          delay(3000);
+          minForce = readDataFromSensor(I2C_ADDR);
+          nClicks = nClicks + 1;
+//          actuator1.write(position_MIN);
+//          break; 
+      }
+      if (nClicks == 3) {
           user_position_MAX = counter - 2;
           maxForce = readDataFromSensor(I2C_ADDR);
+          delay(3000);
           actuator1.write(position_MIN);
           break; 
       }
@@ -608,9 +623,9 @@ int calibrationMaxDeepPressure() {
 
 //Serial.println("ZERO FORCE:");
   Serial.println(zeroForce);
-//Serial.println("UPPER LIMIT FORCE:");
+  Serial.println(minForce); // new
   Serial.println(maxForce);
-//  Serial.println("Calibration stage complete. Max actuator positions is:");
+  Serial.println(user_position_MIN); // new
   Serial.println(user_position_MAX);
 //  Serial.println("Make sure to researcher records these values and press button to proceed.");
 //  while(!risingEdgeButton());
@@ -623,15 +638,18 @@ void calibration() {
   bool calibrationComplete = false;
   int nMaxPressure = 0;
   int sum = 0;
-  int lenUserMaxArr = 10;
-  int user_position_MAX_arr[lenUserMaxArr];
+  int sum1 = 0;
+  int lenUserArr = 10;
+  int user_position_MAX_arr[lenUserArr];
+  int user_position_MIN_arr[lenUserArr];
   int d1 = 0;
   int d2 = 0;
   int d3 = 0;
 
   // initialize blank array
-  for (int j = 0; j< lenUserMaxArr; j++) {
+  for (int j = 0; j< lenUserArr; j++) {
      user_position_MAX_arr[j] = 0;
+     user_position_MIN_arr[j] = 0;
   }
           
   // Reset position of actuator
@@ -642,8 +660,9 @@ void calibration() {
     if (Serial.available() > 0) {
       mode = CALIBRATION_OPTIONS(Serial.read() - '0');
       switch (mode) {
-        case ZERO_FORCE:
+        case ZERO_FORCE: // test for passing min AND max
           while (!(Serial.available() > 0));
+          user_position_MIN = (Serial.read() - '0')*10 + (Serial.read() - '0')*1;
           d1 = (Serial.read() - '0');
           d2 = (Serial.read() - '0');
           user_position_MAX = d1*10 + d2*1;
@@ -654,7 +673,9 @@ void calibration() {
           //user_position_MAX = (Serial.read() - '0')*10 + (Serial.read() - '0')*1;
           //if (Serial.available() > 0) user_position_MAX = user_position_MAX * 10 + (Serial.read() - '0')*1;
           user_position_MAX_arr[nMaxPressure] = user_position_MAX;
+          user_position_MIN_arr[nMaxPressure] = user_position_MIN;
           nMaxPressure = nMaxPressure + 1;
+          Serial.println(user_position_MIN);
           Serial.println(user_position_MAX);
           break;
         case FLEX:
@@ -662,12 +683,17 @@ void calibration() {
           break;
         case MAX_PRESSURE:
           user_position_MAX_arr[nMaxPressure] = calibrationMaxDeepPressure();
+          user_position_MIN_arr[nMaxPressure] = user_position_MIN;
           nMaxPressure = nMaxPressure + 1;
           sum = 0;
+          sum1 = 0;
           for (int i = 0; i< nMaxPressure; i++) {
             sum = sum + user_position_MAX_arr[i];
+            sum1 = sum1 + user_position_MIN_arr[i];
           }
           user_position_MAX = sum/nMaxPressure;
+          user_position_MIN = sum1/nMaxPressure;
+          Serial.println(user_position_MIN);
           Serial.println(user_position_MAX);
           break;
         case ACTUATOR:

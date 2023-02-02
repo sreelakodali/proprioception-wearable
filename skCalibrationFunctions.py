@@ -51,7 +51,10 @@ def calibrateMaxPressure(mcu, p, saveData):
 		g = open(p + 'constantsCalibrated.py', 'a', encoding='UTF8')
 		h = open(p + 'maxForce' + '.csv', 'a', encoding='UTF8')
 	mcu.write(str(5).encode()) # letting teensy know that max pressure reached
-	while (lineCount < 4):
+	
+	# wait for click
+	
+	while (lineCount < 7):
 		value = (mcu.readline()).decode()
 		value = value.strip()
 
@@ -65,12 +68,21 @@ def calibrateMaxPressure(mcu, p, saveData):
 						g.write("ZERO_FORCE = " + value + "\n")
 						h.write("ZERO_FORCE = " + value + "\n")
 					elif (lineCount== 1):
+						g.write("USER_MIN_FORCE_DATA = " + value + "\n")
+						h.write("USER_MIN_FORCE_DATA = " + value + "\n")
+					elif (lineCount== 2):
 						g.write("USER_MAX_FORCE_DATA = " + value + "\n")
 						h.write("USER_MAX_FORCE_DATA = " + value + "\n")
-					elif (lineCount == 2):
+					elif (lineCount == 3):
+						g.write("USER_MIN_ACTUATOR_COMMAND = " + value + "\n")
+						h.write("USER_MIN_ACTUATOR_COMMAND = " + value + "\n")
+					elif (lineCount == 4):
 						g.write("USER_MAX_ACTUATOR_COMMAND = " + value + "\n")
 						h.write("USER_MAX_ACTUATOR_COMMAND = " + value + "\n")
-					elif (lineCount == 3):
+					elif (lineCount == 5):
+						g.write("USER_MIN_ACTUATOR_AVG = " + value + "\n")
+						h.write("USER_MIN_ACTUATOR_AVG = " + value + "\n")
+					elif (lineCount == 6):
 						g.write("USER_MAX_ACTUATOR_AVG = " + value + "\n")
 						h.write("USER_MAX_ACTUATOR_AVG = " + value + "\n")
 				lineCount = lineCount + 1

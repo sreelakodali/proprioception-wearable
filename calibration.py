@@ -171,5 +171,13 @@ if(not(skipGUI)):
 						CALIBRATION_FUNCTIONS[i](mcu,p, sc, saveData)
 				elif (btn == 1): # clicking anywhere else on the screen
 					if i == 'MAX_PRESSURE':
-						CALIBRATION_FUNCTIONS[i](mcu,p, saveData)
+						mcu.write(str(5).encode())
+						while(True):
+							btn2 = waitforclick(1)
+						# time.sleep(2)
+						# btn2 = waitforclick(1)
+							if (btn2 == 1):
+								#print("bloop")
+								CALIBRATION_FUNCTIONS[i](mcu,p, saveData)
+								break
 	
