@@ -4,7 +4,7 @@
 import serial
 import datetime
 import csv
-import sys
+import sys, getopt
 import os
 import shutil
 import numpy as np
@@ -25,6 +25,7 @@ import keyboard
 # 4 = start actuator calibration
 # 3 = start max pressure calibration
 # 2 = start flex calibration
+# 1 = set userMax value
 # 0 = done with calibration
 
 CALIBRATION_OPTIONS = {'ACTUATOR':4, 'MAX_PRESSURE': 3, 'FLEX': 2, 'NONE': 0}
@@ -32,24 +33,47 @@ CALIBRATION_OPTIONS2 = {'ACTUATOR':4, 'MAX_PRESSURE': 3, 'NONE': 0}
 CALIBRATION_FUNCTIONS = {'ACTUATOR':skC.calibrateActuator, 'MAX_PRESSURE': skC.calibrateMaxPressure, 'FLEX': skC.calibrateFlexSensor, 'ZERO_FORCE': 1, 'NONE': skC.calibrateDone}
 
 calibrationSeq = CALIBRATION_OPTIONS.keys() # default
+saveData = False
+mcu = serial.Serial(port=CONST.PORT_NAME, baudrate=CONST.BAUD_RATE, timeout=.1)
+click = 0
+lineCount = 0
+skipClickForNewText = 0
+skipGUI = 0
 
-opts, args = getopt.getopt(sys.argv[1:],"m",["mode=", "custom="])
+opts, args = getopt.getopt(sys.argv[1:],"zms",["mode=", "userMax="])
 for opt, arg in opts:
-	if opt in ["-m", "--mode"]:
+	if opt == "--userMax":
+		mcu.write(str(1).encode())
+		mcu.write(str(arg).encode())
+		value = (mcu.readline()).decode()
+		value = value.strip()
+		if (value):
+			print(value)
+
+	elif opt == "-z":
+		print('NONE')
+		mcu.write(str(CALIBRATION_OPTIONS['NONE']).encode())
+		skipGUI = 1
+
+	elif opt in ["-m", "--mode"]:
 		if arg == 'FLEX':
 			calibrationSeq = CALIBRATION_OPTIONS.keys()
 		if arg == 'KEY':
 			calibrationSeq = CALIBRATION_OPTIONS2.keys()
 			#calibrationSeq = (CALIBRATION_OPTIONS[arg])
-	elif opt == "--custom":
-		calibrationSeq = arg
+	
+	elif opt == "-s":
+		saveData = True	
+
+	# elif opt == "--custom":
+	# 	calibrationSeq = arg # fix not done
+
+
 
 print(calibrationSeq)
 
-mcu = serial.Serial(port=CONST.PORT_NAME, baudrate=CONST.BAUD_RATE, timeout=.1)
-click = 0
-lineCount = 0
-skipClickForNewText = 0
+
+
 
 #----------------------------------------------------------------
 def on_click(x, y):
@@ -70,70 +94,82 @@ def waitforclick(maxPressure):
 	global click, mcu
 	turtle.update()
 	click = 0
+
+	if(maxPressure and saveData):
+		h = open(p + 'maxForce' + '.csv', 'a', encoding='UTF8')
+
 	while not click:
 
 		if (maxPressure):
-			print("here")
 			value = (mcu.readline()).decode()
 			value = value.strip()
 
 			if (value):
 				print(value)
 
+				if (saveData):
+					# h = open(p + 'maxForce' + '.csv', 'w+', encoding='UTF8')
+					h.write(value+ "\n")
+					#h.close()
+
 		turtle.update()
 		time.sleep(.2)
 	oldClick = click
 	click = 0
+	if(maxPressure and saveData):
+		h.close()
 	return oldClick
 #----------------------------------------------------------------
 
 
+if(not(skipGUI)):
+	# Default mode
+	# actuator, welcome, please wear device, max+zero, flex
 
-# Default mode
-# actuator, welcome, please wear device, max+zero, flex
+	if(saveData):
+		p = skC.calibrateNewSubject();
+	else:
+		p = ''
+	sc = turtle.Screen()
+	sc.tracer(0)
+	sc.title("Calibration")
+	turtle.onscreenclick(on_click, btn=1)
+	turtle.update()
+	skG.initializeCalibrationWindow(sc, skC.CALIBRATION_TEXT_INTRO)
 
-p = skC.calibrateNewSubject();
+	for i in calibrationSeq:
 
-sc = turtle.Screen()
-sc.tracer(0)
-sc.title("Calibration")
-turtle.onscreenclick(on_click, btn=1)
-turtle.update()
-skG.initializeCalibrationWindow(sc, skC.CALIBRATION_TEXT_INTRO)
+		if not(skipClickForNewText): btn = waitforclick(0)
+		else: skipClickForNewText = 0
+		skG.initializeCalibrationWindow(sc, skC.CALIBRATION_TEXT[i])
 
-for i in calibrationSeq:
+		if i == 'NONE':
+			waitforclick(0)
+			print(i)
+			mcu.write(str(CALIBRATION_OPTIONS[i]).encode())
+			CALIBRATION_FUNCTIONS[i](mcu,p, saveData)
 
-	if not(skipClickForNewText): btn = waitforclick(0)
-	else: skipClickForNewText = 0
-	skG.initializeCalibrationWindow(sc, skC.CALIBRATION_TEXT[i])
+		else:	
+			skG.buttons(sc)
+			while(True):
 
-	if i == 'NONE':
-		waitforclick(0)
-		print(i)
-		mcu.write(str(CALIBRATION_OPTIONS[i]).encode())
-		CALIBRATION_FUNCTIONS[i](mcu,p)
+				if (i == 'MAX_PRESSURE'):
+					btn = waitforclick(1)
+				else: btn = waitforclick(0)
 
-	else:	
-		skG.buttons(sc)
-		while(True):
-
-			if (i == 'MAX_PRESSURE'):
-				btn = waitforclick(1)
-			else: btn = waitforclick(0)
-
-			#btn = waitforclick()
-			#print(btn)
-			if (btn == 3): # done
-				skipClickForNewText = 1
-				break
-			elif (btn == 2): # calibrate
-				print(i)
-				mcu.write(str(CALIBRATION_OPTIONS[i]).encode())
-				if i =='ACTUATOR':
-					CALIBRATION_FUNCTIONS[i](mcu,p)
-				elif i == 'FLEX':
-					CALIBRATION_FUNCTIONS[i](mcu,p, sc)
-			elif (btn == 1): # clicking anywhere else on the screen
-				if i == 'MAX_PRESSURE':
-					CALIBRATION_FUNCTIONS[i](mcu,p)
+				#btn = waitforclick()
+				#print(btn)
+				if (btn == 3): # done
+					skipClickForNewText = 1
+					break
+				elif (btn == 2): # calibrate
+					print(i)
+					mcu.write(str(CALIBRATION_OPTIONS[i]).encode())
+					if i =='ACTUATOR':
+						CALIBRATION_FUNCTIONS[i](mcu,p, saveData)
+					elif i == 'FLEX':
+						CALIBRATION_FUNCTIONS[i](mcu,p, sc, saveData)
+				elif (btn == 1): # clicking anywhere else on the screen
+					if i == 'MAX_PRESSURE':
+						CALIBRATION_FUNCTIONS[i](mcu,p, saveData)
 	

@@ -14,6 +14,8 @@ import skFunctions as sk
 import constants as CONST
 
 
+### SEE WHEN TRIAL # CHANGES TO FIND DIFFERENT SECTIONS, IDENTIFY TARGET ANGLES AND SUBJECT ATTEMPTS
+
 # # Find the most recent data directory
 # allSubdirs = [CONST.PATH_LAPTOP+d for d in os.listdir(CONST.PATH_LAPTOP) if os.path.isdir(os.path.join(CONST.PATH_LAPTOP, d))]
 # p = max(allSubdirs, key=sk.getCreationTime) + '/'
@@ -55,6 +57,9 @@ import constants as CONST
 # print(targets_afterEachChange)
 # print("Angle Attempts")
 # print(angle_afterEachChange)
+
+
+### FOR SUBJECT 1, READ IN REVISED TARGET ANGLE AND COMPUTE ERROR WITH SUBJECT ATTEMPT
 
 # Find the most recent data directory
 allSubdirs = [CONST.PATH_LAPTOP+d for d in os.listdir(CONST.PATH_LAPTOP) if os.path.isdir(os.path.join(CONST.PATH_LAPTOP, d))]

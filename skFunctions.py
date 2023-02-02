@@ -80,7 +80,7 @@ def delta_feedbackToPosition(delta):
 
 # Function 5: Digital value from force sensor --> force measurement (N)
 def computeForce(data):
-	return round(((data - 255- CONST.ZERO_FORCE) * (45.0)/512), 2) #(data - 256) * (45.0)/511 # NEEDS CALIBRATED VAL
+	return round(((data - CONST.ZERO_FORCE) * (45.0)/512), 2) #(data - 256) * (45.0)/511 # NEEDS CALIBRATED VAL
 	#changed bc uncalibrated
 
 # dataFunc = {'time':millisToSeconds, 'flex sensor':computeAngle,'actuator position, command':commandToPosition, \
@@ -126,7 +126,7 @@ def generateAngles(txt, N, M, A):
 
 	if txt in ['TARGET', 'PRACTICE', 'TEST']:
 		for i in range(0,M):
-			t = list(range(40,180,15))
+			t = list(range(180,40,-15))#list(range(40,180,15))
 			r = [t.pop(random.randrange(len(t)))]
 			r.append(t.pop(random.randrange(len(t))))
 			half1 = t[:4]
@@ -143,7 +143,7 @@ def generateAngles(txt, N, M, A):
 
 	if txt in ['PRACTICE', 'TEST']:
 		for i in range(0,A):
-			t2 = list(range(40,180,15))
+			t2 = list(range(180,40,-15))#list(range(40,180,15))
 			random.shuffle(t2)
 			trialAngles = trialAngles + t2
 
@@ -531,10 +531,30 @@ def plot_Force(s, p, fileName, time, force):
 	plt.yticks(name='Arial')
 
 	ax1.set_ylabel("Force (N)", name='Arial',)
+	#ax1.scatter(time, force)
 	l1 = ax1.plot(time, force, 'r', linewidth=1.75, label='Force')
 	ax1.yaxis.label.set_color('r')
 	ax1.tick_params(axis='y', color='r')
-	ax1.set_ylim(0,25)
+	ax1.set_ylim(-2,10)
+
+	plt.grid(True)
+	#ax1.legend(l_all, labels, loc=0)
+	if s==1: plt.savefig(p +"fig_"+fileName)
+	plt.show()
+
+def plot_ForceDistance(s, p, fileName, time, force):
+	fig, ax1 = plt.subplots()
+	plt.suptitle("Real-time Data " + fileName, name='Arial', weight='bold')
+	ax1.set_xlabel("Tactor Extension (mm)", name='Arial')
+	plt.xticks(name='Arial')
+	plt.yticks(name='Arial')
+
+	ax1.set_ylabel("Force (N)", name='Arial',)
+	ax1.scatter(time, force)
+	#l1 = ax1.plot(time, force, 'r', linewidth=1.75, label='Force')
+	#ax1.yaxis.label.set_color('r')
+	#ax1.tick_params(axis='y', color='r')
+	ax1.set_ylim(0,max(force)+1)
 
 	plt.grid(True)
 	#ax1.legend(l_all, labels, loc=0)

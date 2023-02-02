@@ -1,0 +1,4 @@
+No haptic, no visual
+No haptic, yes visual
+Yes haptic, no visual
+Yes haptic, yes visual

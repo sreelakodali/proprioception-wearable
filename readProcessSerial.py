@@ -58,7 +58,7 @@ for opt, arg in opts:
 
 # Read in serial data and save in csv
 if (not(CONST.TRANSFER_RAW)): writer.writerow(list(dataFunc.keys()))
-endTime = datetime.datetime.now() + datetime.timedelta(seconds=CONST.RUNTIME_LENGTH)
+endTime = datetime.datetime.now() + datetime.timedelta(seconds=30)
 while (datetime.datetime.now() < endTime):
 	value = mcu.readline()
 	value = str(value, "utf-8").split(",")

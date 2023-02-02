@@ -21,9 +21,10 @@ CALIBRATION_TEXT_ZERO = ["Calibration complete!"]
 
 CALIBRATION_TEXT = {'ACTUATOR':CALIBRATION_TEXT_ACTUATOR, 'MAX_PRESSURE': CALIBRATION_TEXT_MAX_PRESSURE, 'FLEX': CALIBRATION_TEXT_FLEX, 'NONE': CALIBRATION_TEXT_ZERO}#  'ZERO_FORCE': 1, 'NONE': 0}
 
-def calibrateActuator(mcu, p):
+def calibrateActuator(mcu, p, saveData):
 	lineCount = 0
-	g = open(p + 'constantsCalibrated.py', 'a', encoding='UTF8')
+	if(saveData):
+		g = open(p + 'constantsCalibrated.py', 'a', encoding='UTF8')
 	while (lineCount < 2):
 	#while (1):
 		value = (mcu.readline()).decode()
@@ -34,37 +35,53 @@ def calibrateActuator(mcu, p):
 
 			if (value.isnumeric()):
 
-				if (lineCount == 0):
-					g.write("ACTUATOR_FEEDBACK_MAX = " + value + "\n")
-				elif (lineCount == 1):
-					g.write("ACTUATOR_FEEDBACK_MIN = " + value + "\n")
+				if (saveData):
+					if (lineCount == 0):
+						g.write("ACTUATOR_FEEDBACK_MAX = " + value + "\n")
+					elif (lineCount == 1):
+						g.write("ACTUATOR_FEEDBACK_MIN = " + value + "\n")
+				
 				lineCount = lineCount + 1
-	g.close()
+	if(saveData):
+		g.close()
 
-def calibrateMaxPressure(mcu, p):
+def calibrateMaxPressure(mcu, p, saveData):
 	lineCount = 0
-	g = open(p + 'constantsCalibrated.py', 'a', encoding='UTF8')
+	if(saveData):
+		g = open(p + 'constantsCalibrated.py', 'a', encoding='UTF8')
+		h = open(p + 'maxForce' + '.csv', 'a', encoding='UTF8')
 	mcu.write(str(5).encode()) # letting teensy know that max pressure reached
-	while (lineCount < 3):
+	while (lineCount < 4):
 		value = (mcu.readline()).decode()
 		value = value.strip()
 
 		if (value):
 			print(value)
-
+			if(saveData):
+				h.write(value+'\n')
 			if (value.isnumeric()):
-				if (lineCount == 0):
-					g.write("ZERO_FORCE = " + value + "\n")
-				elif (lineCount== 1):
-					g.write("USER_MAX_FORCE_DATA = " + value + "\n")
-				elif (lineCount == 2):
-					g.write("USER_MAX_ACTUATOR_COMMAND = " + value + "\n")
+				if(saveData):
+					if (lineCount == 0):
+						g.write("ZERO_FORCE = " + value + "\n")
+						h.write("ZERO_FORCE = " + value + "\n")
+					elif (lineCount== 1):
+						g.write("USER_MAX_FORCE_DATA = " + value + "\n")
+						h.write("USER_MAX_FORCE_DATA = " + value + "\n")
+					elif (lineCount == 2):
+						g.write("USER_MAX_ACTUATOR_COMMAND = " + value + "\n")
+						h.write("USER_MAX_ACTUATOR_COMMAND = " + value + "\n")
+					elif (lineCount == 3):
+						g.write("USER_MAX_ACTUATOR_AVG = " + value + "\n")
+						h.write("USER_MAX_ACTUATOR_AVG = " + value + "\n")
 				lineCount = lineCount + 1
-	g.close()
+	if(saveData):
+		g.close()
+		h.close()
 
-def calibrateFlexSensor(mcu, p, sc):
+def calibrateFlexSensor(mcu, p, sc, saveData): # FIX: update with save data
 	TIME_LENGTH_READ = 30 #seconds
-	g = open(p + 'constantsCalibrated.py', 'a', encoding='UTF8')
+	if(saveData):
+		g = open(p + 'constantsCalibrated.py', 'a', encoding='UTF8')
 
 	# first just read the values
 	min_AngleData = 500;
@@ -124,12 +141,15 @@ def calibrateFlexSensor(mcu, p, sc):
 	skG.buttons(sc)
 
 
-def calibrateDone(mcu, p):
+def calibrateDone(mcu, p, saveData):
 	# g = open(p + 'constantsCalibrated.py', 'a', encoding='UTF8')
 	# g.close()
 	# copy over new calibration file to constants.py
-	shutil.copy2(os.path.join(p,'constantsCalibrated.py'),os.path.join(CONST.PATH_HOME,'constants.py'))
 
+	if(saveData):
+		shutil.copy2(os.path.join(p,'constantsCalibrated.py'),os.path.join(CONST.PATH_HOME,'constants.py'))
+		importlib.reload(CONST) #constants as 
+		importlib.reload(sk)
 
 def calibrateNewSubject():
 	# Wait for subject input
