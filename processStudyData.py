@@ -26,4 +26,6 @@ import constants as CONST
 # print(experimentDataDirs)
 # print(skD.extractSubjectAttemptAngles('2023-02-02_15-52', 4))
 
-skD.generateSubjectAttemptsTargets(4)
+#skD.generateSubjectAttemptsTargets(4)
+#skD.combineProcess(4)
+skD.combineRaw(4)

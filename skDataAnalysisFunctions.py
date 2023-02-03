@@ -113,8 +113,116 @@ def generateSubjectAttemptsTargets(n):
 		# if attempt total == 110, have all the data. can proceed. otherwise: data missing error
 
 
-def combineProcessRaw():
+def combineProcess(n):
 
+	# find experimentDataDirs. get the processingFile. 
+	path = CONST.PATH_LAPTOP+"SUBJECT"+str(n)
+	allSubDirs = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+	experimentDataDirs = [ d for d in allSubDirs if d.find('subject')==-1]
+	print(experimentDataDirs)
+
+	# copy first processingFile and make that the main
+	endTime = 0
+	newTime = []
+	combinedFile = CONST.PATH_LAPTOP + 'SUBJECT' + str(n) + "/processed_" + 'SUBJECT' + str(n) + ".csv"
+	h = open(combinedFile, 'w+', encoding='UTF8', newline='')
+	writer = csv.writer(h)
+	dataFunc = {'oldTime':sk.millisToSeconds, 'flex sensor':sk.doNothing,'actuator position, command':sk.commandToPosition, \
+			'actuator position, measured':sk.feedbackToPosition, 'force':sk.computeForce}
+
+	columnNames = list(dataFunc.keys())
+	columnNames.append("'Trial Number'") 
+	columnNames.append("'Target Angle'")
+	columnNames.append("'Bookmark'")
+	writer.writerow(columnNames)
+	h.close()
+
+	for d in experimentDataDirs:
+
+
+		# if it doesn't have subjectAngleAttempts,extract and add to subject angle attempts list. add targets with same length
+		file = [f for f in os.listdir(path+'/'+d) if (f.find('processed')!=-1)]
+		file = file[0]
+
+		# copy this file into main file by
+		# append the other processingFiles
+		f = open(combinedFile, 'a', encoding='UTF8', newline='')
+		print(path+'/'+ d + '/' + file)
+		g = open(path+'/'+ d + '/' + file, 'r', encoding='UTF8', newline='')
+		
+		counter = 0
+		for line in g:
+			if not (counter == 0):
+				f.write(line)
+			counter = counter + 1
+		f.close()
+		g.close()
+		data = pd.read_csv(path+'/'+ d + '/' + file, delimiter = ",").astype(float)
+		time = data['time'].tolist()
+		revisedTime = [i + endTime for i in time] #endTime + t
+		newTime = newTime + revisedTime # create new time vector by 
+		endTime = endTime + time[-1]
+
+	# add new time column
+	data1 = pd.read_csv(combinedFile, delimiter = ",").astype(float)
+	data1['time'] = newTime
+	data1.to_csv(combinedFile)
+	print("done")
+	
+
+def combineRaw(n):
+	# find experimentDataDirs. get the processingFile. 
+	path = CONST.PATH_LAPTOP+"SUBJECT"+str(n)
+	allSubDirs = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
+	experimentDataDirs = [ d for d in allSubDirs if d.find('subject')==-1]
+	print(experimentDataDirs)
+
+	# copy first processingFile and make that the main
+	endTime = 0
+	newTime = []
+	combinedFile = CONST.PATH_LAPTOP + 'SUBJECT' + str(n) + "/raw_" + 'SUBJECT' + str(n) + ".csv"
+	h = open(combinedFile, 'w+', encoding='UTF8', newline='')
+	writer = csv.writer(h)
+	dataFunc = {'oldTime':sk.millisToSeconds, 'flex sensor':sk.doNothing,'actuator position, command':sk.commandToPosition, \
+			'actuator position, measured':sk.feedbackToPosition, 'force':sk.computeForce}
+
+	columnNames = list(dataFunc.keys())
+	columnNames.append("'Trial Number'") 
+	columnNames.append("'Target Angle'")
+	columnNames.append("'Bookmark'")
+	writer.writerow(columnNames)
+	h.close()
+
+	for d in experimentDataDirs:
+		# if it doesn't have subjectAngleAttempts,extract and add to subject angle attempts list. add targets with same length
+		file = [f for f in os.listdir(path+'/'+d) if (f.find('raw')!=-1)]
+		file = file[0]
+
+		# copy this file into main file by
+		# append the other processingFiles
+		f = open(combinedFile, 'a', encoding='UTF8', newline='')
+		print(path+'/'+ d + '/' + file)
+		g = open(path+'/'+ d + '/' + file, 'r', encoding='UTF8', newline='')
+		
+		#counter = 0
+		for line in g:
+		#	if not (counter == 0):
+			f.write(line)
+		#	counter = counter + 1
+		f.close()
+		g.close()
+		data = pd.read_csv(path+'/'+ d + '/' + file, delimiter = ",", header=None).astype(float)
+		time = data[0].tolist()
+		revisedTime = [i + endTime for i in time] #endTime + t
+		newTime = newTime + revisedTime # create new time vector by 
+		endTime = endTime + time[-1]
+
+	# add new time column
+	print(len(newTime))
+	data1 = pd.read_csv(combinedFile, delimiter = ",").astype(float)
+	data1['time'] = newTime
+	data1.to_csv(combinedFile)
+	print("done")
 
 # def plotForceVsTime():
 
@@ -125,5 +233,5 @@ def combineProcessRaw():
 # def computeError():
 
 
-# def combineRaw():
+
 

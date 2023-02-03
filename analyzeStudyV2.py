@@ -47,25 +47,6 @@ for i in list(range(0,nSubjects)):
 			#print(force)
 			sk.plot_Force(0, p, p, time, force)
 
-
-	# fileName = [f for f in os.listdir(CONST.PATH_LAPTOP + p) if (f.startswith('subject') and f.endswith('.csv'))]
-	# fileName = fileName[0]
-	# data0 = pd.read_csv(CONST.PATH_LAPTOP + p + fileName, delimiter = "\n").astype(float)
-	# subjectAttempt = data0['subject'].tolist()
-
-	# fileName = [f for f in os.listdir(CONST.PATH_LAPTOP + p) if (f.startswith('targetAngles') and f.endswith('.csv'))]
-	# fileName = fileName[0]
-	# data1 = pd.read_csv(CONST.PATH_LAPTOP + p + fileName, delimiter = "\n").astype(float)
-	# target = data1['target'].tolist()
-
-	# fileName = [f for f in os.listdir(CONST.PATH_LAPTOP + p) if (f.startswith('processed') and f.endswith('.csv'))]
-	# fileName = fileName[0]
-	# data = pd.read_csv(CONST.PATH_LAPTOP + p + fileName, delimiter = ",").astype(float)
-	# force = data['force'].tolist()
-	# time = data['time'].tolist()
-	# #print(force)
-	# sk.plot_Force(0, p, p, time, force)
-
 	if (hapticsConditionsTest[i]):		
 		test_HnV = list(range(70,80)) # haptics, no visual
 		test_HV = list(range(80,90)) # haptics, yes visual
