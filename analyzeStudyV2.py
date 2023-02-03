@@ -21,8 +21,8 @@ import constants as CONST
 # 		p = arg
 # print(p)
 
-nSubjects = 3
-hapticsConditionsTest = [1, 0, 1]
+nSubjects = 5
+hapticsConditionsTest = [1, 0, 1, 1, 0]
 errorTotal = []
 errorABSTotal =[]
 for i in list(range(0,nSubjects)):
@@ -31,23 +31,40 @@ for i in list(range(0,nSubjects)):
 	## COMPUTING ERROR
 	p = "SUBJECT" + str(i+1) + '/'
 	print(p)
-	fileName = [f for f in os.listdir(CONST.PATH_LAPTOP + p) if (f.startswith('subject') and f.endswith('.csv'))]
-	fileName = fileName[0]
-	data0 = pd.read_csv(CONST.PATH_LAPTOP + p + fileName, delimiter = "\n").astype(float)
-	subjectAttempt = data0['subject'].tolist()
+	for f in os.listdir(CONST.PATH_LAPTOP + p):
+		if f.startswith('subject') and f.endswith('.csv'):
+			data0 = pd.read_csv(CONST.PATH_LAPTOP + p + f, delimiter = "\n", header=None).astype(float)
+			subjectAttempt = [i[0] for i in data0.values.tolist()]
+			#print(subjectAttempt)
+		elif f.startswith('targetAngles') and f.endswith('.csv'):
+			data1 = pd.read_csv(CONST.PATH_LAPTOP + p + f, delimiter = "\n", header=None).astype(float)
+			target = [i[0] for i in data1.values.tolist()]
+			#print(target)
+		elif f.startswith('processed') and f.endswith('.csv'):
+			data = pd.read_csv(CONST.PATH_LAPTOP + p + f, delimiter = ",").astype(float)
+			force = data['force'].tolist()
+			time = data['time'].tolist()
+			#print(force)
+			sk.plot_Force(0, p, p, time, force)
 
-	fileName = [f for f in os.listdir(CONST.PATH_LAPTOP + p) if (f.startswith('targetAngles') and f.endswith('.csv'))]
-	fileName = fileName[0]
-	data1 = pd.read_csv(CONST.PATH_LAPTOP + p + fileName, delimiter = "\n").astype(float)
-	target = data1['target'].tolist()
 
-	fileName = [f for f in os.listdir(CONST.PATH_LAPTOP + p) if (f.startswith('processed') and f.endswith('.csv'))]
-	fileName = fileName[0]
-	data = pd.read_csv(CONST.PATH_LAPTOP + p + fileName, delimiter = ",").astype(float)
-	force = data['force'].tolist()
-	time = data['time'].tolist()
-	#print(force)
-	sk.plot_Force(0, p, p, time, force)
+	# fileName = [f for f in os.listdir(CONST.PATH_LAPTOP + p) if (f.startswith('subject') and f.endswith('.csv'))]
+	# fileName = fileName[0]
+	# data0 = pd.read_csv(CONST.PATH_LAPTOP + p + fileName, delimiter = "\n").astype(float)
+	# subjectAttempt = data0['subject'].tolist()
+
+	# fileName = [f for f in os.listdir(CONST.PATH_LAPTOP + p) if (f.startswith('targetAngles') and f.endswith('.csv'))]
+	# fileName = fileName[0]
+	# data1 = pd.read_csv(CONST.PATH_LAPTOP + p + fileName, delimiter = "\n").astype(float)
+	# target = data1['target'].tolist()
+
+	# fileName = [f for f in os.listdir(CONST.PATH_LAPTOP + p) if (f.startswith('processed') and f.endswith('.csv'))]
+	# fileName = fileName[0]
+	# data = pd.read_csv(CONST.PATH_LAPTOP + p + fileName, delimiter = ",").astype(float)
+	# force = data['force'].tolist()
+	# time = data['time'].tolist()
+	# #print(force)
+	# sk.plot_Force(0, p, p, time, force)
 
 	if (hapticsConditionsTest[i]):		
 		test_HnV = list(range(70,80)) # haptics, no visual
@@ -100,39 +117,6 @@ for i in list(range(0,nSubjects)):
 
 # print(errorTotal)
 # print(errorABSTotal)
-
-
-
-# ## UPDATE THESE RANGES
-# test_nHnV = list(range(0,10)) # no haptics, no visual
-# test_nHV = list(range(10,20)) # no haptics, visual
-# test_HnV = list(range(20,30)) # haptics, no visual
-# test_HV = list(range(30,40))  # haptics, visual
-
-# groups = [test_nHnV, test_nHV, test_HnV, test_HV]
-# txt = ['Test, No Haptic No Visual= ', 'Test, No Haptic Yes Visual= ', 'Test, Yes Haptic No Visual= ', 'Test, Yes Haptic Yes Visual= ']
-# # groups = [test_HnV, test_HV, test_nHnV, test_nHV]
-# # txt = ['Test, Yes Haptic No Visual= ', 'Test, Yes Haptic Yes Visual= ', 'Test, No Haptic No Visual= ', 'Test, No Haptic Yes Visual= ']
-
-# print("---- MEAN ERROR -----")
-
-# for i in range(0,len(groups)):
-# 	idx = groups[i]
-# 	error = [target[j] - subjectAttempt[j] for j in idx]
-# 	#print(error)
-# 	avgError = sum(error) / len(error)
-# 	# errorABS = [abs(target[i] - subjectAttempt[i]) for i in idx]
-# 	# avgErrorABS = sum(errorABS) / len(errorABS)
-# 	print(txt[i]+str(avgError))
-
-# print("---- MEAN ERROR (ABSOLUTE VALUE) -----")
-# for i in range(0,len(groups)):
-# 	idx = groups[i]
-# 	errorABS = [abs(target[j] - subjectAttempt[j]) for j in groups[i]]
-# 	#print(errorABS)
-# 	avgErrorABS = sum(errorABS) / len(errorABS)
-# 	print(txt[i]+str(avgErrorABS))
-
 
 
 

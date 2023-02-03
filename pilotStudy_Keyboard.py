@@ -23,6 +23,7 @@ import random
 # Global Variables
 t = 1
 nTrials = 0
+bookmark = 0
 # N = 1
 # M = 1
 # A = 1
@@ -100,6 +101,7 @@ dataFunc = {'time':sk.millisToSeconds, 'flex sensor':sk.doNothing,'actuator posi
 columnNames = list(dataFunc.keys())
 columnNames.append("'Trial Number'") 
 columnNames.append("'Target Angle'")
+columnNames.append("'Bookmark'")
 writer.writerow(columnNames)
 
 # # Read in serial data and save in csv
@@ -142,11 +144,13 @@ while (datetime.datetime.now() < endTime):
 			raw = [j.rstrip() for j in i]
 			raw.append(nTrials)
 			raw.append(nTrials)
+			raw.append(bookmark)
 			writer2.writerow(raw)
 
 			newRow = sk.processNewRow(dataFunc, i)		
 			newRow.append(nTrials)
 			newRow.append(nTrials)
+			newRow.append(bookmark)
 			writer.writerow(newRow)	
 			print(newRow)                                                                                        
 	
@@ -174,6 +178,7 @@ while (datetime.datetime.now() < endTime):
 
 armAngle = 180
 sk.sendAngle_PCToWearable(armAngle, mcu)
+bookmark = bookmark + 0.5
 skG.initializeWindow(sc,EXPERIMENT_TEXT_4)
 keyboard.wait('up')
 
@@ -187,7 +192,7 @@ skG.initializeWindow(sc,EXPERIMENT_TEXT_5)
 keyboard.wait('up')
 
 skG.initializeWindow(sc,EXPERIMENT_TEXT_6)
-
+bookmark = bookmark + 0.5
 skG.drawUpperArm()
 skG.drawForearm(sc,nTargetAngles[nTrials], skG.COLOR)
 skG.initializeTrialLabel(sc,len(nTargetAngles))
@@ -203,11 +208,13 @@ while (nTrials < len(nTargetAngles)):
 			raw = [j.rstrip() for j in i]
 			raw.append(nTrials)
 			raw.append(nTargetAngles[nTrials])
+			raw.append(bookmark)
 			writer2.writerow(raw)
 
 			newRow = sk.processNewRow(dataFunc, i)		
 			newRow.append(nTrials)
 			newRow.append(nTargetAngles[nTrials])
+			newRow.append(bookmark)
 			writer.writerow(newRow)	
 			print(newRow)
 
@@ -241,6 +248,7 @@ while (nTrials < len(nTargetAngles)):
 
 armAngle = 180
 sk.sendAngle_PCToWearable(armAngle, mcu)
+bookmark = bookmark + 0.5
 skG.initializeWindow(sc,EXPERIMENT_TEXT_7)
 keyboard.wait('up')
 
@@ -256,7 +264,7 @@ keyboard.wait('up')
 skG.initializeWindow(sc,EXPERIMENT_TEXT_9)
 nTrials = 0
 tLEARN3 = 10
-
+bookmark = bookmark + 0.5
 skG.drawUpperArm()
 skG.drawForearm(sc,nHaptics[nTrials], skG.COLOR)
 sk.sendAngle_PCToWearable(nHaptics[nTrials], mcu)
@@ -274,11 +282,13 @@ while (nTrials < len(nHaptics)):
 			raw = [j.rstrip() for j in i]
 			raw.append(nTrials)
 			raw.append(nHaptics[nTrials])
+			raw.append(bookmark)
 			writer2.writerow(raw)
 
 			newRow = sk.processNewRow(dataFunc, i)		
 			newRow.append(nTrials)
 			newRow.append(nHaptics[nTrials])
+			newRow.append(bookmark)
 			writer.writerow(newRow)	
 			print(newRow)
 
@@ -298,6 +308,7 @@ while (nTrials < len(nHaptics)):
 
 armAngle = 180
 sk.sendAngle_PCToWearable(armAngle, mcu)
+bookmark = bookmark + 0.5
 skG.initializeWindow(sc,EXPERIMENT_TEXT_10)
 keyboard.wait('up')
 
@@ -312,6 +323,7 @@ keyboard.wait('up')
 
 skG.initializeWindow(sc,EXPERIMENT_TEXT_12)
 nTrials = 0
+bookmark = bookmark + 0.5
 skG.drawUpperArm()
 skG.drawForearm(sc,nPractice[nTrials], skG.COLOR)
 skG.initializeTrialLabel(sc,len(nPractice))
@@ -334,11 +346,13 @@ while (nTrials < len(nPractice)):
 			raw = [j.rstrip() for j in i]
 			raw.append(nTrials)
 			raw.append(nPractice[nTrials])
+			newRow.append(bookmark)
 			writer2.writerow(raw)
 
 			newRow = sk.processNewRow(dataFunc, i)		
 			newRow.append(nTrials)
 			newRow.append(nPractice[nTrials])
+			newRow.append(bookmark)
 			writer.writerow(newRow)	
 			print(newRow)
 
@@ -368,6 +382,7 @@ while (nTrials < len(nPractice)):
 
 armAngle = 180
 sk.sendAngle_PCToWearable(armAngle, mcu)
+bookmark = bookmark + 0.5
 skG.initializeWindow(sc,EXPERIMENT_TEXT_13)
 keyboard.wait('up')
 
@@ -381,6 +396,7 @@ keyboard.wait('up')
 
 skG.initializeWindow(sc,EXPERIMENT_TEXT_15)
 nTrials = 0
+bookmark = bookmark + 0.5
 skG.drawUpperArm()
 skG.drawForearm(sc,nTest[nTrials], skG.COLOR)
 skG.initializeTrialLabel(sc,len(nTest))
@@ -399,11 +415,13 @@ while (nTrials < len(nTest)):
 			raw = [j.rstrip() for j in i]
 			raw.append(nTrials)
 			raw.append(nTest[nTrials])
+			raw.append(bookmark)
 			writer2.writerow(raw)
 
 			newRow = sk.processNewRow(dataFunc, i)		
 			newRow.append(nTrials)
 			newRow.append(nTest[nTrials])
+			newRow.append(bookmark)
 			writer.writerow(newRow)	
 			print(newRow)
 
@@ -432,12 +450,14 @@ while (nTrials < len(nTest)):
 
 	elif k == 'up':
 		if (((nTrials+1) % 10) == 0):
+			bookmark = bookmark + 0.5
 			skG.initializeWindow(sc,EXPERIMENT_TEXT_16)
 			armAngle = 180
 			sk.sendAngle_PCToWearable(armAngle, mcu)
 			keyboard.wait('up')
 			skG.erase3(sc, 'white')
 			skG.initializeTrialLabel(sc,len(nTest))
+			bookmark = bookmark + 0.5
 
 
 		skG.erase(sc, 'white')
@@ -456,6 +476,7 @@ while (nTrials < len(nTest)):
 
 armAngle = 180
 sk.sendAngle_PCToWearable(armAngle, mcu)
+bookmark = bookmark + 0.5
 skG.initializeWindow(sc,EXPERIMENT_TEXT_17)
 keyboard.wait('up')
 
