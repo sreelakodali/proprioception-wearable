@@ -12,6 +12,7 @@ from scipy import signal # import lfilter, lfilter_zi, filtfilt, butter
 # from scipy.signal import lfilter, lfilter_zi, filtfilt, butter
 from operator import itemgetter
 import skFunctions as sk
+import skDataAnalysisFunctions as skD
 import constants as CONST
 
 # ##Give input file
@@ -21,16 +22,27 @@ import constants as CONST
 # 		p = arg
 # print(p)
 
-nSubjects = 5
-hapticsConditionsTest = [1, 0, 1, 1, 0]
+
+#hapticsConditionsTest = [0, 1, 0, 0, 1]
+# subjects = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+# #hapticsConditionsTest = [1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0]
+# hapticsConditionsTest = [1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0]
+
+subjects = [1, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16]
+hapticsConditionsTest = [1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0]
 errorTotal = []
 errorABSTotal =[]
-for i in list(range(0,nSubjects)):
 
+# errorHnV = []
+# errorHV = []
+
+#for i in list(range(8,13)):
+
+for i in list(range(0, len(subjects))):
 
 	## COMPUTING ERROR
-	p = "SUBJECT" + str(i+1) + '/'
-	print(p)
+	p = "SUBJECT" + str(subjects[i]) + '/'
+	#print(p)
 	for f in os.listdir(CONST.PATH_LAPTOP + p):
 		if f.startswith('subject') and f.endswith('.csv'):
 			data0 = pd.read_csv(CONST.PATH_LAPTOP + p + f, delimiter = "\n", header=None).astype(float)
@@ -40,13 +52,34 @@ for i in list(range(0,nSubjects)):
 			data1 = pd.read_csv(CONST.PATH_LAPTOP + p + f, delimiter = "\n", header=None).astype(float)
 			target = [i[0] for i in data1.values.tolist()]
 			#print(target)
-		elif f.startswith('processed') and f.endswith('.csv'):
-			data = pd.read_csv(CONST.PATH_LAPTOP + p + f, delimiter = ",").astype(float)
-			force = data['force'].tolist()
-			time = data['time'].tolist()
-			#print(force)
-			sk.plot_Force(0, p, p, time, force)
+		# elif f.startswith('processed') and f.endswith('.csv'):
+		# 	data = pd.read_csv(CONST.PATH_LAPTOP + p + f, delimiter = ",").astype(float)
+		# 	force = data['force'].tolist()
+		# 	dist = data["actuator position, measured"].tolist()
+		# 	time = data['time'].tolist()
+		# 	nTrial = data["'Trial Number'"].tolist()
+		# 	angle = data['flex sensor'].tolist()
+		# 	targets = data["'Target Angle'"].tolist()
 
+			# print(len(force))
+			# print(len(dist))
+			# print(len(time))
+
+			# k = []
+			# for z in list(range(0,len(dist))):
+			# 	if ((dist[z]) > 0 and force[z]/dist[z] >= 0 and force[z]/dist[z] < 2):
+			# 		k.append(force[z]/dist[z])
+			# 	else:
+			# 		k.append(0)
+			# meanK = np.mean(k)
+			# #print("k = %s" % meanK)
+			# #print(force)
+			# sk.plot_Force(0, p, p, time, k)
+			#skD.plotStudyTest(0, p, time,targets,angle,force,nTrial)
+	#print(hapticsConditionsTest[i-8])
+	#if (hapticsConditionsTest[i-8]):
+
+	#print(hapticsConditionsTest[i])
 	if (hapticsConditionsTest[i]):		
 		test_HnV = list(range(70,80)) # haptics, no visual
 		test_HV = list(range(80,90)) # haptics, yes visual
@@ -59,22 +92,32 @@ for i in list(range(0,nSubjects)):
 		test_HnV = list(range(90,100)) # haptics, no visual
 		test_HV = list(range(100,110)) # haptics, yes visual
 
+	#txt = ['1, 0, ', '1, 1, ', '0, 0, ', '0, 1, ']
 	txt = ['Test, Yes Haptic No Visual  | ', 'Test, Yes Haptic Yes Visual | ', 'Test, No Haptic No Visual   | ', 'Test, No Haptic Yes Visual  | ']
 	groups = [test_HnV, test_HV, test_nHnV, test_nHV]
+	groups = [test_HnV]
+	#txt = [txt[3]]
+	#groups = [groups[3]]
 
-	print("----------------------------- MEAN ERROR     MEAN ERROR (ABS)-----")
+	#print("----------------------------- MEAN ERROR     MEAN ERROR (ABS)-----")
 	buff0 = []
 	buff1 = []
-	for i in range(0,len(groups)):
-		error = [target[j] - subjectAttempt[j] for j in groups[i]]
-		errorABS = [abs(target[j] - subjectAttempt[j]) for j in groups[i]]
+	for r in range(0,len(groups)):
+		error = [target[j] - subjectAttempt[j] for j in groups[r]]
+		errorABS = [abs(target[j] - subjectAttempt[j]) for j in groups[r]]
 		#print(error)
 		avgError = sum(error) / len(error)
 		buff0.append(avgError)
 		avgErrorABS = sum(errorABS) / len(errorABS)
 		buff1.append(avgErrorABS)
-		print(txt[i]+str(avgError) + "          " + str(avgErrorABS))
+		#print(str(subjects[i]) + ", " + txt[r] + str(avgErrorABS))
+		#writer.writerow([subjects[i], 0, 1, avgErrorABS])
+		#print(txt[r]+str(avgError) + "          " + str(avgErrorABS))
+		print(str(avgErrorABS))
 
+	#print([subjects[i]] +  buff1 + [meanK])
+#	writer.writerow([subjects[i]] +  buff1 + [meanK])
+#file.close()
 	errorTotal.append(buff0)
 	errorABSTotal.append(buff1)
 
@@ -96,9 +139,25 @@ for i in list(range(0,nSubjects)):
 # 	# Force vs. Time
 
 
-# print(errorTotal)
-# print(errorABSTotal)
+errorTotal = np.array(errorTotal)
+errorABSTotal = np.array(errorABSTotal)
+#print(errorTotal)
 
+print(np.average(errorTotal,axis=0))
+stdError = np.std(errorTotal,axis=0)
+print(stdError/np.sqrt(np.size(errorTotal, 0)))
+
+#file = open('error_notABS.csv','w+', encoding='UTF8', newline='')
+#writer = csv.writer(file)
+# for row in errorTotal: #list(range(0,14)):
+# 	print(row)
+# 	writer.writerow(row)
+
+# file.close()
+# print(errorABSTotal)
+# print(np.average(errorABSTotal,axis=0))
+# stdABSError = np.std(errorABSTotal,axis=0)
+# print(stdABSError/np.sqrt(np.size(errorABSTotal, 0)))
 
 
 

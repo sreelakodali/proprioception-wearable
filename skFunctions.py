@@ -535,7 +535,29 @@ def plot_Force(s, p, fileName, time, force):
 	l1 = ax1.plot(time, force, 'r', linewidth=1.75, label='Force')
 	ax1.yaxis.label.set_color('r')
 	ax1.tick_params(axis='y', color='r')
+	#ax1.set_ylim(-2,10)
+	ax1.set_ylim(0,2)
+
+	plt.grid(True)
+	#ax1.legend(l_all, labels, loc=0)
+	if s==1: plt.savefig(p +"fig_"+fileName)
+	plt.show()
+
+def plot_ForceVsDist(s, p, fileName, time, force):
+	fig, ax1 = plt.subplots()
+	plt.suptitle("Real-time Data " + fileName, name='Arial', weight='bold')
+	ax1.set_xlabel("Distance (mm)", name='Arial')
+	plt.xticks(name='Arial')
+	plt.yticks(name='Arial')
+
+	ax1.set_ylabel("Force (N)", name='Arial',)
+	#ax1.scatter(time, force)
+	#l1 = ax1.plot(time, force, 'r', linewidth=1.75, label='Force')
+	ax1.scatter(time, force, edgecolors='g')
+	ax1.yaxis.label.set_color('r')
+	ax1.tick_params(axis='y', color='r')
 	ax1.set_ylim(-2,10)
+	#ax1.set_ylim(0,2)
 
 	plt.grid(True)
 	#ax1.legend(l_all, labels, loc=0)
@@ -573,6 +595,26 @@ def plot_Angle(s, p, fileName, time, angle):
 	ax1.yaxis.label.set_color('b')
 	ax1.tick_params(axis='y', color='b')
 	ax1.set_ylim(-50,200)
+
+	plt.grid(True)
+	#ax1.legend(l_all, labels, loc=0)
+	if s==1: plt.savefig(p +"fig_"+fileName)
+	plt.show()
+
+def plot_Angles(s, p, fileName, time, angle1, angle2):
+	fig, ax1 = plt.subplots(2,2, sharex=True, sharey=True)
+
+	plt.suptitle("Real-time Data " + fileName, name='Arial', weight='bold')
+	ax1.set_xlabel("Time (s)", name='Arial')
+	plt.xticks(name='Arial')
+	plt.yticks(name='Arial')
+
+	ax1.set_ylabel("Angle (degrees)", name='Arial',)
+	l1 = ax1.plot(time, angle1, 'b', linewidth=1.75, label='target')
+	l1 = ax1.plot(time, angle2, 'o', linewidth=1.75, label='subject attempt')
+	#ax1.yaxis.label.set_color('b')
+	# ax1.tick_params(axis='y', color='b')
+	ax1.set_ylim(40,200)
 
 	plt.grid(True)
 	#ax1.legend(l_all, labels, loc=0)

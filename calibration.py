@@ -25,8 +25,51 @@ import keyboard
 # 4 = start actuator calibration
 # 3 = start max pressure calibration
 # 2 = start flex calibration
-# 1 = set userMax value
+# 1 = load in userMin and Max values
 # 0 = done with calibration
+
+
+# -------------------------------------------------------------------------
+
+# --  Different ways to call calibration.py --
+
+# python calibration.py -z    			: skips and closes calibration. uses default calibration values
+
+# python calibration.py -m FLEX 
+# python calibration.py --mode FLEX 	: sets up calibration sequence with flex sensor
+
+# python calibration.py -m KEY
+# python calibration.py --mode KEY 		: sets up calibration sequence with flex sensor
+
+# python calibration.py -s    			: creates new directory and constants file to save calibration data
+
+# python calibration.py --userMax 49120	: passes in actuator position min and max values 49 and 120
+
+# -------------------------------------------------------------------------
+
+# -- Examples -- 
+
+# 1. Suppose I'm starting calibration for the first time with a new subject with keyboard setup
+# 		python calibration.py -m KEY -s
+# With this command, I pass in the correct calibration sequence and create a new folder/files to save the data.
+
+# 2. Suppose I just want to test calibration and its different states, without generating a full constants file 
+# and overwriting existing constants file. 
+# 		python calibration.py -m KEY
+# With this command, I can activate calibration sequence without saving any data or overwriting constants
+
+# 3. Suppose experiment session got interrupted after calibration and I need to reset the MCU. Resetting MCU
+# means that the device no longer has the user's min and max calibrated positions. I want to resume the
+# experiment session without having to redo calibration.
+# 		python calibration.py --userMax 49120
+# With this command, I can directly load in their mean min and max actuator position values from calibration
+# and resume runtime.
+
+# 4. Suppose I want to skip calibration in entirety.
+#		python calibration.py -z
+# With this command, I close calibration so I can move onto runtime.
+
+# -------------------------------------------------------------------------
 
 CALIBRATION_OPTIONS = {'ACTUATOR':4, 'MAX_PRESSURE': 3, 'FLEX': 2, 'NONE': 0}
 CALIBRATION_OPTIONS2 = {'ACTUATOR':4, 'MAX_PRESSURE': 3, 'NONE': 0}

@@ -1,0 +1,91 @@
+SUBJECT1/
+1
+----------------------------- MEAN ERROR     MEAN ERROR (ABS)-----
+Test, Yes Haptic No Visual  | -4.9          12.5
+Test, Yes Haptic Yes Visual | 0.1          0.5
+Test, No Haptic No Visual   | -23.0          31.2
+Test, No Haptic Yes Visual  | 0.3          0.7
+SUBJECT2/
+0
+----------------------------- MEAN ERROR     MEAN ERROR (ABS)-----
+Test, Yes Haptic No Visual  | -20.1          20.1
+Test, Yes Haptic Yes Visual | -0.1          0.7
+Test, No Haptic No Visual   | -33.6          33.6
+Test, No Haptic Yes Visual  | 0.0          0.0
+SUBJECT3/
+1
+----------------------------- MEAN ERROR     MEAN ERROR (ABS)-----
+Test, Yes Haptic No Visual  | -8.4          12.6
+Test, Yes Haptic Yes Visual | 0.7          0.7
+Test, No Haptic No Visual   | -20.3          21.9
+Test, No Haptic Yes Visual  | 0.1          0.5
+SUBJECT4/
+1
+----------------------------- MEAN ERROR     MEAN ERROR (ABS)-----
+Test, Yes Haptic No Visual  | -23.2          23.6
+Test, Yes Haptic Yes Visual | 0.1          0.3
+Test, No Haptic No Visual   | -31.1          31.1
+Test, No Haptic Yes Visual  | 0.6          0.6
+SUBJECT5/
+0
+----------------------------- MEAN ERROR     MEAN ERROR (ABS)-----
+Test, Yes Haptic No Visual  | -15.2          15.2
+Test, Yes Haptic Yes Visual | 0.2          0.6
+Test, No Haptic No Visual   | -17.0          26.2
+Test, No Haptic Yes Visual  | -0.5          1.1
+SUBJECT6/
+1
+----------------------------- MEAN ERROR     MEAN ERROR (ABS)-----
+Test, Yes Haptic No Visual  | -17.0          21.8
+Test, Yes Haptic Yes Visual | 0.0          0.8
+Test, No Haptic No Visual   | -16.8          19.2
+Test, No Haptic Yes Visual  | -0.1          0.7
+SUBJECT7/
+0
+----------------------------- MEAN ERROR     MEAN ERROR (ABS)-----
+Test, Yes Haptic No Visual  | 0.6          14.8
+Test, Yes Haptic Yes Visual | 0.1          0.7
+Test, No Haptic No Visual   | -19.2          19.2
+Test, No Haptic Yes Visual  | -0.2          0.6
+SUBJECT8/
+1
+----------------------------- MEAN ERROR     MEAN ERROR (ABS)-----
+Test, Yes Haptic No Visual  | -18.4          23.0
+Test, Yes Haptic Yes Visual | 0.2          0.8
+Test, No Haptic No Visual   | -14.2          14.2
+Test, No Haptic Yes Visual  | -0.4          0.8
+SUBJECT9/
+0
+----------------------------- MEAN ERROR     MEAN ERROR (ABS)-----
+Test, Yes Haptic No Visual  | -6.3          10.5
+Test, Yes Haptic Yes Visual | 0.2          0.2
+Test, No Haptic No Visual   | -22.5          34.5
+Test, No Haptic Yes Visual  | -0.2          0.2
+SUBJECT10/
+1
+----------------------------- MEAN ERROR     MEAN ERROR (ABS)-----
+Test, Yes Haptic No Visual  | 20.0          21.6
+Test, Yes Haptic Yes Visual | 0.0          0.0
+Test, No Haptic No Visual   | -0.9          15.5
+Test, No Haptic Yes Visual  | 0.0          0.0
+SUBJECT11/
+0
+----------------------------- MEAN ERROR     MEAN ERROR (ABS)-----
+Test, Yes Haptic No Visual  | 1.7          8.7
+Test, Yes Haptic Yes Visual | 0.1          0.7
+Test, No Haptic No Visual   | 25.1          27.3
+Test, No Haptic Yes Visual  | -0.3          0.5
+SUBJECT12/
+0
+----------------------------- MEAN ERROR     MEAN ERROR (ABS)-----
+Test, Yes Haptic No Visual  | 2.0          17.2
+Test, Yes Haptic Yes Visual | 0.2          1.8
+Test, No Haptic No Visual   | 15.1          20.1
+Test, No Haptic Yes Visual  | 0.0          0.8
+SUBJECT13/
+1
+----------------------------- MEAN ERROR     MEAN ERROR (ABS)-----
+Test, Yes Haptic No Visual  | -13.4          21.2
+Test, Yes Haptic Yes Visual | -12.4          12.4
+Test, No Haptic No Visual   | 5.9          10.1
+Test, No Haptic Yes Visual  | 0.1          0.3

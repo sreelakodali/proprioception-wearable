@@ -11,21 +11,35 @@ import skDataAnalysisFunctions as skD
 import constants as CONST
 
 
-# subjectNumber = 4
-# path = CONST.PATH_LAPTOP+"/SUBJECT"+str(subjectNumber)
-# allSubDirs = [CONST.PATH_LAPTOP+d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-# experimentDataDirs = [ d for d in allSubDirs if d.find('subject')==-1]
+# subjectNumber = 1
+# data = skD.sortProcessLearningTime(skD.extractLearningTimes(subjectNumber))
+# print(data)
+# print(data.shape)
 
-# for d in experimentDataDirs:
+subjects = [1, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16]
+#subjects = [3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16]
+totalData =  [[[0] * 5] * 10]* len(subjects)
 
-# # go through all the subdirs without 'subject' and in order of when it was created.
-# # if it doesn't have subjectAngleAttempts,extract and add to attempt total. and add to subject angle attempts list. add targets with same length
-# # if it does have, add length of its attempts file to attempt total
-# # if attempt total == 110, have all the data. can proceed. otherwise: data missing error
+for i in list(range(0, len(subjects))):
+	totalData[i] = skD.sortProcessLearningTime(skD.extractLearningTimes(subjects[i]))
+# 	#skD.generateForce(i+1)
+# 	#skD.passiveHapticSection(i+1)
 
-# print(experimentDataDirs)
-# print(skD.extractSubjectAttemptAngles('2023-02-02_15-52', 4))
+totalData = np.array(totalData)
+print(totalData.shape)
+std = np.std(totalData,axis=(0, 1))
+std = std/np.sqrt(140)
+print(std.shape)
+print(std)
+avgTotalData = np.average(totalData,axis=0)
+print(avgTotalData.shape)
+print(avgTotalData)
 
-#skD.generateSubjectAttemptsTargets(4)
-#skD.combineProcess(4)
-skD.combineRaw(4)
+# f = open(CONST.PATH_LAPTOP + 'averageLearningTime_ALL_S1-16_n2_n8_reshaped.csv','w+', encoding='UTF8', newline='')
+# writer = csv.writer(f)
+# writer.writerows(avgTotalData)
+# f.close()
+
+# skD.generateSubjectAttemptsTargets(subjectNumber)
+# skD.combineProcess(subjectNumber)
+# skD.combineRaw(subjectNumber)

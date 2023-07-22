@@ -1,4 +1,4 @@
-,oldTime,flex sensor,"actuator position, command","actuator position, measured",force,Trial Number,Target Angle,time
+,oldTime,flex sensor,"actuator position, command","actuator position, measured",force,'Trial Number','Target Angle',time
 0,46.405,180.0,4.0,3.7659574468085104,0.0,0.0,0.0,46.405
 1,46.858000000000004,180.0,4.0,3.893617021276597,0.0,0.0,0.0,46.858000000000004
 2,47.31,180.0,4.0,3.8297872340425516,0.0,0.0,0.0,47.31

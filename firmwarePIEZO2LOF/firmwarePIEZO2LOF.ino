@@ -20,15 +20,15 @@
 #define position_MAX 139//130 // 47 new
 
 // Pin Names
-#define position1_IN A3 // pin to measure position1_Measured
-#define position1_OUT 9 // pin to send position1_Command
+#define position1_IN A7 // pin to measure position1_Measured
+#define position1_OUT 7 // pin to send position1_Command
 #define button_IN 4 // pushbutton
 #define led_OUT 6 // led indicator
 #define CHIP_SELECT 10 // SD card writing
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // SET VALUES BEFORE
-const bool keyboardON = true;
+const bool keyboardON = false;
 const bool serialON = true; // sets if device will write data to serial
 const int actuatorType = 1; // 1 indicates either the original actuator or Tom's, 2 is the additional one we ordered
 const bool fastMapON = false; // set true if reading flex value as a float and doing mapFloat
@@ -249,7 +249,7 @@ void runtime(bool feedback) {
     // time for the beginning of the loop
     myTime = millis();
     // Read flex sensor
-    if (capacitiveFlexSensor.available() == true) flexSensor = capacitiveFlexSensor.getX();
+    if (capacitiveFlexSensor.available() == true) flexSensor = abs(capacitiveFlexSensor.getX());
     //myTime_1 = micros();
     
      // Map angle to actuator command
