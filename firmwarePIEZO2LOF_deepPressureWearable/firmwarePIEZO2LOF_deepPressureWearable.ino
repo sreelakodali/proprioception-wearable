@@ -7,20 +7,24 @@
 
 #include <DeepPressureWearable.h>
 
-// create and initialize instance of DeepPressureWearable(bool keyboard, bool serial)
-const bool keyboardON = false; // interfaces with flex sensor for elbow measurement
-const bool serialON = true; // and has serial output
+// create and initialize instance of DeepPressureWearable(INPUT_TYPE input, bool serial, bool c)
 
-DeepPressureWearable device1(keyboardON, serialON);
+const INPUT_TYPE in = FLEX_INPUT; // NO_INPUT, FLEX_INPUT, KEYBOARD_INPUT
+const bool serialON = true; // and has serial output
+const int calibrateOn = false;
+
+DeepPressureWearable device1(in, serialON, calibrateOn);
 
 
 void setup() {
-    Serial.println("Actuator and flex sensor connected. Entering calibration mode. Close serial monitor and start calibration.py");
-    device1.calibration();
-    Serial.println("Calibrated. Entering runtime");
+    Serial.println("Device initialized.");
 }
 
 void loop() {
   // pressing button can turn feedback on and off
-  device1.runtime();
+  device1.runtime(mapping);
+}
+
+int mapping(int a) {
+  return map(a, int(device1.user_flex_MIN), int(device1.user_flex_MAX), device1.user_position_MIN, device1.user_position_MAX);
 }
