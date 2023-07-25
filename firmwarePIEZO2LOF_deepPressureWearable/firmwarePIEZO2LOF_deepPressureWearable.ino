@@ -13,7 +13,7 @@ const INPUT_TYPE in = FLEX_INPUT; // NO_INPUT, FLEX_INPUT, KEYBOARD_INPUT
 const bool serialON = true; // and has serial output
 const int calibrateOn = false;
 
-DeepPressureWearable device1(in, serialON, calibrateOn);
+DeepPressureWearable device(in, serialON, calibrateOn);
 
 
 void setup() {
@@ -22,9 +22,26 @@ void setup() {
 
 void loop() {
   // pressing button can turn feedback on and off
-  device1.runtime(mapping);
+  device.runtime(mapping);
 }
 
-int mapping(int a) {
-  return map(a, int(device1.user_flex_MIN), int(device1.user_flex_MAX), device1.user_position_MIN, device1.user_position_MAX);
+void mapping(int angle) {
+  int x;
+
+  // set device1.position1_Command and device1.position2_Command with angle
+   
+//  x = map(angle, int(device.user_flex_MIN), int(device.user_flex_MAX), device.user_position_MIN, device.user_position_MAX);
+//  device.position1_Command = x;
+//  device.position2_Command = x;
+  
+  if (angle < 110) {
+    x = map(angle, int(device.user_flex_MIN), 110, device.user_position_MIN, device.user_position_MAX);
+    device.position1_Command = x;
+    device.position2_Command = device.user_position_MIN;
+  }
+  else {
+    x = map(angle, 110, int(device.user_flex_MAX), device.user_position_MIN, device.user_position_MAX);
+    device.position1_Command = device.user_position_MIN;
+    device.position2_Command = x;
+  }
 }

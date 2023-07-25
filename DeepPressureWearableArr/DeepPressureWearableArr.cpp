@@ -7,7 +7,7 @@
 
 
 //Constructor
-DeepPressureWearable::DeepPressureWearable(INPUT_TYPE input, bool serial, bool c) {
+DeepPressureWearable::DeepPressureWearable(INPUT_TYPE input, bool serial, bool c, int N_ACTUATORS) {
 
 	// settings
 	inputType = input;
@@ -19,15 +19,21 @@ DeepPressureWearable::DeepPressureWearable(INPUT_TYPE input, bool serial, bool c
 	user_position_MAX = POSITION_MAX;
 	user_flex_MIN = FLEX_MIN;
 	user_flex_MAX = FLEX_MAX;
-  zeroForce = 0;
 
-	// Linear Actuator, command, position
-	position1_Command = 0;
-	position1_Measured = 0;
+  int i;
+  for (i=0; i < N_ACTUATORS; ++i) {
+    position_CommandArr[i] = 0;
+    position_MeasuredArr[i] = 0;
+    zeroForceArr[i] = 0;
+  }
+
+	// // Linear Actuator, command, position
+	// position1_Command = 0;
+	// position1_Measured = 0;
 	
-  // Linear Actuator, command, position
-  position2_Command = 0;
-  position2_Measured = 0;
+  // // Linear Actuator, command, position
+  // position2_Command = 0;
+  // position2_Measured = 0;
 	
 	cycleCount = 0; // cycleCount
 	powerOn = 0; // powerOn
@@ -73,7 +79,13 @@ void DeepPressureWearable::blink_T (int t_d) {
 void DeepPressureWearable::safety() {
       // Safety withdraw actuator and stop
     if (risingEdgeButton()) {
-      actuator1.write(POSITION_MIN);
+
+      int i;
+      for (i=0; i < N_ACTUATORS; ++i) {
+        actuatorArr[i].write(POSITION_MIN);
+      }
+
+      // actuator1.write(POSITION_MIN);
       if (serialON) Serial.println("Device off. Turn off power.");
       if (sdWriteON) {
         File dataFile = SD.open("raw_data.csv", FILE_WRITE);
@@ -86,7 +98,7 @@ void DeepPressureWearable::safety() {
     }
 }
 
-void DeepPressureWearable::runtime(void (*mapping)(int)) {
+void DeepPressureWearable::runtime(int (*mapping)(int)) {
     short data;
     unsigned long myTime;
 
@@ -101,25 +113,36 @@ void DeepPressureWearable::runtime(void (*mapping)(int)) {
     }
     mapping(int(flexSensor));
     //position1_Command = map(int(flexSensor), int(user_flex_MIN), int(user_flex_MAX), user_position_MIN, user_position_MAX);
-    if(position1_Command > POSITION_MAX) position1_Command = POSITION_MAX;
-    else if(position1_Command < POSITION_MIN) position1_Command = POSITION_MIN;
+    
+    int i;
+      for (i=0; i < N_ACTUATORS; ++i) {
+         if(position_Command[i] > POSITION_MAX) position_Command[i] = POSITION_MAX;
+         else if(position_Command[i] < POSITION_MIN) position_Command[i] = POSITION_MIN;
+      }
 
-    if(position2_Command > POSITION_MAX) position2_Command = POSITION_MAX;
-    else if(position2_Command < POSITION_MIN) position2_Command = POSITION_MIN;
+    // if(position1_Command > POSITION_MAX) position1_Command = POSITION_MAX;
+    // else if(position1_Command < POSITION_MIN) position1_Command = POSITION_MIN;
 
     // Send command to actuator and measure actuator position
-    // actuator1.write(position1_Command);
-    //Serial.println(buttonCount % 2);
+
     if (!(buttonCount % 2)) {
-      actuator1.write(position1_Command);
-      actuator2.write(position2_Command);
+      for (i=0; i < N_ACTUATORS; ++i) {
+         actuatorArr[i].write(position_CommandArr[i]);
+      }
+      //actuator1.write(position1_Command);
     }
     else {
-      actuator1.write(POSITION_MIN);
-      actuator2.write(POSITION_MIN);
+      for (i=0; i < N_ACTUATORS; ++i) {
+         actuatorArr[i].write(POSITION_MIN);
+      }
+      //actuator1.write(POSITION_MIN);
     }
-    position1_Measured = analogRead(position1_IN);
-    position2_Measured = analogRead(position2_IN);
+
+    for (i=0; i < N_ACTUATORS; ++i) {
+         position_Measured[i] = analogRead(position_IN[i]);
+    }
+
+    //position1_Measured = analogRead(position1_IN);
 
     // read force data and write out data at lower frequency
     cycleCount = cycleCount + 1;
@@ -128,69 +151,11 @@ void DeepPressureWearable::runtime(void (*mapping)(int)) {
       powerOn = (data >= 150);
       if (powerOn) analogWrite(led_OUT, 255);
       else analogWrite(led_OUT, 30);
-      writeOutData(myTime, flexSensor, position1_Command, position1_Measured, data);
+      writeOutData(myTime, flexSensor, position_Command[0], position_Measured[0], data);
       cycleCount = 0;
     }
     risingEdgeButton();
     if (T_CYCLE > 0) delay(T_CYCLE);    
-}
-
-void DeepPressureWearable::miniPilot_patternsSequence(int t_d) {
-        int i;
-      int j;
-      int x;
-      int patterns[3] = {user_position_MIN, user_position_MIN + (user_position_MAX-user_position_MIN)/2, user_position_MAX};
-
-     actuator1.write(POSITION_MIN);
-      actuator2.write(POSITION_MIN);
-
-      for (i=0; i<3; ++i) {
-        position1_Command = patterns[i];
-        for (j=0; j<3; ++j) {
-          Serial.print(i);
-          Serial.print(" ");
-          Serial.println(j);
-          position2_Command = patterns[j];
-          actuator1.write(position1_Command);
-          actuator2.write(position2_Command);
-          delay(t_d);
-        }
-      }
-
-      actuator1.write(POSITION_MIN);
-      actuator2.write(POSITION_MIN);
-
-      delay(t_d);
-
-}
-
-
-void DeepPressureWearable::miniPilot_patternsCommand() {
-      int i;
-      int j;
-      int x;
-      int y;
-      int patterns[3] = {user_position_MIN, user_position_MIN + (user_position_MAX-user_position_MIN)/2, user_position_MAX};
-
-     // actuator1.write(POSITION_MIN);
-     //  actuator2.write(POSITION_MIN);
-
-      if (Serial.available() > 0) {
-        x = (Serial.read() - '0');
-        y = (Serial.read() - '0');
-        (Serial.read() - '0');
-        if ((x < 0) or (y < 0) or (x > 2) or (y > 2)) {
-          Serial.println("Error: invalid input. Try again.");
-        }
-        else {
-          Serial.print(x);
-      Serial.print(" ");
-      Serial.println(y);
-      actuator1.write(patterns[x]);
-      actuator2.write(patterns[y]);
-        }
-      }
-
 }
 
 // sweeping actuator position, increasing and decreasing. infinite loop.
@@ -205,8 +170,10 @@ int DeepPressureWearable::sweep(int t_d) {
     
     while (counter <= user_position_MAX) {
       String dataString = "";
-      actuator1.write(counter);
-      actuator2.write(counter);
+
+      for (i=0; i < N_ACTUATORS; ++i) {
+         actuatorArr[i].write(counter);
+      }
       position1_Measured = analogRead(position1_IN);
       myTime = millis();
       if (position1_Measured < minValue) minValue = position1_Measured;
@@ -549,7 +516,7 @@ void DeepPressureWearable::writeOutData(unsigned long t, float f, int c, int m, 
 }
 
 short DeepPressureWearable::readDataFromSensor(short address) {
-  byte i2cPacketLength = 6;//i2c packet length. Just need 6 bytes from each peripheral
+  byte i2cPacketLength = 6;//i2c packet length. Just need 6 bytes from each slave
   byte outgoingI2CBuffer[3];//outgoing array buffer
   byte incomingI2CBuffer[6];//incoming array buffer
   bool debug;
@@ -557,21 +524,21 @@ short DeepPressureWearable::readDataFromSensor(short address) {
   debug = false;
 
   outgoingI2CBuffer[0] = 0x01;//I2c read command
-  outgoingI2CBuffer[1] = 128;//peripheral data offset
+  outgoingI2CBuffer[1] = 128;//Slave data offset
   outgoingI2CBuffer[2] = i2cPacketLength;//require 6 bytes
 
   if (debug) Serial.println("Transmit address");  
   Wire.beginTransmission(address); // transmit to device 
   Wire.write(outgoingI2CBuffer, 3);// send out command
   if (debug) Serial.println("Check sensor status");
-  byte error = Wire.endTransmission(); // stop transmitting and check peripheral status
+  byte error = Wire.endTransmission(); // stop transmitting and check slave status
   if (debug) Serial.println("bloop");
-  if (error != 0) return -1; //if peripheral not exists or has error, return -1
-  Wire.requestFrom((uint8_t)address, i2cPacketLength);//require 6 bytes from peripheral
+  if (error != 0) return -1; //if slave not exists or has error, return -1
+  Wire.requestFrom((uint8_t)address, i2cPacketLength);//require 6 bytes from slave
   if (debug) Serial.println("Request bytes from sensor");
   
   byte incomeCount = 0;
-  while (incomeCount < i2cPacketLength)    // peripheral may send less than requested
+  while (incomeCount < i2cPacketLength)    // slave may send less than requested
   {
     if (Wire.available())
     {

@@ -41,24 +41,17 @@ typedef enum {
 class DeepPressureWearable {
 	public:
 	// methods
-	DeepPressureWearable(INPUT_TYPE input, bool serial, bool c);
+	DeepPressureWearable(INPUT_TYPE input, bool serial, bool c, int N_ACTUATORS);
 
 	// Calibration 
 	int  user_position_MIN;
 	int  user_position_MAX;
 	float  user_flex_MIN;
 	float  user_flex_MAX;
-
-	int  position1_Command;
-	int  position2_Command;
-
-	
+	//short zeroForce;
 	void calibration();
 	
-	void runtime(void (*mapping)(int));
-
-	void miniPilot_patternsSequence(int t_d);
-	void miniPilot_patternsCommand();
+	void runtime(int (*mapping)(int));
 
 	void testLed();
 	void testPushbutton();
@@ -78,10 +71,19 @@ class DeepPressureWearable {
 	int WRITE_COUNT = 8;
 	int T_CYCLE = 15;
 
-	short zeroForce;
+	// Array version for multiple actuators
+	Servo actuatorArr[N_ACTUATORS];
+	int position_CommandArr[N_ACTUATORS];
+	int position_MeasuredArr[N_ACTUATORS];
+	short zeroForceArr[N_ACTUATORS];
+	const  int position_INArr = [21, 20, 22, 23];
+	const  int position_OUTArr = [7, 6, 8, 9];
+	const  byte I2C_ADDRArr = [0x04, 0x04, 0x04, 0x04];
+
 
 	// Linear Actuator, command, position
-		Servo actuator1;
+	Servo actuator1;
+	int  position1_Command;
 	int  position1_Measured;
 	const  int position1_IN = 21;// analog read in position pin
 	const  int position1_OUT = 7;// PWM output pin
@@ -89,6 +91,7 @@ class DeepPressureWearable {
 
 	// Linear Actuator2, command, position
 	Servo actuator2;
+	int  position2_Command;
 	int  position2_Measured;
 	const  int position2_IN = 20;// analog read in position pin
 	const  int position2_OUT = 6;// PWM output pin
