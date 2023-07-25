@@ -7,10 +7,10 @@
 
 
 //Constructor
-DeepPressureWearable::DeepPressureWearable(bool keyboard, bool serial) {
+DeepPressureWearable::DeepPressureWearable(INPUT_TYPE input, bool serial, bool c) {
 
 	// settings
-	keyboardON = keyboard;
+	inputType = input;
 	serialON = serial;
   sdWriteON = !(serialON); // if outputting data via serial, no need to write to SD card
 
@@ -22,11 +22,12 @@ DeepPressureWearable::DeepPressureWearable(bool keyboard, bool serial) {
   zeroForce = 0;
 
 	// Linear Actuator, command, position
-	Servo actuator1;
 	position1_Command = 0;
 	position1_Measured = 0;
-	// position1_OUT = position_OUT;// PWM output pin
-	// position1_IN = position_IN;// analog read in position pin
+	
+  // Linear Actuator, command, position
+  position2_Command = 0;
+  position2_Measured = 0;
 	
 	cycleCount = 0; // cycleCount
 	powerOn = 0; // powerOn
@@ -40,7 +41,7 @@ DeepPressureWearable::DeepPressureWearable(bool keyboard, bool serial) {
 	oldButtonState = 0; // old button state
 	buttonCount = 0; // button count
 
-	initializeSystem();
+	initializeSystem(c);
 }
 
 
@@ -85,25 +86,28 @@ void DeepPressureWearable::safety() {
     }
 }
 
-void DeepPressureWearable::runtime() {
+void DeepPressureWearable::runtime(int (*mapping)(int)) {
     short data;
     unsigned long myTime;
 
     myTime = millis(); // time for beginning of the loop
 
     // read flex sensor and map angle to actuator command. keep values in the bounds
-    if (!(keyboardON)) {
+    if (inputType == FLEX_INPUT) {
       if (capacitiveFlexSensor.available() == true) flexSensor = abs(capacitiveFlexSensor.getX());
     }
-    else {
+    else if (inputType == KEYBOARD_INPUT) {
       if (Serial.available() > 0) flexSensor = (Serial.read() - '0')*100 + (Serial.read() - '0')*10 + (Serial.read() - '0')*1 ;
     }
-    position1_Command = map(int(flexSensor), int(user_flex_MIN), int(user_flex_MAX), user_position_MIN, user_position_MAX);
+    position1_Command = mapping(int(flexSensor));
+    //position1_Command = map(int(flexSensor), int(user_flex_MIN), int(user_flex_MAX), user_position_MIN, user_position_MAX);
     if(position1_Command > POSITION_MAX) position1_Command = POSITION_MAX;
     else if(position1_Command < POSITION_MIN) position1_Command = POSITION_MIN;
 
     // Send command to actuator and measure actuator position
-    if (buttonCount % 2) actuator1.write(position1_Command);
+    // actuator1.write(position1_Command);
+    //Serial.println(buttonCount % 2);
+    if (!(buttonCount % 2)) actuator1.write(position1_Command);
     else actuator1.write(POSITION_MIN);
     position1_Measured = analogRead(position1_IN);
 
@@ -125,6 +129,7 @@ void DeepPressureWearable::runtime() {
 // t_d is time between actuator steps
 int DeepPressureWearable::sweep(int t_d) {
     unsigned long myTime;
+    short data;
     int counter = user_position_MIN;
     int extending = 1;
     int minValue = 1000;
@@ -133,14 +138,17 @@ int DeepPressureWearable::sweep(int t_d) {
     while (counter <= user_position_MAX) {
       String dataString = "";
       actuator1.write(counter);
+      actuator2.write(counter);
       position1_Measured = analogRead(position1_IN);
       myTime = millis();
       if (position1_Measured < minValue) minValue = position1_Measured;
+      data = readDataFromSensor(I2C_ADDR);
 
       if (serialON) {
-        dataString += (String(myTime) + "," + String(counter) + "," \
-        + String(position1_Measured));
-        Serial.println(dataString);
+        writeOutData(myTime, 0, counter, position1_Measured, data);
+        // dataString += (String(myTime) + "," + String(counter) + "," \
+        // + String(position1_Measured));
+        // Serial.println(dataString);
       }
 
       if (extending == 1) {
@@ -378,19 +386,22 @@ void DeepPressureWearable::blinkN (int n, int t_d) {
   }
 }
 
-bool DeepPressureWearable::initializeSystem() {
+void DeepPressureWearable::initializeSystem(bool c) {
   Wire.begin(); // join i2c bus
   initializeSerial(); // start serial for output
   initializeSDCard(); // initialize sd card
   initializeActuator(); // initialize actuator and set in min position
-  if (!(keyboardON)) initializeFlexSensor(); // initialize flex sensor
+  if (inputType == FLEX_INPUT) initializeFlexSensor(); // initialize flex sensor
   else {
     WRITE_COUNT = 30;
     flexSensor = 180;
   }
   initializeIO(); // initialize IO pins, i.e. button and led
   analogWrite(led_OUT, 30);
-  return (true);
+  if (c) {
+    Serial.println("Entering calibration...");
+    calibration();
+  }
 }
 
 bool DeepPressureWearable::initializeSerial() {
@@ -417,6 +428,9 @@ bool DeepPressureWearable::initializeSDCard() {
 bool DeepPressureWearable::initializeActuator() {
   actuator1.attach(position1_OUT); // attach servo 
   actuator1.write(POSITION_MIN); //put in minimum position
+
+  actuator2.attach(position2_OUT); // attach servo 
+  actuator2.write(POSITION_MIN); //put in minimum position
   return (true);
 }
 

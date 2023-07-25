@@ -32,13 +32,26 @@ typedef enum {
 typedef enum { NONE, ZERO_FORCE, FLEX, MAX_PRESSURE, ACTUATOR  
 } CALIBRATION_OPTIONS;
 
+typedef enum {
+	NO_INPUT,
+	FLEX_INPUT,
+	KEYBOARD_INPUT
+} INPUT_TYPE;
 
 class DeepPressureWearable {
 	public:
 	// methods
-	DeepPressureWearable(bool keyboard, bool serial);
-	void runtime();
+	DeepPressureWearable(INPUT_TYPE input, bool serial, bool c);
+
+	// Calibration 
+	int  user_position_MIN;
+	int  user_position_MAX;
+	float  user_flex_MIN;
+	float  user_flex_MAX;
+	short zeroForce;
 	void calibration();
+	
+	void runtime(int (*mapping)(int));
 
 	void testLed();
 	void testPushbutton();
@@ -52,18 +65,12 @@ class DeepPressureWearable {
 	// variables
 
 	// Settings
-	bool keyboardON;
+	INPUT_TYPE inputType;
 	bool serialON;
 	bool sdWriteON;
 	int WRITE_COUNT = 8;
 	int T_CYCLE = 15;
 
-	// Calibration 
-	int  user_position_MIN;
-	int  user_position_MAX;
-	float  user_flex_MIN;
-	float  user_flex_MAX;
-	short zeroForce;
 
 	// Linear Actuator, command, position
 	Servo actuator1;
@@ -72,6 +79,14 @@ class DeepPressureWearable {
 	const  int position1_IN = 21;// analog read in position pin
 	const  int position1_OUT = 7;// PWM output pin
 	const  byte I2C_ADDR = 0x04; // force sensor's i2C addr
+
+	// Linear Actuator2, command, position
+	Servo actuator2;
+	int  position2_Command;
+	int  position2_Measured;
+	const  int position2_IN = 20;// analog read in position pin
+	const  int position2_OUT = 6;// PWM output pin
+	//const  byte I2C_ADDR = 0x04; // force sensor's i2C addr	
 	
 	int  cycleCount; // cycleCount
 	bool  powerOn; // powerOn
@@ -90,7 +105,7 @@ class DeepPressureWearable {
 
 	// methods
 	void blinkN(int n, int t_d);
-	bool initializeSystem();
+	void initializeSystem(bool c);
 	bool initializeSerial();
 	bool initializeSDCard();
 	bool initializeActuator();
