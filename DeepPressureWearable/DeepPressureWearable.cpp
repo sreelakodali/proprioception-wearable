@@ -188,7 +188,40 @@ void DeepPressureWearable::miniPilot_patternsCommand() {
       Serial.println(y);
       actuator1.write(patterns[x]);
       actuator2.write(patterns[y]);
+       }
+      }
+
+}
+
+void DeepPressureWearable::miniPilot_patternsCommandbyLetter() {
+      int i;
+      int j;
+      int x;
+      int y;
+      int z;
+      int patterns[3] = {user_position_MIN, user_position_MIN + (user_position_MAX-user_position_MIN)/2, user_position_MAX};
+
+      if (Serial.available() > 0) {
+        x = (Serial.read());
+        (Serial.read());
+        
+         // Serial.print(": ");
+        if ((x < 65) or (x > 73)) {
+          Serial.println("Error: invalid input. Try again.");
         }
+        else {
+          Serial.println((char) x);
+          z = (x < 68) + (x >= 68 and x < 71)*2 + (x >= 71 and x <74)*3 - 1;
+
+          y = (x+1) % 3;
+      //     Serial.print(z);
+      // Serial.print(" ");
+      // Serial.println(y);
+          actuator1.write(patterns[z]);
+          actuator2.write(patterns[y]);
+
+        }
+
       }
 
 }
@@ -235,6 +268,99 @@ int DeepPressureWearable::sweep(int t_d) {
       delay(t_d);
     }
     return minValue;    
+}
+
+
+// sweeping actuator position, increasing and decreasing. infinite loop.
+// t_d is time between actuator steps
+void DeepPressureWearable::miniPilot_sweep(int t_d) {
+    unsigned long myTime;
+    short data;
+    int counter = user_position_MIN; // user_position_MIN + (user_position_MAX-user_position_MIN)/2
+    //int extending = 1;
+    //int minValue = 1000;
+    
+    actuator1.write(counter);
+    actuator2.write(counter);
+    
+    while (counter <= user_position_MAX) {
+      actuator1.write(counter);
+      position1_Measured = analogRead(position1_IN);
+      myTime = millis();
+      data = readDataFromSensor(I2C_ADDR);
+
+      if (serialON) {
+        writeOutData(myTime, 0, counter, position1_Measured, data);
+      }
+      counter = counter + 1;
+      delay(t_d);
+    }
+    counter = user_position_MIN; // user_position_MIN + (user_position_MAX-user_position_MIN)/2
+    actuator1.write(counter);
+
+    while (counter <= user_position_MAX) {
+      actuator2.write(counter);
+      position2_Measured = analogRead(position2_IN);
+      myTime = millis();
+      data = readDataFromSensor(I2C_ADDR);
+
+      if (serialON) {
+        writeOutData(myTime, 0, counter, position2_Measured, data);
+      }
+      counter = counter + 1;
+      delay(t_d);
+    }
+
+
+}
+
+void DeepPressureWearable::miniPilot_sweepKeyboard() {
+    unsigned long myTime;
+    short data;
+    int counter = user_position_MIN; // user_position_MIN + (user_position_MAX-user_position_MIN)/2
+    int x;
+    //int extending = 1;
+    //int minValue = 1000;
+    
+    actuator1.write(counter);
+    actuator2.write(counter);
+
+    while (1) {
+
+      if (Serial.available() > 0) {
+        x = (Serial.read());
+         //Serial.println(x);
+
+      if ( (x < 52) or (x > 53)) {
+        Serial.println("Error: invalid input. Try again.");
+      }
+
+      else if (x == 52) {
+        counter = counter - 1;
+        Serial.println(counter);
+      }
+      else if (x == 53) {
+        counter = counter + 1;
+        Serial.println(counter);
+      }
+
+      if(counter < user_position_MIN) counter = user_position_MIN;
+      else if(counter > (2*user_position_MAX + 1 - user_position_MIN)) counter = (2*user_position_MAX + 1 - user_position_MIN);
+
+      if ((counter >= user_position_MIN) and (counter <= user_position_MAX)) {
+        actuator1.write(counter);
+        actuator2.write(user_position_MIN);
+      }
+      else if ((counter > user_position_MAX) and (counter < (2*user_position_MAX + 1 - user_position_MIN))) {
+        actuator1.write(user_position_MIN);
+        actuator2.write(counter-(user_position_MAX + 1 - user_position_MIN));
+      }
+
+      }      
+
+
+    }
+
 }
 
 // Calibration

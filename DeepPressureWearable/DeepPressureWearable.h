@@ -59,6 +59,9 @@ class DeepPressureWearable {
 
 	void miniPilot_patternsSequence(int t_d);
 	void miniPilot_patternsCommand();
+	void miniPilot_patternsCommandbyLetter();
+	void miniPilot_sweep(int t_d);
+	void miniPilot_sweepKeyboard();
 
 	void testLed();
 	void testPushbutton();
