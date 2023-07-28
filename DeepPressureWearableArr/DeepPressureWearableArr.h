@@ -4,6 +4,8 @@
 #ifndef DeepPressureWearableArr_h
 #define DeepPressureWearableArr_h
 
+# define N_ACT 2
+
 #include "Arduino.h"
 // #else
 // #include "WProgram.h"
@@ -40,12 +42,12 @@ typedef enum {
 
 
 
-template < int N_ACT > class DeepPressureWearableArr {
+class DeepPressureWearableArr {
 	public:
 	// methods
-	DeepPressureWearableArr(INPUT_TYPE input, bool serial, bool c, int n);
+	DeepPressureWearableArr(INPUT_TYPE input, bool serial, bool c);
 
-	int  N_ACTUATORS;
+	int  N_ACTUATORS = N_ACT;
 
 	// Calibration 
 	int  user_position_MIN;
