@@ -41,7 +41,9 @@ typedef enum {
 class DeepPressureWearable {
 	public:
 	// methods
-	DeepPressureWearable(INPUT_TYPE input, bool serial, bool c, int N_ACTUATORS);
+	DeepPressureWearable(INPUT_TYPE input, bool serial, bool c, int n);
+
+	int  N_ACTUATORS;
 
 	// Calibration 
 	int  user_position_MIN;
@@ -57,7 +59,7 @@ class DeepPressureWearable {
 	void testPushbutton();
 	void blink_T(int t_d);
 	void safety();
-	int sweep(int t_d);
+	int sweep(int t_d, int n);
 
 	private:
 	
@@ -74,28 +76,28 @@ class DeepPressureWearable {
 	// Array version for multiple actuators
 	Servo actuatorArr[N_ACTUATORS];
 	int position_CommandArr[N_ACTUATORS];
-	int position_MeasuredArr[N_ACTUATORS];
+	int position_MeasuredArr[N_ACTUATORS]; // this could be local
 	short zeroForceArr[N_ACTUATORS];
-	const  int position_INArr = [21, 20, 22, 23];
-	const  int position_OUTArr = [7, 6, 8, 9];
-	const  byte I2C_ADDRArr = [0x04, 0x04, 0x04, 0x04];
+	const  int position_INArr[] = {21, 20, 22, 23};
+	const  int position_OUTArr[] = {7, 6, 8, 9};
+	const  byte I2C_ADDRArr[] = {0x08, 0x06, 0x10, 0x12};
 
 
-	// Linear Actuator, command, position
-	Servo actuator1;
-	int  position1_Command;
-	int  position1_Measured;
-	const  int position1_IN = 21;// analog read in position pin
-	const  int position1_OUT = 7;// PWM output pin
-	const  byte I2C_ADDR = 0x04; // force sensor's i2C addr
+	// // Linear Actuator, command, position
+	// Servo actuator1;
+	// int  position1_Command;
+	// int  position1_Measured;
+	// const  int position1_IN = 21;// analog read in position pin
+	// const  int position1_OUT = 7;// PWM output pin
+	// const  byte I2C_ADDR = 0x08; // force sensor's i2C addr
 
-	// Linear Actuator2, command, position
-	Servo actuator2;
-	int  position2_Command;
-	int  position2_Measured;
-	const  int position2_IN = 20;// analog read in position pin
-	const  int position2_OUT = 6;// PWM output pin
-	//const  byte I2C_ADDR = 0x04; // force sensor's i2C addr	
+	// // Linear Actuator2, command, position
+	// Servo actuator2;
+	// int  position2_Command;
+	// int  position2_Measured;
+	// const  int position2_IN = 20;// analog read in position pin
+	// const  int position2_OUT = 6;// PWM output pin
+	// //const  byte I2C_ADDR = 0x06; // force sensor's i2C addr	
 	
 	int  cycleCount; // cycleCount
 	bool  powerOn; // powerOn
@@ -103,12 +105,12 @@ class DeepPressureWearable {
 
 	// flex sensor and angle
 	ADS  capacitiveFlexSensor;
-	float  flexSensor;
+	float  flexSensor; // could be local(?)
 
 	// Pushbutton & LED
 	int  buttonState; // button state
 	int  oldButtonState; // old button state
-	int  buttonCount; // button count
+	int  buttonCount; // button count. global!
 	const int  button_IN = 4;
 	const int  led_OUT = 5;
 
@@ -121,13 +123,13 @@ class DeepPressureWearable {
 	bool initializeFlexSensor();
 	bool initializeIO();
 	bool risingEdgeButton();
-	void writeOutData(unsigned long t, float f, int c, int m, short d);
+	void writeOutData(int l, unsigned long t, float f, int *c, int *m, short *d)
 	short readDataFromSensor(short address);
 
-	void calibrationActuatorFeedback();
+	void calibrationActuatorFeedback(int n);
 	void calibrationZeroForce();
 	void calibrationFlexSensor(unsigned long timeLength);
-	int calibrationMaxDeepPressure();
+	int calibrationMaxDeepPressure(int n);
 
 };
 #endif

@@ -32,14 +32,14 @@ void setup()
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
-  Serial.println("PPS UK: Changing SingleTact slave address.");
+  Serial.println("PPS UK: Changing SingleTact peripheral address.");
   Serial.println("-----------------END-----------------------");	
 }
 
 void loop()
 {   
-    byte i2cAddress = 0x04; // Slave address (SingleTact), default 0x04
-    byte i2cNewAddress = 0x08; // New device address;
+    byte i2cAddress = 0x04; // Slave peripheral (SingleTact), default 0x04
+    byte i2cNewAddress = 0x06; // New device address;
     changeSensorAddress(i2cAddress,i2cNewAddress);
     
     delay(100); // Change this if you are getting values too quickly 
@@ -60,5 +60,3 @@ void changeSensorAddress(short address, short newAddress)
   Wire.write(outgoingI2CBuffer, i2cPacketLength);            // sends value byte  
   Wire.endTransmission();     // stop transmitting
 }
-
-

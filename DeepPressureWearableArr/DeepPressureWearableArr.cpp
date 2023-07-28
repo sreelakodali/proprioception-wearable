@@ -7,12 +7,14 @@
 
 
 //Constructor
-DeepPressureWearable::DeepPressureWearable(INPUT_TYPE input, bool serial, bool c, int N_ACTUATORS) {
+DeepPressureWearable::DeepPressureWearable(INPUT_TYPE input, bool serial, bool c, int n) {
 
 	// settings
 	inputType = input;
 	serialON = serial;
   sdWriteON = !(serialON); // if outputting data via serial, no need to write to SD card
+
+  N_ACTUATORS = n;
 
 	// DEFAULT Calibration settings
 	user_position_MIN = POSITION_MIN;
@@ -81,9 +83,7 @@ void DeepPressureWearable::safety() {
     if (risingEdgeButton()) {
 
       int i;
-      for (i=0; i < N_ACTUATORS; ++i) {
-        actuatorArr[i].write(POSITION_MIN);
-      }
+      for (i=0; i < N_ACTUATORS; ++i) actuatorArr[i].write(POSITION_MIN);
 
       // actuator1.write(POSITION_MIN);
       if (serialON) Serial.println("Device off. Turn off power.");
@@ -99,8 +99,9 @@ void DeepPressureWearable::safety() {
 }
 
 void DeepPressureWearable::runtime(int (*mapping)(int)) {
-    short data;
+    short data[N_ACTUATORS];
     unsigned long myTime;
+    int i;
 
     myTime = millis(); // time for beginning of the loop
 
@@ -114,11 +115,10 @@ void DeepPressureWearable::runtime(int (*mapping)(int)) {
     mapping(int(flexSensor));
     //position1_Command = map(int(flexSensor), int(user_flex_MIN), int(user_flex_MAX), user_position_MIN, user_position_MAX);
     
-    int i;
-      for (i=0; i < N_ACTUATORS; ++i) {
-         if(position_Command[i] > POSITION_MAX) position_Command[i] = POSITION_MAX;
-         else if(position_Command[i] < POSITION_MIN) position_Command[i] = POSITION_MIN;
-      }
+    for (i=0; i < N_ACTUATORS; ++i) {
+        if(position_Command[i] > user_position_MAX) position_Command[i] = user_position_MAX;
+        else if(position_Command[i] < user_position_MIN) position_Command[i] = user_position_MIN;
+     }
 
     // if(position1_Command > POSITION_MAX) position1_Command = POSITION_MAX;
     // else if(position1_Command < POSITION_MIN) position1_Command = POSITION_MIN;
@@ -126,32 +126,27 @@ void DeepPressureWearable::runtime(int (*mapping)(int)) {
     // Send command to actuator and measure actuator position
 
     if (!(buttonCount % 2)) {
-      for (i=0; i < N_ACTUATORS; ++i) {
-         actuatorArr[i].write(position_CommandArr[i]);
-      }
+      for (i=0; i < N_ACTUATORS; ++i) actuatorArr[i].write(position_CommandArr[i]);
       //actuator1.write(position1_Command);
     }
     else {
-      for (i=0; i < N_ACTUATORS; ++i) {
-         actuatorArr[i].write(POSITION_MIN);
-      }
+      for (i=0; i < N_ACTUATORS; ++i) actuatorArr[i].write(POSITION_MIN);
       //actuator1.write(POSITION_MIN);
     }
 
-    for (i=0; i < N_ACTUATORS; ++i) {
-         position_Measured[i] = analogRead(position_IN[i]);
-    }
+    for (i=0; i < N_ACTUATORS; ++i) position_Measured[i] = analogRead(position_IN[i]);
 
     //position1_Measured = analogRead(position1_IN);
 
     // read force data and write out data at lower frequency
     cycleCount = cycleCount + 1;
     if ((cycleCount == WRITE_COUNT)) {
-      data = readDataFromSensor(I2C_ADDR);
-      powerOn = (data >= 150);
-      if (powerOn) analogWrite(led_OUT, 255);
-      else analogWrite(led_OUT, 30);
-      writeOutData(myTime, flexSensor, position_Command[0], position_Measured[0], data);
+      for (i=0; i < N_ACTUATORS; ++i) data[i] = readDataFromSensor(I2C_ADDRArr[i]);
+      // powerOn = (data >= 150);
+      // if (powerOn) analogWrite(led_OUT, 255);
+      // else analogWrite(led_OUT, 30);
+
+      writeOutData(N_ACTUATORS, myTime, flexSensor, position_Command, position_Measured, data);
       cycleCount = 0;
     }
     risingEdgeButton();
@@ -160,7 +155,7 @@ void DeepPressureWearable::runtime(int (*mapping)(int)) {
 
 // sweeping actuator position, increasing and decreasing. infinite loop.
 // t_d is time between actuator steps
-int DeepPressureWearable::sweep(int t_d) {
+int DeepPressureWearable::sweep(int t_d, int n) {
     unsigned long myTime;
     short data;
     int counter = user_position_MIN;
@@ -171,16 +166,14 @@ int DeepPressureWearable::sweep(int t_d) {
     while (counter <= user_position_MAX) {
       String dataString = "";
 
-      for (i=0; i < N_ACTUATORS; ++i) {
-         actuatorArr[i].write(counter);
-      }
-      position1_Measured = analogRead(position1_IN);
+      actuatorArr[n].write(counter);
+      position_MeasuredArr[n] = analogRead(position_INArr[n]);
       myTime = millis();
-      if (position1_Measured < minValue) minValue = position1_Measured;
-      data = readDataFromSensor(I2C_ADDR);
+      if (position_MeasuredArr[n] < minValue) minValue = position_MeasuredArr[n];
+      data = readDataFromSensor(I2C_ADDRArr[n]);
 
       if (serialON) {
-        writeOutData(myTime, 0, counter, position1_Measured, data);
+        writeOutData(1, myTime, 0, counter, position_Measured[n], data);
         // dataString += (String(myTime) + "," + String(counter) + "," \
         // + String(position1_Measured));
         // Serial.println(dataString);
@@ -205,35 +198,39 @@ int DeepPressureWearable::sweep(int t_d) {
 }
 
 // Calibration
-void DeepPressureWearable::calibrationActuatorFeedback() {
+void DeepPressureWearable::calibrationActuatorFeedback(int n) {
+  int i;
   int ACTUATOR_FEEDBACK_MAX = 500;
   int ACTUATOR_FEEDBACK_MIN = 500;
-  
+
   // Calibration: Sweep and record the actuator position feedback positions
-  actuator1.write(POSITION_MIN);
+  for (i=0; i < N_ACTUATORS; ++i) actuatorArr[i].write(POSITION_MIN);
   
   delay(500);
-  ACTUATOR_FEEDBACK_MAX = analogRead(position1_IN);
-  ACTUATOR_FEEDBACK_MIN = sweep(300);
+  ACTUATOR_FEEDBACK_MAX = analogRead(position_IN[n]);
+  ACTUATOR_FEEDBACK_MIN = sweep(300, n);
   Serial.println(ACTUATOR_FEEDBACK_MAX);
   Serial.println(ACTUATOR_FEEDBACK_MIN);
 }
 
 void DeepPressureWearable::calibrationZeroForce() {
-  zeroForce = 0;
-  
+  int i;
+  for (i=0; i < N_ACTUATORS; ++i) actuatorArr[i].write(POSITION_MIN);
+
   // Calibration Stage: Get the zero force of the device
-  actuator1.write(POSITION_MIN);
-  zeroForce = readDataFromSensor(I2C_ADDR);
-  Serial.println((zeroForce - 255) * (45.0)/512);
+  for (i=0; i < N_ACTUATORS; ++i) {
+    zeroForceArr[i] = readDataFromSensor(I2C_ADDRArr[i]);
+    Serial.println(( zeroForceArr[i] - 255) * (45.0)/512);
+  }
 }
 
 void DeepPressureWearable::calibrationFlexSensor(unsigned long timeLength) {
   unsigned long startTime;
   unsigned long endTime;
+  int i;
   //unsigned long timeLength = 50000;
 
-  actuator1.write(POSITION_MIN);
+  for (i=0; i < N_ACTUATORS; ++i) actuatorArr[i].write(POSITION_MIN);
 
   // use the initial value as baseline. otherwise user_flex is set at 0 180 default
    if (capacitiveFlexSensor.available() == true) user_flex_MIN = capacitiveFlexSensor.getX();
@@ -268,7 +265,7 @@ void DeepPressureWearable::calibrationFlexSensor(unsigned long timeLength) {
 
 
 // Calibration Stage: Get the detection and pain thresholds
-int DeepPressureWearable::calibrationMaxDeepPressure() {
+int DeepPressureWearable::calibrationMaxDeepPressure(int n) {
    int counter = POSITION_MIN;
    int x;
    short data;
@@ -277,19 +274,18 @@ int DeepPressureWearable::calibrationMaxDeepPressure() {
    short minForce = 0; // detection threshold
    int nClicks = 0;
 
-   zeroForce = 0;
-   actuator1.write(counter);
+   for (i=0; i < N_ACTUATORS; ++i) actuatorArr[i].write(counter);
    blinkN(5,1000);
-   zeroForce = readDataFromSensor(I2C_ADDR);
+   for (i=0; i < N_ACTUATORS; ++i) zeroForceArr[i] = readDataFromSensor(I2C_ADDRArr[i]);
 
     while (counter <= POSITION_MAX) {
        // Measure force and actuator position
       dataString = "";
-      data = readDataFromSensor(I2C_ADDR);
-      position1_Measured = analogRead(position1_IN);
+      data = readDataFromSensor(I2C_ADDRArr[n]);
+      position_MeasuredArr[n] = analogRead(position_INArr[n]);
       // Send command to actuator
-      actuator1.write(counter);
-      dataString += (String(counter) + "," + String(position1_Measured) + "," + String((data - 255) * (45.0)/512));
+      actuatorArr[n].write(counter);
+      dataString += (String(counter) + "," + String(position_MeasuredArr[n]) + "," + String((data - 255) * (45.0)/512));
       Serial.println(dataString);
         
       //if (serialON) Serial.println((data - 255) * (45.0)/512);
@@ -303,20 +299,20 @@ int DeepPressureWearable::calibrationMaxDeepPressure() {
           //Serial.println("min detected!");
           user_position_MIN = counter;
           delay(3000);
-          minForce = readDataFromSensor(I2C_ADDR);
+          minForce = readDataFromSensor(I2C_ADDRArr[n]);
           nClicks = nClicks + 1;
       }
       if (nClicks == 3) { // NOTE: nClicks = 3 is deliebrate. rising edge of click
           user_position_MAX = counter - 2; // NOTE: the -2 is arbitrary
-          maxForce = readDataFromSensor(I2C_ADDR);
+          maxForce = readDataFromSensor(I2C_ADDRArr[n]);
           delay(3000);
-          actuator1.write(POSITION_MIN);
+          actuatorArr[n].write(POSITION_MIN);
           break; 
       }
       delay(250);
       counter = counter + 1;
   }
-  actuator1.write(POSITION_MIN);
+  for (i=0; i < N_ACTUATORS; ++i) actuatorArr[i].write(POSITION_MIN);
 
   Serial.println(zeroForce);
   Serial.println(minForce); // new
@@ -340,6 +336,7 @@ void DeepPressureWearable::calibration() {
   int d1 = 0;
   int d2 = 0;
   int d3 = 0;
+  int i;
 
   // initialize blank array
   for (int j = 0; j< lenUserArr; j++) {
@@ -348,7 +345,7 @@ void DeepPressureWearable::calibration() {
   }
           
   // Reset position of actuator
-  actuator1.write(POSITION_MIN);
+  for (i=0; i < N_ACTUATORS; ++i) actuatorArr[i].write(POSITION_MIN);
 
   while(!(calibrationComplete)){
     if (Serial.available() > 0) {
@@ -382,7 +379,7 @@ void DeepPressureWearable::calibration() {
           calibrationFlexSensor(50000);
           break;
         case MAX_PRESSURE:
-          user_position_MAX_arr[nMaxPressure] = calibrationMaxDeepPressure();
+          user_position_MAX_arr[nMaxPressure] = calibrationMaxDeepPressure(0); // FIX
           user_position_MIN_arr[nMaxPressure] = user_position_MIN;
           nMaxPressure = nMaxPressure + 1;
           sum = 0;
@@ -397,7 +394,7 @@ void DeepPressureWearable::calibration() {
           Serial.println(user_position_MAX);
           break;
         case ACTUATOR:
-          calibrationActuatorFeedback();
+          calibrationActuatorFeedback(0); // FIX
           break;
         case NONE:
           calibrationComplete = true;
@@ -461,11 +458,12 @@ bool DeepPressureWearable::initializeSDCard() {
 }
 
 bool DeepPressureWearable::initializeActuator() {
-  actuator1.attach(position1_OUT); // attach servo 
-  actuator1.write(POSITION_MIN); //put in minimum position
+  int i;
 
-  actuator2.attach(position2_OUT); // attach servo 
-  actuator2.write(POSITION_MIN); //put in minimum position
+  for (i=0; i < N_ACTUATORS; ++i) {
+    actuatorArr[i].attach(position_OUTArr[i]); // attach servo 
+    actuatorArr[i].write(POSITION_MIN); //put in minimum position
+  }
   return (true);
 }
 
@@ -499,11 +497,15 @@ bool DeepPressureWearable::risingEdgeButton() {
   return false;
 }
 
-void DeepPressureWearable::writeOutData(unsigned long t, float f, int c, int m, short d) {
+void DeepPressureWearable::writeOutData(int l, unsigned long t, float f, int *c, int *m, short *d) {
   String dataString = "";
   if (sdWriteON || serialON) {
-    dataString += (String(t) + "," + String(f) + "," + String(c) + "," \
-    + String(m) + "," + String(d));
+    dataString += (String(t) + "," + String(f));
+
+    for (i=0; i < l; ++i) {
+      dataString += (+ "," String(c) + "," + String(m) + "," + String(d));
+    }
+      
     if (sdWriteON) {
       File dataFile = SD.open("raw_data.csv", FILE_WRITE);
       if (dataFile) {
@@ -511,7 +513,7 @@ void DeepPressureWearable::writeOutData(unsigned long t, float f, int c, int m, 
         dataFile.close();
       } else if (serialON) Serial.println("error opening datalog");
     }
-        if (serialON) Serial.println(dataString);
+    if (serialON) Serial.println(dataString);
   }  
 }
 
