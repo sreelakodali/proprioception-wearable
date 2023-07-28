@@ -1,8 +1,8 @@
-// DeepPressureWearable.h
+// DeepPressureWearableArr.h
 // Written by: Sreela Kodali, kodali@stanford.edu
 
-#ifndef DeepPressureWearable_h
-#define DeepPressureWearable_h
+#ifndef DeepPressureWearableArr_h
+#define DeepPressureWearableArr_h
 
 #include "Arduino.h"
 // #else
@@ -38,10 +38,12 @@ typedef enum {
 	KEYBOARD_INPUT
 } INPUT_TYPE;
 
-class DeepPressureWearable {
+
+
+template < int N_ACT > class DeepPressureWearableArr {
 	public:
 	// methods
-	DeepPressureWearable(INPUT_TYPE input, bool serial, bool c, int n);
+	DeepPressureWearableArr(INPUT_TYPE input, bool serial, bool c, int n);
 
 	int  N_ACTUATORS;
 
@@ -50,10 +52,10 @@ class DeepPressureWearable {
 	int  user_position_MAX;
 	float  user_flex_MIN;
 	float  user_flex_MAX;
-	//short zeroForce;
+	int position_CommandArr[N_ACT];
 	void calibration();
 	
-	void runtime(int (*mapping)(int));
+	void runtime(void (*mapping)(int));
 
 	void testLed();
 	void testPushbutton();
@@ -74,13 +76,13 @@ class DeepPressureWearable {
 	int T_CYCLE = 15;
 
 	// Array version for multiple actuators
-	Servo actuatorArr[N_ACTUATORS];
-	int position_CommandArr[N_ACTUATORS];
-	int position_MeasuredArr[N_ACTUATORS]; // this could be local
-	short zeroForceArr[N_ACTUATORS];
-	const  int position_INArr[] = {21, 20, 22, 23};
-	const  int position_OUTArr[] = {7, 6, 8, 9};
-	const  byte I2C_ADDRArr[] = {0x08, 0x06, 0x10, 0x12};
+	Servo actuatorArr[N_ACT];
+	int position_MeasuredArr[N_ACT]; // this could be local
+	short zeroForceArr[N_ACT]; // should this be local?
+
+	const  int position_INArr[4] = {21, 20, 22, 23};
+	const  int position_OUTArr[4] = {7, 6, 8, 9};
+	const  byte I2C_ADDRArr[4] = {0x08, 0x06, 0x10, 0x12};
 
 
 	// // Linear Actuator, command, position
@@ -123,7 +125,7 @@ class DeepPressureWearable {
 	bool initializeFlexSensor();
 	bool initializeIO();
 	bool risingEdgeButton();
-	void writeOutData(int l, unsigned long t, float f, int *c, int *m, short *d)
+	void writeOutData(int l, unsigned long t, float f, int *c, int *m, short *d);
 	short readDataFromSensor(short address);
 
 	void calibrationActuatorFeedback(int n);

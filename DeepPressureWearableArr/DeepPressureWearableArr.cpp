@@ -3,11 +3,11 @@
 
 #include "Arduino.h"
 #include "pins_arduino.h"
-#include "DeepPressureWearable.h"
+#include "DeepPressureWearableArr.h"
 
 
 //Constructor
-DeepPressureWearable::DeepPressureWearable(INPUT_TYPE input, bool serial, bool c, int n) {
+template < int N_ACT > DeepPressureWearableArr< N_ACT>::DeepPressureWearableArr(INPUT_TYPE input, bool serial, bool c, int n) {
 
 	// settings
 	inputType = input;
@@ -54,14 +54,14 @@ DeepPressureWearable::DeepPressureWearable(INPUT_TYPE input, bool serial, bool c
 
 
 // Public methods
-void DeepPressureWearable::testLed () {
+template < int N_ACT > void DeepPressureWearableArr< N_ACT>::testLed () {
   digitalWrite(led_OUT, HIGH);   // turn the LED on (HIGH is the voltage level)
   delay(1000);               // wait for a second
   digitalWrite(led_OUT, LOW);    // turn the LED off by making the voltage LOW
   delay(1000);               // wait for a second
 }
 
-void DeepPressureWearable::testPushbutton () {
+template < int N_ACT > void DeepPressureWearableArr< N_ACT>::testPushbutton () {
   digitalWrite(led_OUT, LOW);
   if (risingEdgeButton()) {
     if (serialON) Serial.println("Pushed!");
@@ -71,14 +71,14 @@ void DeepPressureWearable::testPushbutton () {
   }
 }
 
-void DeepPressureWearable::blink_T (int t_d) {
+template < int N_ACT > void DeepPressureWearableArr< N_ACT>::blink_T (int t_d) {
   digitalWrite(led_OUT, LOW);
   delay(t_d);
   digitalWrite(led_OUT, HIGH);
   delay(t_d);
 }
 
-void DeepPressureWearable::safety() {
+template < int N_ACT > void DeepPressureWearableArr< N_ACT>::safety() {
       // Safety withdraw actuator and stop
     if (risingEdgeButton()) {
 
@@ -98,7 +98,7 @@ void DeepPressureWearable::safety() {
     }
 }
 
-void DeepPressureWearable::runtime(int (*mapping)(int)) {
+template < int N_ACT > void DeepPressureWearableArr< N_ACT>::runtime(void (*mapping)(int)) {
     short data[N_ACTUATORS];
     unsigned long myTime;
     int i;
@@ -116,8 +116,8 @@ void DeepPressureWearable::runtime(int (*mapping)(int)) {
     //position1_Command = map(int(flexSensor), int(user_flex_MIN), int(user_flex_MAX), user_position_MIN, user_position_MAX);
     
     for (i=0; i < N_ACTUATORS; ++i) {
-        if(position_Command[i] > user_position_MAX) position_Command[i] = user_position_MAX;
-        else if(position_Command[i] < user_position_MIN) position_Command[i] = user_position_MIN;
+        if(position_CommandArr[i] > user_position_MAX) position_CommandArr[i] = user_position_MAX;
+        else if(position_CommandArr[i] < user_position_MIN) position_CommandArr[i] = user_position_MIN;
      }
 
     // if(position1_Command > POSITION_MAX) position1_Command = POSITION_MAX;
@@ -134,7 +134,7 @@ void DeepPressureWearable::runtime(int (*mapping)(int)) {
       //actuator1.write(POSITION_MIN);
     }
 
-    for (i=0; i < N_ACTUATORS; ++i) position_Measured[i] = analogRead(position_IN[i]);
+    for (i=0; i < N_ACTUATORS; ++i) position_MeasuredArr[i] = analogRead(position_INArr[i]);
 
     //position1_Measured = analogRead(position1_IN);
 
@@ -146,7 +146,7 @@ void DeepPressureWearable::runtime(int (*mapping)(int)) {
       // if (powerOn) analogWrite(led_OUT, 255);
       // else analogWrite(led_OUT, 30);
 
-      writeOutData(N_ACTUATORS, myTime, flexSensor, position_Command, position_Measured, data);
+      writeOutData(N_ACTUATORS, myTime, flexSensor, position_CommandArr, position_MeasuredArr, data);
       cycleCount = 0;
     }
     risingEdgeButton();
@@ -155,7 +155,7 @@ void DeepPressureWearable::runtime(int (*mapping)(int)) {
 
 // sweeping actuator position, increasing and decreasing. infinite loop.
 // t_d is time between actuator steps
-int DeepPressureWearable::sweep(int t_d, int n) {
+template < int N_ACT > int DeepPressureWearableArr< N_ACT>::sweep(int t_d, int n) {
     unsigned long myTime;
     short data;
     int counter = user_position_MIN;
@@ -173,7 +173,7 @@ int DeepPressureWearable::sweep(int t_d, int n) {
       data = readDataFromSensor(I2C_ADDRArr[n]);
 
       if (serialON) {
-        writeOutData(1, myTime, 0, counter, position_Measured[n], data);
+        writeOutData(1, myTime, 0, counter, position_MeasuredArr[n], data);
         // dataString += (String(myTime) + "," + String(counter) + "," \
         // + String(position1_Measured));
         // Serial.println(dataString);
@@ -198,7 +198,7 @@ int DeepPressureWearable::sweep(int t_d, int n) {
 }
 
 // Calibration
-void DeepPressureWearable::calibrationActuatorFeedback(int n) {
+template < int N_ACT > void DeepPressureWearableArr< N_ACT>::calibrationActuatorFeedback(int n) {
   int i;
   int ACTUATOR_FEEDBACK_MAX = 500;
   int ACTUATOR_FEEDBACK_MIN = 500;
@@ -207,13 +207,13 @@ void DeepPressureWearable::calibrationActuatorFeedback(int n) {
   for (i=0; i < N_ACTUATORS; ++i) actuatorArr[i].write(POSITION_MIN);
   
   delay(500);
-  ACTUATOR_FEEDBACK_MAX = analogRead(position_IN[n]);
+  ACTUATOR_FEEDBACK_MAX = analogRead(position_INArr[n]);
   ACTUATOR_FEEDBACK_MIN = sweep(300, n);
   Serial.println(ACTUATOR_FEEDBACK_MAX);
   Serial.println(ACTUATOR_FEEDBACK_MIN);
 }
 
-void DeepPressureWearable::calibrationZeroForce() {
+template < int N_ACT > void DeepPressureWearableArr< N_ACT>::calibrationZeroForce() {
   int i;
   for (i=0; i < N_ACTUATORS; ++i) actuatorArr[i].write(POSITION_MIN);
 
@@ -224,7 +224,7 @@ void DeepPressureWearable::calibrationZeroForce() {
   }
 }
 
-void DeepPressureWearable::calibrationFlexSensor(unsigned long timeLength) {
+template < int N_ACT > void DeepPressureWearableArr< N_ACT>::calibrationFlexSensor(unsigned long timeLength) {
   unsigned long startTime;
   unsigned long endTime;
   int i;
@@ -265,7 +265,7 @@ void DeepPressureWearable::calibrationFlexSensor(unsigned long timeLength) {
 
 
 // Calibration Stage: Get the detection and pain thresholds
-int DeepPressureWearable::calibrationMaxDeepPressure(int n) {
+template < int N_ACT > int DeepPressureWearableArr< N_ACT>::calibrationMaxDeepPressure(int n) {
    int counter = POSITION_MIN;
    int x;
    short data;
@@ -273,6 +273,7 @@ int DeepPressureWearable::calibrationMaxDeepPressure(int n) {
    short maxForce = 0;
    short minForce = 0; // detection threshold
    int nClicks = 0;
+   int i;
 
    for (i=0; i < N_ACTUATORS; ++i) actuatorArr[i].write(counter);
    blinkN(5,1000);
@@ -314,7 +315,7 @@ int DeepPressureWearable::calibrationMaxDeepPressure(int n) {
   }
   for (i=0; i < N_ACTUATORS; ++i) actuatorArr[i].write(POSITION_MIN);
 
-  Serial.println(zeroForce);
+  Serial.println(zeroForceArr[n]);
   Serial.println(minForce); // new
   Serial.println(maxForce);
   Serial.println(user_position_MIN); // new
@@ -324,7 +325,7 @@ int DeepPressureWearable::calibrationMaxDeepPressure(int n) {
 }
 
 /* Calibration: Interfaces with python gui */
-void DeepPressureWearable::calibration() {
+template < int N_ACT > void DeepPressureWearableArr< N_ACT>::calibration() {
   CALIBRATION_OPTIONS mode;
   bool calibrationComplete = false;
   int nMaxPressure = 0;
@@ -409,7 +410,7 @@ void DeepPressureWearable::calibration() {
 
 // Private methods
 
-void DeepPressureWearable::blinkN (int n, int t_d) {
+template < int N_ACT > void DeepPressureWearableArr< N_ACT>::blinkN (int n, int t_d) {
   for(int i=0; i < n; i++) {
     analogWrite(led_OUT, 10);
     delay(t_d/2);
@@ -418,7 +419,7 @@ void DeepPressureWearable::blinkN (int n, int t_d) {
   }
 }
 
-void DeepPressureWearable::initializeSystem(bool c) {
+template < int N_ACT > void DeepPressureWearableArr< N_ACT>::initializeSystem(bool c) {
   Wire.begin(); // join i2c bus
   initializeSerial(); // start serial for output
   initializeSDCard(); // initialize sd card
@@ -436,14 +437,14 @@ void DeepPressureWearable::initializeSystem(bool c) {
   }
 }
 
-bool DeepPressureWearable::initializeSerial() {
+template < int N_ACT > bool DeepPressureWearableArr< N_ACT>::initializeSerial() {
     Serial.begin(4608000);  
     Serial.flush();
     while (!Serial);
     return (true); 
 }
 
-bool DeepPressureWearable::initializeSDCard() {
+template < int N_ACT > bool DeepPressureWearableArr< N_ACT>::initializeSDCard() {
   if (sdWriteON) {
     // See if the card is present and can be initialized:
     if (!SD.begin(CHIP_SELECT)) {
@@ -457,7 +458,7 @@ bool DeepPressureWearable::initializeSDCard() {
   }
 }
 
-bool DeepPressureWearable::initializeActuator() {
+template < int N_ACT > bool DeepPressureWearableArr< N_ACT>::initializeActuator() {
   int i;
 
   for (i=0; i < N_ACTUATORS; ++i) {
@@ -467,7 +468,7 @@ bool DeepPressureWearable::initializeActuator() {
   return (true);
 }
 
-bool DeepPressureWearable::initializeFlexSensor() {
+template < int N_ACT > bool DeepPressureWearableArr< N_ACT>::initializeFlexSensor() {
     if (capacitiveFlexSensor.begin() == false) {
       Serial.println(("No sensor detected. Check wiring. Freezing..."));
       while (1);
@@ -476,13 +477,13 @@ bool DeepPressureWearable::initializeFlexSensor() {
   return (true);
 }
 
-bool DeepPressureWearable::initializeIO() {
+template < int N_ACT > bool DeepPressureWearableArr< N_ACT>::initializeIO() {
   pinMode(button_IN, INPUT); // set button and led
   pinMode(led_OUT, OUTPUT);
   return (true); 
 }
 
-bool DeepPressureWearable::risingEdgeButton() {
+template < int N_ACT > bool DeepPressureWearableArr< N_ACT>::risingEdgeButton() {
   buttonState = digitalRead(button_IN);
   //Serial.println(buttonState);
   if (buttonState != oldButtonState) {
@@ -497,13 +498,14 @@ bool DeepPressureWearable::risingEdgeButton() {
   return false;
 }
 
-void DeepPressureWearable::writeOutData(int l, unsigned long t, float f, int *c, int *m, short *d) {
+template < int N_ACT > void DeepPressureWearableArr< N_ACT>::writeOutData(int l, unsigned long t, float f, int *c, int *m, short *d) {
+  int i;
   String dataString = "";
   if (sdWriteON || serialON) {
     dataString += (String(t) + "," + String(f));
 
     for (i=0; i < l; ++i) {
-      dataString += (+ "," String(c) + "," + String(m) + "," + String(d));
+      dataString += ( "," + String(c) + "," + String(m) + "," + String(d));
     }
       
     if (sdWriteON) {
@@ -517,7 +519,7 @@ void DeepPressureWearable::writeOutData(int l, unsigned long t, float f, int *c,
   }  
 }
 
-short DeepPressureWearable::readDataFromSensor(short address) {
+template < int N_ACT > short DeepPressureWearableArr< N_ACT>::readDataFromSensor(short address) {
   byte i2cPacketLength = 6;//i2c packet length. Just need 6 bytes from each slave
   byte outgoingI2CBuffer[3];//outgoing array buffer
   byte incomingI2CBuffer[6];//incoming array buffer

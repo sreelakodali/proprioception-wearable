@@ -1,0 +1,48 @@
+/*
+ * Firmware Code for Proprioception Wearable Device
+ * Using DeepPressureWearableArr library
+ * Written by Sreela Kodali (kodali@stanford.edu) 
+ * 
+ * */
+
+#include <DeepPressureWearableArr.h>
+
+// create and initialize instance of DeepPressureWearable(INPUT_TYPE input, bool serial, bool c)
+
+const INPUT_TYPE in = FLEX_INPUT; // NO_INPUT, FLEX_INPUT, KEYBOARD_INPUT
+const bool serialON = true; // and has serial output
+const int calibrateOn = false;
+const int n_actuators = 2;
+
+DeepPressureWearableArr<2> device(in, serialON, calibrateOn, n_actuators);
+
+
+void setup() {
+    Serial.println("Device initialized.");
+}
+
+void loop() {
+  // pressing button can turn feedback on and off
+  device.runtime(mapping);
+}
+
+void mapping(int angle) {
+  int x;
+
+  // set device1.position1_Command and device1.position2_Command with angle
+   
+//  x = map(angle, int(device.user_flex_MIN), int(device.user_flex_MAX), device.user_position_MIN, device.user_position_MAX);
+//  device.position1_Command = x;
+//  device.position2_Command = x;
+  
+  if (angle < 110) {
+    x = map(angle, int(device.user_flex_MIN), 110, device.user_position_MIN, device.user_position_MAX);
+    device.position_CommandArr[0] = x;
+    device.position_CommandArr[1] = device.user_position_MIN;
+  }
+  else {
+    x = map(angle, 110, int(device.user_flex_MAX), device.user_position_MIN, device.user_position_MAX);
+    device.position_CommandArr[0] = device.user_position_MIN;
+    device.position_CommandArr[1] = x;
+  }
+}
