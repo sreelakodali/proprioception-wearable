@@ -173,7 +173,7 @@ int DeepPressureWearableArr::sweep(int t_d, int n) {
       data = readDataFromSensor(I2C_ADDRArr[n]);
 
       if (serialON) {
-        writeOutData(1, myTime, 0, counter, position_MeasuredArr[n], data);
+        // writeOutData(1, myTime, 0, counter, position_MeasuredArr[n], data);
         // dataString += (String(myTime) + "," + String(counter) + "," \
         // + String(position1_Measured));
         // Serial.println(dataString);
@@ -195,6 +195,162 @@ int DeepPressureWearableArr::sweep(int t_d, int n) {
       delay(t_d);
     }
     return minValue;    
+}
+
+void DeepPressureWearableArr::miniPilot_patternsCommand() {
+      int w;
+      int n_valid = 0;
+      int i;
+      int input[N_ACTUATORS];
+      int patterns[3] = {user_position_MIN, user_position_MIN + (user_position_MAX-user_position_MIN)/2, user_position_MAX};
+
+      //for (i=0; i < N_ACTUATORS; ++i) actuatorArr[i].write(POSITION_MIN);
+
+
+      if (Serial.available() > 0) {
+
+        // read input
+        for (i=0; i <= N_ACTUATORS; ++i) {
+          //Serial.println(i);
+          w = (Serial.read() - '0');
+          //Serial.println(w);
+
+          if ((i == N_ACTUATORS) and (w < 0)) break; // right input length
+
+          else if ((w < 0 or w > 2)) {
+            n_valid = 0;
+            Serial.println("Error: invalid input. Try again.");
+            break;
+          }
+          else {
+            input[i] = w;
+            n_valid = n_valid + 1;
+          }
+        }
+
+        // if input is valid, print combo and move actuators
+        if (n_valid == N_ACTUATORS) {
+          //Serial.println("valid input!");
+          for (i=0; i < N_ACTUATORS; ++i) {
+            Serial.print(input[i]);
+            Serial.print(" ");
+            actuatorArr[i].write(patterns[input[i]]);
+          }
+          Serial.println();
+        }
+
+      }
+}
+
+// Note: this is a fixed mapping for two tactor and 9 combos A-I
+void DeepPressureWearableArr::miniPilot_patternsCommandbyLetter() {
+      int x;
+      int y;
+      int z;
+      int patterns[3] = {user_position_MIN, user_position_MIN + (user_position_MAX-user_position_MIN)/2, user_position_MAX};
+
+      if (N_ACTUATORS != 2) {
+         Serial.println("Incorrect number of actuators.");
+         while(1);
+      }
+      if (Serial.available() > 0) {
+        x = (Serial.read());
+        (Serial.read());
+        
+        // If less than A or greater than I
+        if ((x < 65) or (x > 73)) {
+          Serial.println("Error: invalid input. Try again.");
+        }
+        else {
+          Serial.println((char) x);
+          z = (x < 68) + (x >= 68 and x < 71)*2 + (x >= 71 and x <74)*3 - 1;
+          y = (x+1) % 3;
+          actuatorArr[0].write(patterns[z]);
+          actuatorArr[1].write(patterns[y]);
+        }
+      }
+}
+
+// sweeping actuator position, increasing and decreasing. infinite loop.
+// t_d is time between actuator steps
+void DeepPressureWearableArr::miniPilot_sweep(int t_d) {
+    unsigned long myTime;
+    short data[N_ACTUATORS];
+    int counter = user_position_MIN; // user_position_MIN + (user_position_MAX-user_position_MIN)/2
+    int i;
+    
+    for (i=0; i < N_ACTUATORS; ++i) {
+      actuatorArr[i].write(counter);
+      position_MeasuredArr[i] = 0;
+      data[i] = 0;
+    }
+  
+    for (i=0; i < N_ACTUATORS; ++i) {
+
+      while (counter <= user_position_MAX) {
+        actuatorArr[i].write(counter);
+        position_MeasuredArr[i] = analogRead(position_INArr[i]);
+        myTime = millis();
+        data[i] = readDataFromSensor(I2C_ADDRArr[i]);
+
+        if (serialON) {
+          writeOutData(1, myTime, 0, counter, position_MeasuredArr[i], data[i]);
+        }
+        counter = counter + 1;
+        delay(t_d);
+      }
+      counter = user_position_MIN; // user_position_MIN + (user_position_MAX-user_position_MIN)/2
+      actuatorArr[i].write(counter);
+    }
+}
+
+void DeepPressureWearableArr::miniPilot_sweepKeyboard() {
+    unsigned long myTime;
+    //short data;
+    int x;
+    int i;
+    int counter = user_position_MIN; // user_position_MIN + (user_position_MAX-user_position_MIN)/2
+    int max = user_position_MIN + (user_position_MAX-user_position_MIN + 1)*(N_ACTUATORS-1) + (user_position_MAX-user_position_MIN);
+    int bound1[N_ACTUATORS];
+    int bound2[N_ACTUATORS];
+
+    for (i=0; i < N_ACTUATORS; ++i) {
+      actuatorArr[i].write(counter);
+      position_MeasuredArr[i] = 0;
+      //data[i] = 0;
+      bound1[i] = user_position_MIN + (user_position_MAX-user_position_MIN + 1)*(i);
+      bound2[i] = bound1[i] + (user_position_MAX-user_position_MIN);
+    }
+
+    while (1) {
+
+      if (Serial.available() > 0) {
+        x = (Serial.read());
+         //Serial.println(x);
+
+      if ( (x < 52) or (x > 53)) {
+        Serial.println("Error: invalid input. Try again.");
+      }
+
+      else if (x == 52) {
+        counter = counter - 1;
+        Serial.println(counter);
+      }
+      else if (x == 53) {
+        counter = counter + 1;
+        Serial.println(counter);
+      }
+
+      if(counter < user_position_MIN) counter = user_position_MIN;
+      else if(counter > max) counter = max;
+
+      for (i=0; i < N_ACTUATORS; ++i) {
+        if ((counter >= bound1[i]) and (counter <= bound2[i])) actuatorArr[i].write(counter - ((user_position_MAX-user_position_MIN + 1)*(i)));
+        else actuatorArr[i].write(user_position_MIN);
+       }
+
+      }      
+    }
 }
 
 // Calibration

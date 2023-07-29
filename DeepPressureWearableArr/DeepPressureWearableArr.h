@@ -59,6 +59,12 @@ class DeepPressureWearableArr {
 	
 	void runtime(void (*mapping)(int));
 
+	//void miniPilot_patternsSequence(int t_d);
+	void miniPilot_patternsCommand();
+	void miniPilot_patternsCommandbyLetter();
+	void miniPilot_sweep(int t_d);
+	void miniPilot_sweepKeyboard();
+
 	void testLed();
 	void testPushbutton();
 	void blink_T(int t_d);
