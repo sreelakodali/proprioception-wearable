@@ -40,8 +40,6 @@ typedef enum {
 	KEYBOARD_INPUT
 } INPUT_TYPE;
 
-
-
 class DeepPressureWearableArr {
 	public:
 	// methods
@@ -90,24 +88,7 @@ class DeepPressureWearableArr {
 
 	const  int position_INArr[4] = {21, 20, 22, 23};
 	const  int position_OUTArr[4] = {7, 6, 8, 9};
-	const  byte I2C_ADDRArr[4] = {0x08, 0x06, 0x10, 0x12};
-
-
-	// // Linear Actuator, command, position
-	// Servo actuator1;
-	// int  position1_Command;
-	// int  position1_Measured;
-	// const  int position1_IN = 21;// analog read in position pin
-	// const  int position1_OUT = 7;// PWM output pin
-	// const  byte I2C_ADDR = 0x08; // force sensor's i2C addr
-
-	// // Linear Actuator2, command, position
-	// Servo actuator2;
-	// int  position2_Command;
-	// int  position2_Measured;
-	// const  int position2_IN = 20;// analog read in position pin
-	// const  int position2_OUT = 6;// PWM output pin
-	// //const  byte I2C_ADDR = 0x06; // force sensor's i2C addr	
+	const  byte I2C_ADDRArr[4] = {0x08, 0x06, 0x10, 0x12};	
 	
 	int  cycleCount; // cycleCount
 	bool  powerOn; // powerOn

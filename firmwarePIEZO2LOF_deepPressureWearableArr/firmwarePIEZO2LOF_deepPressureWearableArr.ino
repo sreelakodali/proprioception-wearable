@@ -22,8 +22,8 @@ void setup() {
 
 void loop() {
   // pressing button can turn feedback on and off
-  //device.runtime(mapping);
-  device.miniPilot_sweepKeyboard();
+  device.runtime(mapping);
+  //device.miniPilot_sweepKeyboard();
 }
 
 void mapping(int angle) {

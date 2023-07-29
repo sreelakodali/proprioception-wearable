@@ -28,14 +28,6 @@ DeepPressureWearableArr::DeepPressureWearableArr(INPUT_TYPE input, bool serial, 
     position_MeasuredArr[i] = 0;
     zeroForceArr[i] = 0;
   }
-
-	// // Linear Actuator, command, position
-	// position1_Command = 0;
-	// position1_Measured = 0;
-	
-  // // Linear Actuator, command, position
-  // position2_Command = 0;
-  // position2_Measured = 0;
 	
 	cycleCount = 0; // cycleCount
 	powerOn = 0; // powerOn
