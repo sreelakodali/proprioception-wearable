@@ -217,6 +217,8 @@ void DeepPressureWearable::miniPilot_patternsCommandbyLetter() {
       //     Serial.print(z);
       // Serial.print(" ");
       // Serial.println(y);
+          actuatorArr[0].write(patterns[z]);
+          actuatorArr[1].write(patterns[y]);
           actuator1.write(patterns[z]);
           actuator2.write(patterns[y]);
 

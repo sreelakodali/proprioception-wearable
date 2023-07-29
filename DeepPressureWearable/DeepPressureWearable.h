@@ -88,7 +88,9 @@ class DeepPressureWearable {
 	int  position1_Measured;
 	const  int position1_IN = 21;// analog read in position pin
 	const  int position1_OUT = 7;// PWM output pin
-	const  byte I2C_ADDR = 0x04; // force sensor's i2C addr
+	const  byte I2C_ADDR = 0x08; // force sensor's i2C addr
+	const  byte I2C_ADDR2 = 0x06; // force sensor's i2C addr
+
 
 	// Linear Actuator2, command, position
 	Servo actuator2;
