@@ -9,7 +9,7 @@
 
 // create and initialize instance of DeepPressureWearable(INPUT_TYPE input, bool serial, bool c)
 
-const INPUT_TYPE in = FLEX_INPUT; // NO_INPUT, FLEX_INPUT, KEYBOARD_INPUT
+const INPUT_TYPE in = NO_INPUT;//FLEX_INPUT; // NO_INPUT, FLEX_INPUT, KEYBOARD_INPUT
 const bool serialON = true; // and has serial output
 const int calibrateOn = false;
 
@@ -22,7 +22,8 @@ void setup() {
 
 void loop() {
   // pressing button can turn feedback on and off
-  device.runtime(mapping);
+  //device.runtime(mapping);
+  device.miniPilot_sweepKeyboard();
 }
 
 void mapping(int angle) {
