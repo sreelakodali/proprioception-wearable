@@ -18,12 +18,14 @@ DeepPressureWearableArr device(in, serialON, calibrateOn);
 
 void setup() {
     Serial.println("Device initialized.");
+    //delay(10000);
 }
 
 void loop() {
   // pressing button can turn feedback on and off
-  device.runtime(mapping);
-  //device.miniPilot_sweepKeyboard();
+  //device.runtime(mapping);
+  //device.sweep(50, 0);
+  device.testLed();
 }
 
 void mapping(int angle) {
