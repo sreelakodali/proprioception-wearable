@@ -88,7 +88,9 @@ class DeepPressureWearableArr {
 
 	const  int position_INArr[4] = {21, 20, 22, 23};
 	const  int position_OUTArr[4] = {7, 6, 8, 9};
-	const  byte I2C_ADDRArr[4] = {0x08, 0x06, 0x10, 0x12};	
+	const  byte I2C_ADDRArr[4] = {0x06, 0x08, 0x10, 0x12};
+	const int  button_IN = 4;
+	const int  led_OUT = 5;	
 	
 	int  cycleCount; // cycleCount
 	bool  powerOn; // powerOn
@@ -102,8 +104,7 @@ class DeepPressureWearableArr {
 	int  buttonState; // button state
 	int  oldButtonState; // old button state
 	int  buttonCount; // button count. global!
-	const int  button_IN = 4;
-	const int  led_OUT = 5;
+	
 
 	// methods
 	void blinkN(int n, int t_d);

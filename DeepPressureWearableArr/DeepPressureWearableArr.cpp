@@ -47,9 +47,11 @@ DeepPressureWearableArr::DeepPressureWearableArr(INPUT_TYPE input, bool serial, 
 
 // Public methods
 void DeepPressureWearableArr::testLed () {
-  digitalWrite(led_OUT, HIGH);   // turn the LED on (HIGH is the voltage level)
+  //digitalWrite(led_OUT, HIGH);   // turn the LED on (HIGH is the voltage level)
+  analogWrite(led_OUT, 200);
   delay(1000);               // wait for a second
-  digitalWrite(led_OUT, LOW);    // turn the LED off by making the voltage LOW
+  //digitalWrite(led_OUT, LOW);    // turn the LED off by making the voltage LOW
+  analogWrite(led_OUT, 10);
   delay(1000);               // wait for a second
 }
 
@@ -166,9 +168,9 @@ int DeepPressureWearableArr::sweep(int t_d, int n) {
 
       if (serialON) {
         // writeOutData(1, myTime, 0, counter, position_MeasuredArr[n], data);
-        // dataString += (String(myTime) + "," + String(counter) + "," \
-        // + String(position1_Measured));
-        // Serial.println(dataString);
+        dataString += (String(myTime) + "," + String(counter) + "," \
+        + String(position_MeasuredArr[n]) + "," + data);
+        Serial.println(dataString);
       }
 
       if (extending == 1) {
@@ -339,6 +341,7 @@ void DeepPressureWearableArr::miniPilot_sweepKeyboard() {
       for (i=0; i < N_ACTUATORS; ++i) {
         if ((counter >= bound1[i]) and (counter <= bound2[i])) actuatorArr[i].write(counter - ((user_position_MAX-user_position_MIN + 1)*(i)));
         else actuatorArr[i].write(user_position_MIN);
+
        }
 
       }      
@@ -578,7 +581,7 @@ void DeepPressureWearableArr::initializeSystem(bool c) {
     flexSensor = 180;
   }
   initializeIO(); // initialize IO pins, i.e. button and led
-  analogWrite(led_OUT, 30);
+  analogWrite(led_OUT, 10);
   if (c) {
     Serial.println("Entering calibration...");
     calibration();
