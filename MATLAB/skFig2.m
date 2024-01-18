@@ -1,12 +1,12 @@
 close all
-HnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/subjectAttempts_HnV_16.csv','NumHeaderLines',0);
-HV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/subjectAttempts_HV_16.csv','NumHeaderLines',0);
-nHnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/subjectAttempts_nHnV_16.csv','NumHeaderLines',0);
-nHV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/subjectAttempts_nHV_16.csv','NumHeaderLines',0);
-forceHnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/force_HnV_16.csv','NumHeaderLines',0);
-forceHV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/force_HV_16.csv','NumHeaderLines',0);
-forcenHnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/force_nHnV_16.csv','NumHeaderLines',0);
-forcenHV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/force_nHV_16.csv','NumHeaderLines',0);
+HnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/subjectAttempts_HnV_16.csv','NumHeaderLines',0);
+HV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/subjectAttempts_HV_16.csv','NumHeaderLines',0);
+nHnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/subjectAttempts_nHnV_16.csv','NumHeaderLines',0);
+nHV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/subjectAttempts_nHV_16.csv','NumHeaderLines',0);
+forceHnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/force_HnV_16.csv','NumHeaderLines',0);
+forceHV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/force_HV_16.csv','NumHeaderLines',0);
+forcenHnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/force_nHnV_16.csv','NumHeaderLines',0);
+forcenHV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/force_nHV_16.csv','NumHeaderLines',0);
 
 % HnV([2, 8],:) = [];
 % HV([2, 8],:) = [];

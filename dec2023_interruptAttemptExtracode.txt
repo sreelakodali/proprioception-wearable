@@ -1,0 +1,49 @@
+
+elapsedMillis sensorReadingRate;
+
+if (sensorReadingRate >= 500) {
+	sensorReadingRate = sensorReadingRate - 500;
+
+	// read all the sensors
+
+	WriteOutData();
+}
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~
+
+IntervalTimer sensorDataTimer;
+
+sensorDataTimer.begin(readWriteOutData, 150000);
+
+void readWriteOutData() {
+	short data[N_ACTUATORS];
+    unsigned long myTime;
+
+   myTime = millis();
+
+   for (i=0; i < N_ACTUATORS; ++i) {
+   	position_MeasuredArr[i] = analogRead(position_INArr[i]);
+   	data[i] = readDataFromSensor(I2C_ADDRArr[i]);
+   }
+
+   writeOutData(N_ACTUATORS, myTime, 0, position_CommandArr, position_MeasuredArr, data);
+}
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+cycleCount = cycleCount + 1;
+    if ((cycleCount == WRITE_COUNT)) {
+      for (i=0; i < N_ACTUATORS; ++i) data[i] = readDataFromSensor(I2C_ADDRArr[i]);
+      // powerOn = (data >= 150);
+      // if (powerOn) analogWrite(led_OUT, 255);
+      // else analogWrite(led_OUT, 30);
+
+      writeOutData(N_ACTUATORS, myTime, flexSensor, position_CommandArr, position_MeasuredArr, data);
+      cycleCount = 0;
+    }
+    risingEdgeButton();
+    if (T_CYCLE > 0) delay(T_CYCLE);

@@ -27,7 +27,7 @@ typedef enum {
 
 typedef enum {
 	POSITION_MIN = 47,
-	POSITION_MAX = 139
+	POSITION_MAX = 100//139
 } ACTUATOR_LIMITS;
 
 // Calibration states
@@ -68,6 +68,7 @@ class DeepPressureWearableArr {
 	void blink_T(int t_d);
 	void safety();
 	int sweep(int t_d, int n);
+	void blinkN(int n, int t_d);
 
 	private:
 	
@@ -107,7 +108,7 @@ class DeepPressureWearableArr {
 	
 
 	// methods
-	void blinkN(int n, int t_d);
+	
 	void initializeSystem(bool c);
 	bool initializeSerial();
 	bool initializeSDCard();

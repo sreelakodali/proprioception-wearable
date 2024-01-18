@@ -5,12 +5,12 @@ close all
 % HV = ABSError(43:56);
 
 
-nHnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/avgnHnV_pythonGenerated_16.csv','NumHeaderLines',0);
-nHV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/avgnHV_pythonGenerated_16.csv','NumHeaderLines',0);
-HnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/avgHnV_pythonGenerated_16.csv','NumHeaderLines',0);
-HV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/avgHV_pythonGenerated_16.csv','NumHeaderLines',0);
+nHnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/avgnHnV_pythonGenerated_16.csv','NumHeaderLines',0);
+nHV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/avgnHV_pythonGenerated_16.csv','NumHeaderLines',0);
+HnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/avgHnV_pythonGenerated_16.csv','NumHeaderLines',0);
+HV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/avgHV_pythonGenerated_16.csv','NumHeaderLines',0);
 
-errorNotAbs = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/error_notABS.csv','NumHeaderLines',0);
+errorNotAbs = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/error_notABS.csv','NumHeaderLines',0);
 
 
 
