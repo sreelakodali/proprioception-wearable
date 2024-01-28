@@ -9,7 +9,7 @@
 
 // create and initialize instance of DeepPressureWearable(INPUT_TYPE input, bool serial, bool c)
 
-const INPUT_TYPE in = NO_INPUT;//FLEX_INPUT; // NO_INPUT, FLEX_INPUT, KEYBOARD_INPUT
+const INPUT_TYPE in = KEYBOARD_INPUT;//FLEX_INPUT; // NO_INPUT, FLEX_INPUT, KEYBOARD_INPUT
 const bool serialON = true; // and has serial output
 const int calibrateOn = false;
 
@@ -19,7 +19,6 @@ DeepPressureWearableArr device(in, serialON, calibrateOn);
 void setup() {
     Serial.println("Device initialized.");
     device.blinkN(10, 1000);
-    //delay(10000);
 }
 
 void loop() {
@@ -30,6 +29,7 @@ void loop() {
   //device.testLed();
 }
 
+// note that mapping func changes the deepPressureWearableArr.position_CommandArr[0] and position_CommandArr[1] directly
 void mapping(int angle) {
   int x;
   int midpoint = 60;

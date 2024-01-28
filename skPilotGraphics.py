@@ -5,7 +5,7 @@ from turtle import *
 
 # color blind safe palette: https://lospec.com/palette-list/ibm-color-blind-safe
 
-COLOR = '#648FFF' #'#51A0DC'
+COLOR = '#BA0F30' #'#648FFF' #'#51A0DC'
 COLOR_SERIAL= '#FFB000' #yellow, # light green'#A8F3A3'
 COLOR_GREEN = '#44AA99'
 COLOR_ORANGE = '#FE6100'
