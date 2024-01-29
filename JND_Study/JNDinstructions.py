@@ -2,16 +2,11 @@
 # Written by: Sreela Kodali (kodali@stanford.edu) 
 
 
-import datetime
+import datetime, getopt, turtle, time, keyboard, random
 import numpy as np
-import getopt
 import constants as CONST
 import skFunctions as sk
-import turtle
 import skPilotGraphics as skG
-import time
-import keyboard
-import random
 
 
 
@@ -35,7 +30,6 @@ INTRO_TEXT = [INTRO_TEXT_0, INTRO_TEXT_1,INTRO_TEXT_2, INTRO_TEXT_7, INTRO_TEXT_
 
 i = 0
 skipClickForNewText = 0
-armAngle = 180
 sc = turtle.Screen()
 sc.tracer(0)
 sc.title("Introduction")

@@ -5,9 +5,10 @@ from turtle import *
 
 # color blind safe palette: https://lospec.com/palette-list/ibm-color-blind-safe
 
-COLOR = '#BA0F30' #'#648FFF' #'#51A0DC'
+COLOR = '#000000'#'#BA0F30' #'#648FFF' #'#51A0DC'
+COLOR_RED = '#ED2E38'
+COLOR_GREEN = '#009639'
 COLOR_SERIAL= '#FFB000' #yellow, # light green'#A8F3A3'
-COLOR_GREEN = '#44AA99'
 COLOR_ORANGE = '#FE6100'
 COLOR_PINK = '#DC267F'
 COLOR_PURPLE = '#785EF0'
@@ -85,8 +86,8 @@ def deleteForearm(screen, r):
 
 def delay(screen, time):
 	screen.tracer(1,time)
-	goto(0, -(ARM_LENGTH)/2)
-	dot(ELBOW_SIZE)
+	# goto(0, -(ARM_LENGTH)/2)
+	# dot(ELBOW_SIZE)
 	update()
 
 def removeTrialLabel(screen):
@@ -125,6 +126,10 @@ def initializeWindow(sc, arr):
 			goto(-350,230-(i-1)*50)
 			write(arr[i], move=False, font=("Arial",32, "normal"))
 	penup()
+	# goto(30,-320)
+	# color(COLOR_GREEN, COLOR_GREEN)
+	# write("continue", move=False, font=("Arial",32, "bold"))
+	# color(COLOR, COLOR)
 
 def initializeWindow_MultiColor(sc, arr, c):
 	erase2(sc,'white')
@@ -302,6 +307,7 @@ def updateTrialLabel(screen, nTrials):
 	backward(700)
 	penup()
 	color(COLOR, COLOR)
+	update()
 
 def writeClickToContinue(screen):
 	screen.tracer(0)
@@ -325,25 +331,21 @@ def erase(screen, c):
 	begin_fill()
 	color(c, c)
 	penup()
-	goto(-350,200)
+	goto(-350,250)
 	pendown()
 	seth(180)
 	backward(700)
 	right(90)
-	backward(300)
+	backward(700)
 	right(90)
-	backward(350)
-	left(90)
-	backward(100)
+	backward(700)
 	right(90)
-	backward(350)
-	right(90)
-	backward(400)
+	backward(700)
 	end_fill()
 	penup()
 	seth(0)
 	color(COLOR, COLOR)
-	drawUpperArm()
+	#drawUpperArm()
 	update()
 
 def erase3(screen, c):
@@ -398,3 +400,26 @@ def erase4(screen, c):
 	drawUpperArm()
 	update()
 
+def writeText(screen, x, y, txt, c):
+	screen.tracer(0)
+	penup()
+	goto(x,y)
+	color(c, c)
+	write(txt, move=False, font=("Arial",36, "normal"))
+	# if (bold):
+	# 	write(txt, move=False, font=("Arial",36, "normal"))
+	# else:
+	# 	write(txt, move=False, font=("Arial",sz, "normal"))
+	penup()
+	update()
+	
+def eraseLine(screen, x, y):
+	screen.tracer(0)
+	begin_fill()
+	color('white', 'white')
+	penup()
+	goto(x,y)
+	pendown()
+	backward(700)
+	penup()
+	update()
