@@ -63,14 +63,14 @@ def staircase(start, reference, startInc, wait, retract, nUp, nDown, N_Trials):
 			packetB = reference #B will be reference
 
 		# apply stimuli
-		print("Receiving Poke A: " + str(packetA))
-		skG.writeText(sc, -350, 230, "Poke A in progress", skG.COLOR)
+		print("Receiving Stimulus A: " + str(packetA))
+		skG.writeText(sc, -350, 230, "Stimulus A in progress", skG.COLOR)
 		# mcu.write(str(packetA).encode()) # Send poke A
 		time.sleep(wait) # hold the poke
 		# mcu.write(str(retract).encode()) # then retract
 
-		print("Receiving Poke B: " + str(packetB))
-		skG.writeText(sc, -350, 180, "Poke B in progress", skG.COLOR)
+		print("Receiving Stimulus B: " + str(packetB))
+		skG.writeText(sc, -350, 180, "Stimulus B in progress", skG.COLOR)
 		# mcu.write(str(packetB).encode()) # Send poke B
 		time.sleep(wait) # hold the poke
 		# mcu.write(str(retract).encode()) # then retract
@@ -143,7 +143,7 @@ def staircase(start, reference, startInc, wait, retract, nUp, nDown, N_Trials):
 
 # STAGE 0: Introduction
 EXPERIMENT_TEXT_0 = ["Welcome!", "Let's begin the experiment", "", "", "", "", "", "", "", "", "", "", "Please click the red key to continue."]
-EXPERIMENT_TEXT_1 = ["Experiment", "Task: Identify whether Poke A feels more intense,", "the same, or less intense than Poke B.", "", "",  "", "", "", "", "", "Use >, =, and < keys to indicate your answer.", "And then click the red key to begin the next trial.", "Please click the red key to continue."]
+EXPERIMENT_TEXT_1 = ["Experiment", "Task: Identify whether Stimulus A feels more,", "intense, the same, or less intense than Stimulus B.", "", "",  "", "", "", "", "", "Use >, =, and < keys to indicate your answer,", "and then click the red key to go to the next trial.", "Please click the red key to start."]
 EXPERIMENT_TEXT = [EXPERIMENT_TEXT_0, EXPERIMENT_TEXT_1]
 
 skG.initializeWindow(sc,EXPERIMENT_TEXT_0)
