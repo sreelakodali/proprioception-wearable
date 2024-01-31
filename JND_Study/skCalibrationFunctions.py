@@ -1,21 +1,15 @@
 # Calibration Support functions
 # Written by: Sreela Kodali (kodali@stanford.edu)
 
-import os
-import shutil
-import datetime
+import os, shutil, datetime, sys, importlib, csv, turtle, random
 import constants as CONST
-import sys
 import importlib
-import csv
 import skFunctions as sk
-import turtle
 import skPilotGraphics as skG
-import random
 
 CALIBRATION_TEXT_INTRO = ["Welcome! Click to begin."]
 CALIBRATION_TEXT_ACTUATOR = ["Calibration: Actuator","Please don't wear the actuator. Make sure","power is on. Click CALIBRATE to begin", "and DONE once complete.", " ", " ", " ", " ", "Calibrate", "Done"] 
-CALIBRATION_TEXT_MAX_PRESSURE = ["Calibration: Max Pressure", "Please wear the device.", "The actuator will extend into your arm and apply", "pressure. When it is too uncomfortable, click", "anywhere on the screen and the actuator will", "retract. We will do this at least 3 times.", " ", "Click CALIBRATE to begin each round and", "DONE once you've completed at least 3 rounds.", "Calibrate", "Done"]
+CALIBRATION_TEXT_MAX_PRESSURE = ["Calibration: Max Pressure", "Please wear the device. The actuator will extend", "into your arm and apply pressure. When you first", "feel the device, click the screen. The device will", "pause and then continue to extend. When it is too", "uncomfortable, click on the screen and the", "actuator will retract. We'll do this at least 3 times.", "Click CALIBRATE to begin each round and", "DONE once you've completed at least 3 rounds.", "Calibrate", "Done"]
 CALIBRATION_TEXT_FLEX =["Calibration: Flex Sensor", "Please wear the device. Extend your arm in front", "of you with your palm facing up. Keep your arm", "horizontal with the table. Then slowly bend your", "elbow and slowly extend it again. Please repeat", "this a few times.", " ", "Click CALIBRATE to begin and DONE once", "complete.", " ", "Calibrate", "Done"]
 CALIBRATION_TEXT_ZERO = ["Calibration complete!"]
 

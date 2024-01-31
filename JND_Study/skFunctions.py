@@ -536,7 +536,7 @@ def plot_Force(s, p, fileName, time, force):
 	ax1.yaxis.label.set_color('r')
 	ax1.tick_params(axis='y', color='r')
 	#ax1.set_ylim(-2,10)
-	ax1.set_ylim(0,2)
+	#ax1.set_ylim(0,2)
 
 	plt.grid(True)
 	#ax1.legend(l_all, labels, loc=0)
@@ -567,7 +567,7 @@ def plot_ForceVsDist(s, p, fileName, time, force):
 def plot_ForceDistance(s, p, fileName, time, force):
 	fig, ax1 = plt.subplots()
 	plt.suptitle("Real-time Data " + fileName, name='Arial', weight='bold')
-	ax1.set_xlabel("Tactor Extension (mm)", name='Arial')
+	ax1.set_xlabel("Actuator Command (pwm)", name='Arial')
 	plt.xticks(name='Arial')
 	plt.yticks(name='Arial')
 
