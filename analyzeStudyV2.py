@@ -1,11 +1,7 @@
 #analyze pilot results V2
 
 
-import csv
-import os
-import datetime
-import sys, getopt
-import shutil
+import csv, os, datetime, sys, getopt, shutil
 import numpy as np
 import pandas as pd
 from scipy import signal # import lfilter, lfilter_zi, filtfilt, butter
@@ -43,109 +39,109 @@ for i in list(range(0, len(subjects))):
 	## COMPUTING ERROR
 	p = "SUBJECT" + str(subjects[i]) + '/'
 	#print(p)
-	for f in os.listdir(CONST.PATH_LAPTOP + p):
-		if f.startswith('subject') and f.endswith('.csv'):
-			data0 = pd.read_csv(CONST.PATH_LAPTOP + p + f, delimiter = "\n", header=None).astype(float)
-			subjectAttempt = [i[0] for i in data0.values.tolist()]
-			#print(subjectAttempt)
-		elif f.startswith('targetAngles') and f.endswith('.csv'):
-			data1 = pd.read_csv(CONST.PATH_LAPTOP + p + f, delimiter = "\n", header=None).astype(float)
-			target = [i[0] for i in data1.values.tolist()]
-			#print(target)
-		# elif f.startswith('processed') and f.endswith('.csv'):
-		# 	data = pd.read_csv(CONST.PATH_LAPTOP + p + f, delimiter = ",").astype(float)
-		# 	force = data['force'].tolist()
-		# 	dist = data["actuator position, measured"].tolist()
-		# 	time = data['time'].tolist()
-		# 	nTrial = data["'Trial Number'"].tolist()
-		# 	angle = data['flex sensor'].tolist()
-		# 	targets = data["'Target Angle'"].tolist()
+# 	for f in os.listdir(CONST.PATH_LAPTOP + p):
+# 		if f.startswith('subject') and f.endswith('.csv'):
+# 			data0 = pd.read_csv(CONST.PATH_LAPTOP + p + f, delimiter = "\n", header=None).astype(float)
+# 			subjectAttempt = [i[0] for i in data0.values.tolist()]
+# 			#print(subjectAttempt)
+# 		elif f.startswith('targetAngles') and f.endswith('.csv'):
+# 			data1 = pd.read_csv(CONST.PATH_LAPTOP + p + f, delimiter = "\n", header=None).astype(float)
+# 			target = [i[0] for i in data1.values.tolist()]
+# 			#print(target)
+# 		# elif f.startswith('processed') and f.endswith('.csv'):
+# 		# 	data = pd.read_csv(CONST.PATH_LAPTOP + p + f, delimiter = ",").astype(float)
+# 		# 	force = data['force'].tolist()
+# 		# 	dist = data["actuator position, measured"].tolist()
+# 		# 	time = data['time'].tolist()
+# 		# 	nTrial = data["'Trial Number'"].tolist()
+# 		# 	angle = data['flex sensor'].tolist()
+# 		# 	targets = data["'Target Angle'"].tolist()
 
-			# print(len(force))
-			# print(len(dist))
-			# print(len(time))
+# 			# print(len(force))
+# 			# print(len(dist))
+# 			# print(len(time))
 
-			# k = []
-			# for z in list(range(0,len(dist))):
-			# 	if ((dist[z]) > 0 and force[z]/dist[z] >= 0 and force[z]/dist[z] < 2):
-			# 		k.append(force[z]/dist[z])
-			# 	else:
-			# 		k.append(0)
-			# meanK = np.mean(k)
-			# #print("k = %s" % meanK)
-			# #print(force)
-			# sk.plot_Force(0, p, p, time, k)
-			#skD.plotStudyTest(0, p, time,targets,angle,force,nTrial)
-	#print(hapticsConditionsTest[i-8])
-	#if (hapticsConditionsTest[i-8]):
+# 			# k = []
+# 			# for z in list(range(0,len(dist))):
+# 			# 	if ((dist[z]) > 0 and force[z]/dist[z] >= 0 and force[z]/dist[z] < 2):
+# 			# 		k.append(force[z]/dist[z])
+# 			# 	else:
+# 			# 		k.append(0)
+# 			# meanK = np.mean(k)
+# 			# #print("k = %s" % meanK)
+# 			# #print(force)
+# 			# sk.plot_Force(0, p, p, time, k)
+# 			#skD.plotStudyTest(0, p, time,targets,angle,force,nTrial)
+# 	#print(hapticsConditionsTest[i-8])
+# 	#if (hapticsConditionsTest[i-8]):
 
-	#print(hapticsConditionsTest[i])
-	if (hapticsConditionsTest[i]):		
-		test_HnV = list(range(70,80)) # haptics, no visual
-		test_HV = list(range(80,90)) # haptics, yes visual
-		test_nHnV = list(range(90,100)) # no haptics, no visual
-		test_nHV = list(range(100,110)) # no haptics, visual
+# 	#print(hapticsConditionsTest[i])
+# 	if (hapticsConditionsTest[i]):		
+# 		test_HnV = list(range(70,80)) # haptics, no visual
+# 		test_HV = list(range(80,90)) # haptics, yes visual
+# 		test_nHnV = list(range(90,100)) # no haptics, no visual
+# 		test_nHV = list(range(100,110)) # no haptics, visual
 
-	else:
-		test_nHnV = list(range(70,80)) # no haptics, no visual
-		test_nHV = list(range(80,90)) # no haptics, visual
-		test_HnV = list(range(90,100)) # haptics, no visual
-		test_HV = list(range(100,110)) # haptics, yes visual
+# 	else:
+# 		test_nHnV = list(range(70,80)) # no haptics, no visual
+# 		test_nHV = list(range(80,90)) # no haptics, visual
+# 		test_HnV = list(range(90,100)) # haptics, no visual
+# 		test_HV = list(range(100,110)) # haptics, yes visual
 
-	#txt = ['1, 0, ', '1, 1, ', '0, 0, ', '0, 1, ']
-	txt = ['Test, Yes Haptic No Visual  | ', 'Test, Yes Haptic Yes Visual | ', 'Test, No Haptic No Visual   | ', 'Test, No Haptic Yes Visual  | ']
-	groups = [test_HnV, test_HV, test_nHnV, test_nHV]
-	groups = [test_HnV]
-	#txt = [txt[3]]
-	#groups = [groups[3]]
+# 	#txt = ['1, 0, ', '1, 1, ', '0, 0, ', '0, 1, ']
+# 	txt = ['Test, Yes Haptic No Visual  | ', 'Test, Yes Haptic Yes Visual | ', 'Test, No Haptic No Visual   | ', 'Test, No Haptic Yes Visual  | ']
+# 	groups = [test_HnV, test_HV, test_nHnV, test_nHV]
+# 	groups = [test_HnV]
+# 	#txt = [txt[3]]
+# 	#groups = [groups[3]]
 
-	#print("----------------------------- MEAN ERROR     MEAN ERROR (ABS)-----")
-	buff0 = []
-	buff1 = []
-	for r in range(0,len(groups)):
-		error = [target[j] - subjectAttempt[j] for j in groups[r]]
-		errorABS = [abs(target[j] - subjectAttempt[j]) for j in groups[r]]
-		#print(error)
-		avgError = sum(error) / len(error)
-		buff0.append(avgError)
-		avgErrorABS = sum(errorABS) / len(errorABS)
-		buff1.append(avgErrorABS)
-		#print(str(subjects[i]) + ", " + txt[r] + str(avgErrorABS))
-		#writer.writerow([subjects[i], 0, 1, avgErrorABS])
-		#print(txt[r]+str(avgError) + "          " + str(avgErrorABS))
-		print(str(avgErrorABS))
+# 	#print("----------------------------- MEAN ERROR     MEAN ERROR (ABS)-----")
+# 	buff0 = []
+# 	buff1 = []
+# 	for r in range(0,len(groups)):
+# 		error = [target[j] - subjectAttempt[j] for j in groups[r]]
+# 		errorABS = [abs(target[j] - subjectAttempt[j]) for j in groups[r]]
+# 		#print(error)
+# 		avgError = sum(error) / len(error)
+# 		buff0.append(avgError)
+# 		avgErrorABS = sum(errorABS) / len(errorABS)
+# 		buff1.append(avgErrorABS)
+# 		#print(str(subjects[i]) + ", " + txt[r] + str(avgErrorABS))
+# 		#writer.writerow([subjects[i], 0, 1, avgErrorABS])
+# 		#print(txt[r]+str(avgError) + "          " + str(avgErrorABS))
+# 		print(str(avgErrorABS))
 
-	#print([subjects[i]] +  buff1 + [meanK])
-#	writer.writerow([subjects[i]] +  buff1 + [meanK])
-#file.close()
-	errorTotal.append(buff0)
-	errorABSTotal.append(buff1)
-
-
-# 	# Force vs. Distance
-# 	# maxForce =
-# 	fileName = [f for f in os.listdir(CONST.PATH_LAPTOP + p) if (f.startswith('maxForce') and f.endswith('.csv'))]
-# 	fileName = fileName[0]
-# 	data = pd.read_csv(CONST.PATH_LAPTOP + p + fileName, delimiter = "\n").astype(float)
-
-# 	command = data['command'].tolist()
-# 	force = data['force'].tolist()
-# 	dist = [sk.mapFloat(i, 64, 139, 4, 20) for i in command]
-# 	sk.plot_ForceDistance(0, p, p, dist, force)
-
-# 	# processedData = 
-# 	# data = pd.read_csv(CONST.PATH_LAPTOP + p + '/maxForce.csv', delimiter = ",").astype(float)
-
-# 	# Force vs. Time
+# 	#print([subjects[i]] +  buff1 + [meanK])
+# #	writer.writerow([subjects[i]] +  buff1 + [meanK])
+# #file.close()
+# 	errorTotal.append(buff0)
+# 	errorABSTotal.append(buff1)
 
 
-errorTotal = np.array(errorTotal)
-errorABSTotal = np.array(errorABSTotal)
-#print(errorTotal)
+	# Force vs. Distance
+	# maxForce =
+	fileName = [f for f in os.listdir(CONST.PATH_LAPTOP + p) if (f.startswith('maxForce') and f.endswith('.csv'))]
+	fileName = fileName[0]
+	data = pd.read_csv(CONST.PATH_LAPTOP + p + fileName, delimiter = ",").astype(float)
 
-print(np.average(errorTotal,axis=0))
-stdError = np.std(errorTotal,axis=0)
-print(stdError/np.sqrt(np.size(errorTotal, 0)))
+	command = data['command'].tolist()
+	force = data['force'].tolist()
+	dist = [sk.mapFloat(i, 64, 139, 4, 20) for i in command]
+	sk.plot_ForceDistance(0, p, p, dist, force)
+
+	# processedData = 
+	# data = pd.read_csv(CONST.PATH_LAPTOP + p + '/maxForce.csv', delimiter = ",").astype(float)
+
+	# Force vs. Time
+
+
+# errorTotal = np.array(errorTotal)
+# errorABSTotal = np.array(errorABSTotal)
+# #print(errorTotal)
+
+# print(np.average(errorTotal,axis=0))
+# stdError = np.std(errorTotal,axis=0)
+# print(stdError/np.sqrt(np.size(errorTotal, 0)))
 
 #file = open('error_notABS.csv','w+', encoding='UTF8', newline='')
 #writer = csv.writer(file)

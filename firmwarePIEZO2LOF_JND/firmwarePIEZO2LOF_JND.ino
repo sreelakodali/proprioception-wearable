@@ -11,7 +11,7 @@
 
 const INPUT_TYPE in = KEYBOARD_INPUT;//FLEX_INPUT; // NO_INPUT, FLEX_INPUT, KEYBOARD_INPUT
 const bool serialON = true; // and has serial output
-const int calibrateOn = false;
+const int calibrateOn = true;
 
 DeepPressureWearableArr device(in, serialON, calibrateOn);
 
