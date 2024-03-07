@@ -43,6 +43,7 @@ for f in os.listdir(CONST.PATH_LAPTOP + p):
 data = pd.read_csv(CONST.PATH_LAPTOP + p + "v2" + f, delimiter = ",", header=None).astype(float)
 x = data.iloc[:,0]
 y = data.iloc[:,2]
+dist = data.iloc[:,1]
 
 
 
@@ -63,9 +64,22 @@ print(linModel.intercept_)
 print(linModel.coef_)
 print(r2_score(y,ypred))
 # print(linModel.score(x1, y1))
+
+
+dist1 = np.array(dist)
+linModel1 = LinearRegression().fit(x1, dist1)
+ypred1= linModel1.intercept_ + linModel1.coef_ * x1
+
 plt.scatter(x1, y1)
 plt.plot(x1, ypred)
 plt.show()
+
+distMapped = sk.mapFloat()
+plt.scatter(x1, dist1)
+plt.plot(x1, ypred1)
+plt.show()
+
+
 
 poly = PolynomialFeatures(degree=2, include_bias=False)
 poly_features = poly.fit_transform(x1)

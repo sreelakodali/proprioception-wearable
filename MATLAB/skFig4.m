@@ -1,5 +1,5 @@
 close all
-data = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/minMaxForce_MeanSTDperSubject_16.csv','NumHeaderLines',0);
+data = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/minMaxForce_MeanSTDperSubject_16.csv','NumHeaderLines',0);
 disp(mean(data,1));
 data = [data; [0, 0, 0, 0, 0]; mean(data,1)];
 

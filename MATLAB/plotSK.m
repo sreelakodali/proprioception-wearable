@@ -1,8 +1,8 @@
 function [] = plotSK(x, y, err, color, marker, sz, j, lw1, lw2, f, sc, cmap)
     xi = [x(1)-j:1:x(end)+j];
-    if f==1
-        y = flip(y);
-    end
+     if f==1
+         y = flip(y);
+     end
 
     % error bars
     if marker == 0
@@ -21,7 +21,7 @@ function [] = plotSK(x, y, err, color, marker, sz, j, lw1, lw2, f, sc, cmap)
 %         vid = flip(vid);
 %     end
 %    p2 = plot(xi,vid, ':'); hold on;
-    p2 = plot(x,y, ':'); hold on;
+    p2 = plot(x,y, ':'); hold on; % this was for worldhaptics23
     
     e.Color = color;
     e.LineWidth = lw1;

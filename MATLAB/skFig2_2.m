@@ -1,12 +1,12 @@
 close all
-HnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/subjectAttempts_HnV.csv','NumHeaderLines',0);
-HV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/subjectAttempts_HV.csv','NumHeaderLines',0);
-nHnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/subjectAttempts_nHnV.csv','NumHeaderLines',0);
-nHV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/subjectAttempts_nHV.csv','NumHeaderLines',0);
-forceHnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/force_HnV.csv','NumHeaderLines',0);
-forceHV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/force_HV.csv','NumHeaderLines',0);
-forcenHnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/force_nHnV.csv','NumHeaderLines',0);
-forcenHV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/force_nHV.csv','NumHeaderLines',0);
+HnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/subjectAttempts_HnV.csv','NumHeaderLines',0);
+HV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/subjectAttempts_HV.csv','NumHeaderLines',0);
+nHnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/subjectAttempts_nHnV.csv','NumHeaderLines',0);
+nHV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/subjectAttempts_nHV.csv','NumHeaderLines',0);
+forceHnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/force_HnV.csv','NumHeaderLines',0);
+forceHV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/force_HV.csv','NumHeaderLines',0);
+forcenHnV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/force_nHnV.csv','NumHeaderLines',0);
+forcenHV = readmatrix('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/processedDataCsvs/force_nHV.csv','NumHeaderLines',0);
 
 F_avgHnV = mean(forceHnV,1);
 F_stdErrHnV = std(forceHnV, 0, 1)/sqrt(14);
