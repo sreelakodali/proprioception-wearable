@@ -126,14 +126,22 @@ for test in fixedTestValues:
 	res_force = res_force[cut:]
 	meanForce = np.mean(res_force)
 	stdevForce = np.std(res_force)
-
-
+	
+	res_pos = [positionMeasured[i] for i in res_list]
+	res_pos = res_pos[cut:]
+	meanPos = np.mean(res_pos)
+	stdevPos = np.std(res_pos)
 
 	# actuator 2
 	res_force1 = [force1[i] for i in res_list]
 	res_force1 = res_force1[cut:]
 	meanForce1 = np.mean(res_force1)
 	stdevForce1 = np.std(res_force1)
+
+	res_pos1 = [positionMeasured1[i] for i in res_list]
+	res_pos1 = res_pos1[cut:]
+	meanPos1 = np.mean(res_pos1)
+	stdevPos1 = np.std(res_pos1)
 
 	row = [trialCount+1, test, testValuesMM[trialCount], meanForce, stdevForce, meanForce1, stdevForce1]
 	#writer.writerow(row)
