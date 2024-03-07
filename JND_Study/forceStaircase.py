@@ -15,7 +15,7 @@ twoPoke = "2024-01-30_20-21"
 onePoke = "2024-01-30_20-47"
 
 
-p = onePoke + "/"
+p = twoPoke + "/"
 
 
 N_TOTAL_TRIALS = 50
@@ -51,14 +51,13 @@ for f in os.listdir(CONST.PATH_LAPTOP + p):
 
 #print(fixedTestValues)
 
-# h = open(CONST.PATH_LAPTOP + "forceOfStairCase_onePoke_" + onePoke + ".csv", 'w+')
-# writer = csv.writer(h)
-# writer.writerow(["trialCount", "testCommand", "testCommandMM", "meanForce", "stdevForce", "meanForce1", "stdevForce1"])
+h = open(CONST.PATH_LAPTOP + "force_AND_Position_OfStairCase_twoPoke_" + twoPoke + ".csv", 'w+')
+writer = csv.writer(h)
+writer.writerow(["trialCount", "testCommand", "testCommandMM", "meanForce", "stdevForce", "meanPos", "stdevPos", "meanForce1", "stdevForce1", "meanPos1", "stdevPos1", "n"])
 
 testValuesMM = [round(sk.mapFloat(i, 47, 139, 0.0, 20.0),2) for i in fixedTestValues] #commanded test Values
-
-# positionMeasuredMM = [round(sk.mapFloat(i, 986, 49, 0.0, 20.0),2) for i in positionMeasured]
-# positionMeasuredMM1 = [round(sk.mapFloat(i, 986, 49, 0.0, 20.0),2) for i in positionMeasured1]
+positionMeasuredMM = [round(sk.mapFloat(i, 986, 139, 0.0, 20.0),2) for i in positionMeasured]
+positionMeasured1MM = [round(sk.mapFloat(i, 986, 139, 0.0, 20.0),2) for i in positionMeasured1]
 
 
 #print(testValuesMM)
@@ -77,7 +76,7 @@ for test in fixedTestValues:
 
 	command2 = command[marker:]
 	res_list = [i for i in range(len(command)) if command[i] == test]
-	print(" --- TEST: " + str(test) + "--- ")
+	#print(" --- TEST: " + str(test) + "--- ")
 	
 	# I'd like to check how many contiguous pieces / trials in each list
 	# if (len(res_list) > 18):
@@ -127,7 +126,7 @@ for test in fixedTestValues:
 	meanForce = np.mean(res_force)
 	stdevForce = np.std(res_force)
 	
-	res_pos = [positionMeasured[i] for i in res_list]
+	res_pos = [positionMeasuredMM[i] for i in res_list]
 	res_pos = res_pos[cut:]
 	meanPos = np.mean(res_pos)
 	stdevPos = np.std(res_pos)
@@ -138,14 +137,14 @@ for test in fixedTestValues:
 	meanForce1 = np.mean(res_force1)
 	stdevForce1 = np.std(res_force1)
 
-	res_pos1 = [positionMeasured1[i] for i in res_list]
+	res_pos1 = [positionMeasured1MM[i] for i in res_list]
 	res_pos1 = res_pos1[cut:]
 	meanPos1 = np.mean(res_pos1)
 	stdevPos1 = np.std(res_pos1)
 
-	row = [trialCount+1, test, testValuesMM[trialCount], meanForce, stdevForce, meanForce1, stdevForce1]
-	#writer.writerow(row)
+	row = [trialCount+1, test, testValuesMM[trialCount], meanForce, stdevForce, meanPos, stdevPos, meanForce1, stdevForce1, meanPos1, stdevPos1, len(res_list)]
+	writer.writerow(row)
 
-	#print(str(trialCount) + ", " + str(test) + ", " + str(testValuesMM[trialCount]) + ", " + str(meanForce) + ", " + str(stdevForce) + ", " +  str(meanForce1) + ", " + str(stdevForce1))
+	print(row)
 
 	trialCount = trialCount + 1
