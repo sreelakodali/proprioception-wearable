@@ -4,7 +4,7 @@
 % and has no values from the original signal. output shiftedpeaks
 % cannot be the input peaks 
 
-function [shiftedPeaks] = shiftPeaks(peaks, cutR, cutF)
+function [shiftedPeaksRising, shiftedPeaksFalling] = shiftPeaks(peaks, cutR, cutF)
     % rising edge
 %     disp("Indices of Rising Peaks Before Shift")
 %     disp(find(peaks>0))
@@ -23,7 +23,7 @@ function [shiftedPeaks] = shiftPeaks(peaks, cutR, cutF)
 %     disp("Indices of Falling Peaks After Shift")
 %     disp(shiftedPeaksFalling)
 
-     shiftedPeaks = sort([shiftedPeaksRising; shiftedPeaksFalling]);
+     %shiftedPeaks = sort([shiftedPeaksRising; shiftedPeaksFalling]);
     
 %     disp("Indices of All Peaks After Shift")
 %     disp(shiftedPeaks)
