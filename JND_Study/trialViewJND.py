@@ -12,10 +12,10 @@ from matplotlib import pyplot as plt
 
 
 twoPoke = "2024-01-30_20-21/"
-onePoke = "2024-01-30_20-47/"
+onePoke = "2024-01-30_20-47/" #"2024-03-18_22-21/"
 
 
-p = twoPoke
+p = onePoke
 
 N_TOTAL_TRIALS = 50
 

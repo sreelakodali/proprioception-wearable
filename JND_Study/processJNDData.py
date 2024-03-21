@@ -18,6 +18,7 @@ onePoke = "2024-01-30_20-47/"
 
 p = twoPoke
 
+
 for f in os.listdir(CONST.PATH_LAPTOP + p):
 	if f.startswith('processed') and f.endswith('.csv'):
 		data = pd.read_csv(CONST.PATH_LAPTOP + p + f, delimiter = ",", header=0).astype(float)
@@ -32,7 +33,7 @@ for f in os.listdir(CONST.PATH_LAPTOP + p):
 		# for unique actuator position commands
 		unique = sortedData["actuator position, command"].unique()
 
-		print(unique)
+		print(len(unique))
 		new = np.zeros((len(unique), 7)) # number of rows is number of unique values
 
 
@@ -47,13 +48,13 @@ for f in os.listdir(CONST.PATH_LAPTOP + p):
 
 			if (sortedData["actuator position, command"].iloc[i] != u):
 
-				#print(measuredBuf)
-				#print(forceBuf)
+				print(measuredBuf)
+				print(forceBuf)
 
 				meanMeasured = sum(measuredBuf)/len(measuredBuf)
 				stdevMeasured = np.std(measuredBuf)
 				nMeasured = len(measuredBuf)
-
+				print(stdevMeasured)
 				meanForce = sum(forceBuf)/len(forceBuf)
 				stdevForce = np.std(forceBuf)
 				nForce = len(forceBuf)
@@ -70,10 +71,13 @@ for f in os.listdir(CONST.PATH_LAPTOP + p):
 			forceBuf.append(sortedData["force"].iloc[i])
 
 
+		print(measuredBuf)
+		print(forceBuf)
+
 		meanMeasured = sum(measuredBuf)/len(measuredBuf)
 		stdevMeasured = np.std(measuredBuf)
 		nMeasured = len(measuredBuf)
-
+		print(stdevMeasured)
 		meanForce = sum(forceBuf)/len(forceBuf)
 		stdevForce = np.std(forceBuf)
 		nForce = len(forceBuf)
@@ -85,7 +89,7 @@ for f in os.listdir(CONST.PATH_LAPTOP + p):
 		print(" -- ALL DATA -- ")
 		print(new)
 		df = pd.DataFrame(new)
-		df.to_csv(CONST.PATH_LAPTOP + 'bloop3.csv')
+		#df.to_csv(CONST.PATH_LAPTOP + 'bloop3.csv')
 
 
 

@@ -1,4 +1,4 @@
-function [] = plotSK(x, y, err, color, marker, sz, j, lw1, lw2, f, sc, cmap)
+function [] = plotSK_JND(x, y, err, color, marker, sz, j, lw1, lw2, f, sc, cmap)
     xi = [x(1)-j:1:x(end)+j];
 %     if f==1
 %         y = flip(y);

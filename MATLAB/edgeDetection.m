@@ -1,0 +1,87 @@
+function [peaks] = edgeDetection(file, type)
+
+color="#0C1446";%reversal
+color2 = "#29A0B1";%staircase
+color3 = "#FF9636"; %JND
+color4 = "#190204"; %reference
+color5 = "#4B8378";
+color6 = "#DF362D";
+color7 = "#880ED4";
+j = 0.04;
+sz = 50;
+
+j1 = 1;
+sz1 = 5;
+lw2 = 2;
+lw1 = 1;
+
+path = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/JND_Study/JND_Data/';
+onePoke = readmatrix(strcat(path,file, '/processed_', file,'.csv'),'NumHeaderLines',1);
+commandMM_1p = interp1([47, 139],[0, 20],onePoke(:,3));
+measuredMM_1p = interp1([986, 100],[0, 20],onePoke(:,4));
+force_1p = onePoke(:,5);
+time = onePoke(:,1);
+nTrials = onePoke(:,9);
+
+
+% % Edge detection: Method 1 for commands
+if (type == 1)
+    peaks = zeros(size(commandMM_1p));
+
+    for i = 1:(size(onePoke,1)-1)
+         % rising edge
+         if onePoke(i+1,3) > onePoke(i,3)
+              peaks(i+1) = commandMM_1p(i+1);
+         % falling edge
+         elseif onePoke(i+1,3) < onePoke(i,3)
+              peaks(i) = -commandMM_1p(i);
+         end
+    end
+
+
+% edge detection: method 3
+% compute gradient of force. peaks of gradForce are
+% areas where force changes the most, meaning when
+% actuator is moving i.e. rising / falling edges of 
+% force stimuli 
+
+elseif (type == 3)
+    thresh2 = 0.75;
+
+    magGradForce = [diff(force_1p);0];
+    
+    localMax_magGradForce = islocalmax(magGradForce);
+    peaksMax = localMax_magGradForce .* magGradForce;
+    peaksMax(peaksMax < thresh2) = 0;
+    
+    localMin_magGradForce = islocalmin(magGradForce);
+    peaksMin = localMin_magGradForce .* magGradForce;
+    peaksMin(abs(peaksMin) < thresh2) = 0;
+    
+    peaks = peaksMax + peaksMin;
+
+end
+
+
+
+% --------------
+figure;
+fig = gcf;
+set(gcf,'color','white')
+ax = gca(gcf);
+
+if type==1
+    yyaxis left
+    plot(time,commandMM_1p, 'Color', color2); hold on;
+    plotSK_JND(time,abs(peaks), [], color, 0, sz1, j1, lw1, lw2, 1, 0, []);
+
+elseif type == 3
+    yyaxis right
+
+    plot(time,force_1p, 'Color', color7); hold on;
+    plot(time,magGradForce, 'Color', color6); hold on;
+    plotSK_JND(time,peaks, [], color, 0, sz1, j1, lw1, lw2, 1, 0, []);
+    
+end
+
+end

@@ -1,0 +1,46 @@
+% Looking at JND study data 3
+% Written by Sreela Kodali kodali@stanford.edu
+
+close all
+clear
+color2 = "#75E6DA";%"#B00000";
+color = "#189AB4";%"#189AB4"; %"#0000FF";%1/255*[231,188,188];
+color3 = "#05445E";
+lw = 1.5;
+bw = 1;
+
+
+A = [-3.00000000e+00 -5.52336957e-01  2.23414935e-01 -5.05865683e-01 2.38946268e-01  2.30000000e+01;
+0.00000000e+00 -9.83193277e-03  1.02321829e-01 -1.09439776e-02 1.74103398e-01  1.70000000e+01;
+5.00000000e+00  9.31645503e-01  6.21250501e-02  8.72518519e-01 1.25845331e-01  9.00000000e+00];
+
+C = zeros(3,3);
+C(1,1) = 20/(139-47) 20/(139-47) 20/(139-47)];
+
+
+A = C * A;
+
+plotData = A(:,[1,2,4]);
+figure;
+fig = gcf;
+set(gcf,'color','white')
+ax = gca(gcf);
+
+b = bar(plotData, 'grouped', 'EdgeColor','none'); hold on;
+set(b(1), 'FaceColor',color2, 'BarWidth', bw);
+set(b(2), 'FaceColor',color);
+xlabel('Increments')
+ylabel('units')
+ax.FontSize = 18;
+
+
+[ngroups,nbars] = size(plotData);
+% Get the x coordinate of the bars
+x = nan(nbars, ngroups);
+for i = 1:nbars
+    x(i,:) = b(i).XEndPoints;
+end
+
+B = [zeros(3,1), A(:,[3,5])];
+
+er = errorbar(x', plotData, B, 'color', color3, 'linestyle', 'none', 'linewidth', lw); hold on;

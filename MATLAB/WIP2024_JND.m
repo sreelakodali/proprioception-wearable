@@ -49,56 +49,56 @@ sz = 5;
 lw2 = 2;
 lw1 = 1;
 
-figure;
-fig = gcf;
-set(gcf,'color','white')
-ax = gca(gcf);
-
-%p = plot(nTrials, twoPokeTestMM, '-o', 'LineWidth',lw2, 'Color', color2, 'MarkerSize', 5, 'MarkerEdgeColor', color2, 'MarkerFaceColor', color2); hold on;
-
-plotSK_JND(nTrials,twoPokeTestMM, noStdev, color2, 0, sz, j, lw1, lw2, 0, 0, []);
-%yline(95,'-k','LineWidth',lw2);
-%yline(98.5,'--k','LineWidth',lw2);
-yline(10.43,'-','LineWidth',lw1, 'Color',color4); hold on;
-yline(11.20,'--','LineWidth',lw2, 'Color', color3); hold on;
-
-plotSK_JND(nTrials,twoPokeReversal, noStdev, color, 0, sz, j, lw1, lw2, 1, 0, []);
-
-xlim([1,50])
-ylim([10,16])
-%ylim([90 120]);
-xlabel('Trial Number')
-ylabel('Actuator Command (mm)')
-ax.FontSize = 15;
-
-leg = legend('', '', '', 'Reference', 'JND', '', '', 'Reversal');
-set(leg, 'edgeColor','w', 'Location','northeast');
-
-figure;
-fig = gcf;
-set(gcf,'color','white')
-ax = gca(gcf);
-
-%p = plot(nTrials, twoPokeTestMM, '-o', 'LineWidth',lw2, 'Color', color2, 'MarkerSize', 5, 'MarkerEdgeColor', color2, 'MarkerFaceColor', color2); hold on;
-
-plotSK_JND(nTrials,onePokeTestMM, noStdev, color2, 0, sz, j, lw1, lw2, 0, 0, []);
-%yline(95,'-k','LineWidth',lw2);
-%yline(103.1,'-k','LineWidth',lw2);
-
-yline(10.43,'-','LineWidth',lw1, 'Color',color4); hold on;
-yline(12.20,'--','LineWidth',lw2, 'Color', color3); hold on;
-
-plotSK_JND(nTrials,onePokeReversal, noStdev, color, 0, sz, j, lw1, lw2, 1, 0, []);
-
-xlim([1,50])
-ylim([10,16])
-%ylim([90 120]);
-xlabel('Trial Number')
-ylabel('Actuator Command (mm)')
-ax.FontSize = 15;
-
-leg = legend('', '', '', 'Reference', 'JND', '', '', 'Reversal');
-set(leg, 'edgeColor','w', 'Location','northeast');
+% figure;
+% fig = gcf;
+% set(gcf,'color','white')
+% ax = gca(gcf);
+% 
+% %p = plot(nTrials, twoPokeTestMM, '-o', 'LineWidth',lw2, 'Color', color2, 'MarkerSize', 5, 'MarkerEdgeColor', color2, 'MarkerFaceColor', color2); hold on;
+% 
+% plotSK_JND(nTrials,twoPokeTestMM, noStdev, color2, 0, sz, j, lw1, lw2, 0, 0, []);
+% %yline(95,'-k','LineWidth',lw2);
+% %yline(98.5,'--k','LineWidth',lw2);
+% yline(10.43,'-','LineWidth',lw1, 'Color',color4); hold on;
+% yline(11.20,'--','LineWidth',lw2, 'Color', color3); hold on;
+% 
+% plotSK_JND(nTrials,twoPokeReversal, noStdev, color, 0, sz, j, lw1, lw2, 1, 0, []);
+% 
+% xlim([1,50])
+% ylim([10,16])
+% %ylim([90 120]);
+% xlabel('Trial Number')
+% ylabel('Actuator Command (mm)')
+% ax.FontSize = 15;
+% 
+% leg = legend('', '', '', 'Reference', 'JND', '', '', 'Reversal');
+% set(leg, 'edgeColor','w', 'Location','northeast');
+% 
+% figure;
+% fig = gcf;
+% set(gcf,'color','white')
+% ax = gca(gcf);
+% 
+% %p = plot(nTrials, twoPokeTestMM, '-o', 'LineWidth',lw2, 'Color', color2, 'MarkerSize', 5, 'MarkerEdgeColor', color2, 'MarkerFaceColor', color2); hold on;
+% 
+% plotSK_JND(nTrials,onePokeTestMM, noStdev, color2, 0, sz, j, lw1, lw2, 0, 0, []);
+% %yline(95,'-k','LineWidth',lw2);
+% %yline(103.1,'-k','LineWidth',lw2);
+% 
+% yline(10.43,'-','LineWidth',lw1, 'Color',color4); hold on;
+% yline(12.20,'--','LineWidth',lw2, 'Color', color3); hold on;
+% 
+% plotSK_JND(nTrials,onePokeReversal, noStdev, color, 0, sz, j, lw1, lw2, 1, 0, []);
+% 
+% xlim([1,50])
+% ylim([10,16])
+% %ylim([90 120]);
+% xlabel('Trial Number')
+% ylabel('Actuator Command (mm)')
+% ax.FontSize = 15;
+% 
+% leg = legend('', '', '', 'Reference', 'JND', '', '', 'Reversal');
+% set(leg, 'edgeColor','w', 'Location','northeast');
 
 figure;
 fig = gcf;

@@ -12,10 +12,10 @@ from matplotlib import pyplot as plt
 
 
 twoPoke = "2024-01-30_20-21"
-onePoke = "2024-01-30_20-47"
+onePoke = "2024-03-18_22-21"#"2024-01-30_20-47"
 
 
-p = twoPoke + "/"
+p = onePoke + "/"
 
 
 N_TOTAL_TRIALS = 50
@@ -51,7 +51,7 @@ for f in os.listdir(CONST.PATH_LAPTOP + p):
 
 #print(fixedTestValues)
 
-h = open(CONST.PATH_LAPTOP + "force_AND_Position_OfStairCase_twoPoke_" + twoPoke + ".csv", 'w+')
+h = open(CONST.PATH_LAPTOP + "force_AND_Position_OfStairCase_onePoke_" + onePoke + ".csv", 'w+')
 writer = csv.writer(h)
 writer.writerow(["trialCount", "testCommand", "testCommandMM", "meanForce", "stdevForce", "meanPos", "stdevPos", "meanForce1", "stdevForce1", "meanPos1", "stdevPos1", "n"])
 
@@ -69,11 +69,12 @@ positionMeasured1MM = [round(sk.mapFloat(i, 986, 139, 0.0, 20.0),2) for i in pos
 
 print("--------------------------START --------------------------")
 
+#print(len(fixedTestValues))
 trialCount = 0
 marker = 0
 for test in fixedTestValues:
 	# test = 120
-
+	print(test)
 	command2 = command[marker:]
 	res_list = [i for i in range(len(command)) if command[i] == test]
 	#print(" --- TEST: " + str(test) + "--- ")
@@ -113,7 +114,7 @@ for test in fixedTestValues:
 		
 	
 	marker = res_list[-1]
-	#print(res_list)
+	print(res_list)
 	#print(res_list[0])
 	#print("marker: " + str(marker))
 	#print(trialStarts)

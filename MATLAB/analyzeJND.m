@@ -61,6 +61,7 @@ set(gcf,'color','white')
 ax = gca(gcf);
 plot(commandPosition,measuredPosition,'o', 'MarkerSize', sz, 'MarkerEdgeColor', color2, 'MarkerFaceColor', color2); hold on;
 e = errorbar(commandPosition,measuredPosition,measuredErr,"o", 'Color',color2, 'LineWidth',2); hold on;
+plot(commandPosition,commandPosition,'--', 'Color', color); hold on;
 % xlim([90,120])
 % ylim([5,20])
 xlabel('Actuator Command (mm)')
@@ -73,5 +74,5 @@ set(ax, 'YColor', 'r');
 %ylim([0,10])
 plot(commandPosition,force,'s', 'MarkerSize', sz, 'MarkerEdgeColor', color3, 'MarkerFaceColor', color3); hold on;
 e = errorbar(commandPosition,force,forceErr,"o", 'Color',color3, 'LineWidth',2); hold on;
-leg = legend('Measured Position', '', 'Force');
+leg = legend('Measured Position', '', 'Commanded Position', 'Force');
 set(leg, 'edgeColor','w', 'Location','northeast');

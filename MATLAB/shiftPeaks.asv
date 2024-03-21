@@ -1,0 +1,18 @@
+% Note: input peaks is same size as data and has actual numerical values of 
+% peaks of the data or grad of the data, with sign indicating rising or 
+% falling edge. the output shiftedPeaks is an array of indices shifted 
+% and has no values from the original signal. output shiftedpeaks
+% cannot be the input peaks 
+
+function [shiftedPeaks] = shiftPeaks(peaks, cut1, cut2)
+    % rising edge
+     shiftedPeaksRising = find(peaks>0) + cut1;
+    
+     %falling edge
+     shiftedPeaksFalling = find(peaks<0) + cut2;
+
+     shiftedPeaks = [shiftedPeaksRising; shiftedPeaksFalli]
+
+    % I need to know if rising or falling edge
+    % and potentially the original values
+end

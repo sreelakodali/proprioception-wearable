@@ -27,12 +27,12 @@ ax.FontSize = 18;
 
 [ngroups,nbars] = size(plotData);
 % Get the x coordinate of the bars
-x = nan(nbars, ngroups);
+z = nan(nbars, ngroups);
 for i = 1:nbars
-    x(i,:) = b(i).XEndPoints;
+    z(i,:) = b(i).XEndPoints;
 end
 
-er = errorbar(x', plotData, data(:,[3,5]), 'color', color3, 'linestyle', 'none', 'linewidth', lw); hold on;
+er = errorbar(z', plotData, data(:,[3,5]), 'color', color3, 'linestyle', 'none', 'linewidth', lw); hold on;
 %er(1)(13).Color = 'w';
 x = xline(15, ':', 'lineWidth', lw, 'Color',"#000000"); hold on;
 xticks(1:1:16);
