@@ -1,4 +1,4 @@
-function [] = trialViewJND(file)
+function [dataF] = trialViewJND(file)
 
 close all
 
@@ -44,20 +44,49 @@ peaksF = edgeDetection(file,3); % note: these peaks need to get converted bc the
 %criteria for valid window:
 % both positive values, at least t seconds apart, rising and falling edge
 
-data = [];
-nSqr = 0;
-minWindow = 1;
-for i = 1:length(idxPeakC_Rising)
-    check1 = idxPeakC_Rising(i) < idxPeakC_Falling(i);
-    check2 = (sign(commandMM_1p(idxPeakC_Rising(i))) && sign(commandMM_1p(idxPeakC_Rising(i))));
-    check3 = ((time(idxPeakC_Falling(i)) - time(idxPeakC_Rising(i))) > minWindow);
 
-    if (check1 && check2 && check3)
-        sqr = idxPeakC_Rising(i):idxPeakC_Falling(i);
-         nSqr = nSqr + 1;
-        data(end+1:end+length(sqr)) = sqr;
-    end
-end
+
+% %--------
+% i = 1;
+% j = 1;
+% data = [];
+% nSqr = 0;
+% minWindow = 1;
+% 
+% while (i < length(idxPeakC_Rising))
+% 
+%     if (idxPeakC_Rising(i) > idxPeakC_Falling(j))
+%         j = j + 1;
+%     end
+% 
+%     check1 = idxPeakC_Rising(i) < idxPeakC_Falling(j);
+%     check2 = (sign(commandMM_1p(idxPeakC_Rising(i))) && sign(commandMM_1p(idxPeakC_Falling(j))));
+%     check3 = ((time(idxPeakC_Falling(j)) - time(idxPeakC_Rising(i))) > minWindow);
+% 
+%     if (check1 && check2 && check3)
+%         sqr = idxPeakC_Rising(i):idxPeakC_Falling(j);
+%          nSqr = nSqr + 1;
+%         data(end+1:end+length(sqr)) = sqr;
+%         i = i + 1;
+%         j = j + 1;
+%     end
+% end
+
+
+% data = [];
+% nSqr = 0;
+% minWindow = 1;
+% for i = 1:length(idxPeakC_Rising)
+%     check1 = idxPeakC_Rising(i) < idxPeakC_Falling(i);
+%     check2 = (sign(commandMM_1p(idxPeakC_Rising(i))) && sign(commandMM_1p(idxPeakC_Falling(i))));
+%     check3 = ((time(idxPeakC_Falling(i)) - time(idxPeakC_Rising(i))) > minWindow);
+% 
+%     if (check1 && check2 && check3)
+%         sqr = idxPeakC_Rising(i):idxPeakC_Falling(i);
+%          nSqr = nSqr + 1;
+%         data(end+1:end+length(sqr)) = sqr;
+%     end
+% end
 
 % data = [];
 % rising = 0;
@@ -84,11 +113,11 @@ end
 %         falling = 0;
 %     end
 % end
-disp(nSqr);
-
-selectedData = zeros(size(commandMM_1p));
-selectedData(data) = 1;
-selectedData = selectedData .* commandMM_1p;
+% disp(nSqr);
+% 
+% selectedData = zeros(size(commandMM_1p));
+% selectedData(data) = 1;
+% selectedData = selectedData .* commandMM_1p;
 
 % disp(length(idxPeakC))
 % disp(length(idxPeakF))
@@ -100,6 +129,9 @@ onePokeCommandCut = peakMaskC .* commandMM_1p;
 peakMaskF = zeros(size(force_1p));
 peakMaskF([idxPeakF_Rising; idxPeakF_Falling]) = 1;
 onePokeForceCut = peakMaskF .* force_1p;
+
+dataC = zeros(length(unique(nTrials))-1, 4);
+dataF = zeros(length(unique(nTrials))-1, 4);
 
 %for i = 1:10
 for i = 1:(length(unique(nTrials))-1)
@@ -117,7 +149,19 @@ for i = 1:(length(unique(nTrials))-1)
     plot(time(a:b),commandMM_1p(a:b),'Color', color2, 'LineWidth',lw2); hold on;
     plot(time(a:b),measuredMM_1p(a:b), 'Color', color5, 'LineWidth',lw2); hold on;
     plotSK_JND(time(a:b),onePokeCommandCut(a:b), [], color, 0, sz1, j1, lw1, lw2, 1, 0, []);
-    plotSK_JND(time(a:b),selectedData(a:b), [], color6, 0, sz1, j1, lw1, lw2, 1, 0, []);
+
+
+    x = find(onePokeCommandCut(a:b)) + (a-1);
+    if (length(x) < 4)
+        x = [x; zeros(4-length(x),1)];
+    end
+    dataC(i,:) = x(1:4);
+
+    mask = zeros(size(commandMM_1p));
+    mask([x(1):x(2), x(3):x(4)]) = 1;
+    selectedData = mask .* commandMM_1p;
+
+    plotSK_JND(time(a:b),selectedData(a:b), [], color2, 0, sz1, j1, lw1, lw2, 1, 0, []);
     xlabel('Two Contacts, Trial Number')
     ylabel('Actuator Command (mm)')
     ax.FontSize = 15;
@@ -128,5 +172,19 @@ for i = 1:(length(unique(nTrials))-1)
     ax.YAxis(2).Color = color7;
     plot(time(a:b),force_1p(a:b), 'Color', color7, 'LineWidth',lw2); hold on;
     plotSK_JND(time(a:b),onePokeForceCut(a:b), [], color, 0, sz1, j1, lw1, lw2, 1, 0, []);
+
+     y = find(onePokeForceCut(a:b)) + (a-1);
+    if (length(y) < 4)
+        y = [y; zeros(4-length(y),1)];
+    end
+    dataF(i,:) = y(1:4);
+
+    maskF = zeros(size(force_1p));
+    maskF([y(1):y(2), y(3):y(4)]) = 1;
+    selectedDataF = maskF .* force_1p;
     %ylim([0,10])
+
+    plotSK_JND(time(a:b),selectedDataF(a:b), [], color6, 0, sz1, j1, lw1, lw2, 1, 0, []);
+
+
 end
