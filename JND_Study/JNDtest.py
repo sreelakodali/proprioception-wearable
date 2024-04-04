@@ -22,12 +22,13 @@ ref = 95
 stepDown=3
 nUp = 1
 nDown = 2
-N_TOTAL_TRIALS = 50
+N_TOTAL_TRIALS = 10#50
+waitTime = 6
 
 stepSizeRatio = {1:0.2845, 2:0.5488, 3:0.7393 , 4:0.8415}
 
 stepUp = stepDown/stepSizeRatio[nDown]
-waitTime = 5
+
 
 
 # Global Variables
@@ -116,22 +117,37 @@ def staircase(start, reference, stepDown, stepUp, wait, retract, nUp, nDown, N_T
 			packetA = test #A will be test target
 			packetB = reference #B will be reference
 		
+		w = 0
+
 		# apply stimuli
 		print("Receiving Stimulus A: " + str(packetA))
 		skG.writeText(sc, -350, 230, "Stimulus A in progress", skG.COLOR)
-		mcu.write(str(packetA).encode()) # Send poke A
-		time.sleep(wait) # hold the poke
-		mcu.write(str(retract).encode()) # then retract
+		# mcu.write(str(packetA).encode()) # Send poke A
+		endTime = datetime.datetime.now() + datetime.timedelta(seconds=wait)
+		while (datetime.datetime.now() < endTime):
+			w = w + 1
+		#time.sleep(wait) # hold the poke
+	
+		# mcu.write(str(retract).encode()) # then retract
+		endTime = datetime.datetime.now() + datetime.timedelta(seconds=wait/2)
+		while (datetime.datetime.now() < endTime):
+			w = w + 1
+		#time.sleep(wait) # wait
 
-		time.sleep(wait) # wait
 
 		print("Receiving Stimulus B: " + str(packetB))
 		skG.writeText(sc, -350, 180, "Stimulus B in progress", skG.COLOR)
-		mcu.write(str(packetB).encode()) # Send poke B
-		time.sleep(wait) # hold the poke
-		mcu.write(str(retract).encode()) # then retract
+		# mcu.write(str(packetB).encode()) # Send poke B
+		endTime = datetime.datetime.now() + datetime.timedelta(seconds=wait)
+		while (datetime.datetime.now() < endTime):
+			w = w + 1
 
-		time.sleep(wait/2) # wait
+		#time.sleep(wait) # hold the poke
+		# mcu.write(str(retract).encode()) # then retract
+		endTime = datetime.datetime.now() + datetime.timedelta(seconds=wait/2)
+		while (datetime.datetime.now() < endTime):
+			w = w + 1
+		#time.sleep(wait/2) # wait
 
 		# find the real answer
 		# 1 means A > B, 2 means A == B, 3 means A < B
@@ -147,6 +163,7 @@ def staircase(start, reference, stepDown, stepUp, wait, retract, nUp, nDown, N_T
 
 		# wait for user's input
 			k = keyboard.read_key()
+
 			if k == 'page up':
 				userAnswer = 1
 				skG.eraseLine(sc,-350,40)
@@ -201,7 +218,6 @@ def staircase(start, reference, stepDown, stepUp, wait, retract, nUp, nDown, N_T
 			rightStreak = rightStreak + 1
 			userAnswer = 0
 			
-
 			# step down test if they get 3 right answers in a row
 			if ((rightStreak == nDown) or (wrongCount == 0)):
 				test = test - stepDown

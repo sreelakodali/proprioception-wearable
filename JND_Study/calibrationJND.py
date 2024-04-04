@@ -40,12 +40,12 @@ import skCalibrationFunctions as skC
 # -- Examples -- 
 
 # 1. Suppose I'm starting calibration for the first time with a new subject with keyboard setup
-# 		python calibration.py -m KEY -s
+# 		python calibration.py --mode KEY -s
 # With this command, I pass in the correct calibration sequence and create a new folder/files to save the data.
 
 # 2. Suppose I just want to test calibration and its different states, without generating a full constants file 
 # and overwriting existing constants file. 
-# 		python calibration.py -m KEY
+# 		python calibration.py --mode KEY
 # With this command, I can activate calibration sequence without saving any data or overwriting constants
 
 # 3. Suppose experiment session got interrupted after calibration and I need to reset the MCU. Resetting MCU
