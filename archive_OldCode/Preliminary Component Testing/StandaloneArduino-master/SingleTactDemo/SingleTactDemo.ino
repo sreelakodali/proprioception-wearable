@@ -21,6 +21,9 @@
 
 
 #include <Wire.h> //For I2C/SMBus
+#include <movingAvg.h>
+
+movingAvg filter(25);
 
 void setup()
 {
@@ -32,19 +35,25 @@ void setup()
   while (!Serial) {
     ; // wait for serial port to connect. Needed for native USB port only
   }
+  filter.begin();
   Serial.println("PPS UK: SingleTact sensor value in PSI. \n(resembles PC executable display)");
   Serial.println("Refer manual for any other calculation.");
   Serial.println("----------------------------------------");	
+  
 }
 
 void loop()
 {
     byte i2cAddress = 0x04; // Slave address (SingleTact), default 0x04
     short data = readDataFromSensor(i2cAddress);
+    short filteredData = filter.reading(data);
     Serial.print("I2C Sensor Data:");
-    Serial.print(data);    
+    Serial.print(data);
+    Serial.print(", ");
+    Serial.print(filteredData);
     Serial.print("\n");
-    delay(100); // Change this if you are getting values too quickly 
+    
+    delay(10); // Change this if you are getting values too quickly 
 }
 
 
