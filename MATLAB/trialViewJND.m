@@ -1,5 +1,24 @@
 function [dataF] = trialViewJND(file)
 
+% for analyzing JND data
+% This is the FIRST script to call in a sequence:
+% trialViewJND, selectData, (plotSK_JNDByTrial2 |  plotSK_JNDall2)
+
+% (plotSK_JNDByTrial and plotSK_JNDall - without the 2's - are older
+% versions slightly hardcoded and without the more rigorous selection
+% of data in the square waves.)
+% 
+% Call this first to graphically view each trial
+% Each trial consists of two square waves, one for each stimuli. 
+% Check if edge detection worked correctly and chose the data points
+% associated with the command (square wave, not its edges).
+% the code outputs the 'peaks', aka bounds for each square to select
+% the relevant data.
+% if it didn't choose the square waves correctly, can edit the output
+% accordingly.
+
+%
+
 close all
 
 color="#0C1446";%reversal

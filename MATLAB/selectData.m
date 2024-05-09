@@ -1,5 +1,23 @@
 function [forceRef, dataPerTrial, allData] = selectData(file, peaks)
 
+% for analyzing JND data
+% This is the SECOND script to call in a sequence:
+% trialViewJND, selectData, (plotSK_JNDByTrial2 |  plotSK_JNDall2)
+%
+% after viewing each trial manualing and adjusting the endpoints
+% for data selection, this script selects and reorganizes the data, 
+% and as a result, outputs multiple structures.
+
+% dataPerTrial groups the data by each trial, allowing for the traditional
+% staircasing style graph. it has the force data, measured actuator
+% position data, and associated command (not reference value).
+
+% allData organizes the data per actuator command. 
+% force, actuator position measured, and command.
+
+% can pass along dataPerTrial for plotSK_JNDByTrial2 
+% can pass  allData to plotSK_JNDall2
+
 close all
 
 color="#0C1446";%reversal
@@ -107,18 +125,25 @@ dataPerTrial = [forcePerTrial; measuredPerTrial; cmd];
 
 % how to go from per trial to across all time
 
-sorted = sortrows(dataPerTrial',3);
-u = unique(cell2mat(sorted(:,3)));
-allData = cell(length(u),3);
+sorted = sortrows(dataPerTrial',3); % sort by commands
+u = unique(cell2mat(sorted(:,3))); % get all the unique commands
+allData = cell(length(u),3); % create new data structure with dimensions
+                               % of # of unique commands, and space for
+                               % 3 values: force, measured, command
 
 for i = 1:(length(u))
     allData(i,3) = {u(i)};
-    x = find(cell2mat(sorted(:,3)) == u(i));
+    x = find(cell2mat(sorted(:,3)) == u(i)); % in the sorted data, find
+                                       % the indices of the command
+                                   
     
     forceBuf = [];
     measuredBuf = [];
     for j = x
-        forceBuf = [cell2mat(forceBuf); cell2mat(sorted(j,1))];
+        % add the force values associated with that command
+        forceBuf = [cell2mat(forceBuf); cell2mat(sorted(j,1))]; 
+
+        % add the measured values associated with that command
         measuredBuf = [cell2mat(measuredBuf); cell2mat(sorted(j,2))];
         % concatenate force and measured
     end
