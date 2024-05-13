@@ -13,16 +13,16 @@
 
 
 # define N_ACT 2
-# define N_CMDS 2
+# define N_CMDS 3
 
 struct cmd
 {
   char* strname;
-  int*[] motors;
+  const int* motors;
   BLEIntCharacteristic ble;
 };
 
-cmd initializeCmd(char* s, int m) {
+cmd initializeCmd(char* s, const int* m) {
   BLEIntCharacteristic bleCharacteristic("2A59", BLEWrite);
   BLEDescriptor des("2901", s);
   bleCharacteristic.addDescriptor(des);
@@ -32,11 +32,19 @@ cmd initializeCmd(char* s, int m) {
 }
 
 BLEService motorService("01D"); // Bluetooth® Low Energy, motorized device
-cmd allCommands[N_CMDS] = {initializeCmd("cmd1", 0), initializeCmd("cmd2", 1)};
+const int uSCommandValues[10] = {1500, 1300, 1375, 1400, 1425, 1500, 1575, 1600, 1625, 1700};
+
+const int motors_CMD1[N_ACT] = {1, 0};
+const int motors_CMD2[N_ACT] = {0, 1};
+const int motors_CMD3[N_ACT] = {1, 1};
+cmd allCommands[N_CMDS] = {initializeCmd("motor1", motors_CMD1), initializeCmd("motor2", motors_CMD2), initializeCmd("both", motors_CMD3)};
 Servo motorArr[N_ACT];
 const  int pins_CommandOUTArr[8] = {3, 5, 7, 9};
 
 void setup() {
+
+//   Serial.begin(9600);
+//   while (!Serial);
 
     // begin initialization
   if (!BLE.begin()) {
@@ -59,14 +67,17 @@ void setup() {
 
   for (int i = 0; i < N_ACT; ++i) {
      motorArr[i].attach(pins_CommandOUTArr[i]);     // connect each motor to PWM output
+     motorArr[i].writeMicroseconds(1500);
   }
 
   for (int i = 0; i < N_CMDS; ++i) {
       motorService.addCharacteristic(((allCommands[i]).ble)); // add the characteristic to the service
-    }
+  }
     
     BLE.addService(motorService); // add service
     BLE.advertise(); // start advertising
+
+    //Serial.println("Initialized.");
 }
 
 void loop() {
@@ -85,85 +96,60 @@ void loop() {
       // if the remote device wrote to the characteristic,
       // use the value to control the LED:
 
-//      for (int i = 0; i < N_CMDS; ++i) {
-//         if ((cmdCharacteristics[i]).written()) {
-//          int x = (cmdCharacteristics[i]).value();
-//          int y = map(x, 0, 15, 1200, 1700);
-//          motorArr[i].writeMicroseconds(y);
-//          delay(500);
-//         }
-//      }
-      
-      if (((allCommands[0]).ble).written()) {
-        int x = ((allCommands[0]).ble).value();
-        switch (x) {
-          case 01:
-             //Serial.println("Backward");
-              digitalWrite(LED_BUILTIN, HIGH);         // will turn the LED on
-              delay(500);
+      for (int i = 0; i < N_CMDS; ++i) {
+         if (((allCommands[i]).ble).written()) {
+          
+            digitalWrite(LED_BUILTIN, HIGH); // turn on LED value for commmand being sent
+          
+            int x = ((allCommands[i]).ble).value();
+            int y = 1500;
+            if (x >= 0 && x < 10) {
+              y = uSCommandValues[x]; //map(x, 0, 9, 1200, 1800);
+              //Serial.println(y);
+            } else {
+              //Serial.println("Invalid input");
+              digitalWrite(LED_BUILTIN, HIGH);  //blink to show invalid input
+              delay(250);
               digitalWrite(LED_BUILTIN, LOW);
-              delay(500);
-              digitalWrite(LED_BUILTIN, HIGH);         // will turn the LED on
-              motorArr[0].writeMicroseconds(1450);
-              delay(500);
-            break;
-          case 02:
-            //Serial.println("Forward");
-            digitalWrite(LED_BUILTIN, HIGH);         // will turn the LED on
-            motorArr[0].writeMicroseconds(1550);
-            delay(500);
-            break;
-          case 0:
-           // Serial.println(F("LED off"));
-            digitalWrite(LED_BUILTIN, LOW);          // will turn the LED off
-            motorArr[0].writeMicroseconds(1500);
-            delay(500);
-            break;
-          default:
-            //Serial.println(F("LED off"));
-            digitalWrite(LED_BUILTIN, LOW);          // will turn the LED off
-            motorArr[0].writeMicroseconds(1500);
-            delay(500);
-            break;
-        }
-      }
+              delay(250);
+              digitalWrite(LED_BUILTIN, HIGH); 
+              delay(250);
+              digitalWrite(LED_BUILTIN, LOW);
+               delay(250);
+              digitalWrite(LED_BUILTIN, HIGH); 
+              delay(250);
+              digitalWrite(LED_BUILTIN, LOW); 
+            }
 
-        if (((allCommands[1]).ble).written()) {
-            int y = ((allCommands[1]).ble).value();
-        switch (y) {
-          case 01:
+            if (y > 1425 && y < 1525) {
+              digitalWrite(LEDR, HIGH);
+              digitalWrite(LEDG, HIGH);
+              digitalWrite(LEDB, LOW); 
+            } else if (y < 1425) {
               digitalWrite(LEDR, LOW);
               digitalWrite(LEDG, HIGH);
               digitalWrite(LEDB, HIGH);
-              motorArr[1].writeMicroseconds(1450);
-              delay(500);
-            break;
-          case 02:
-             digitalWrite(LEDR, HIGH);
-             digitalWrite(LEDG, LOW);
-             digitalWrite(LEDB, HIGH);
-            motorArr[1].writeMicroseconds(1550);
+            } else if (y > 1525){
+              digitalWrite(LEDR, HIGH);
+              digitalWrite(LEDG, LOW);
+              digitalWrite(LEDB, HIGH);
+            } else {
+              digitalWrite(LEDR, HIGH);
+              digitalWrite(LEDG, HIGH);
+              digitalWrite(LEDB, HIGH); 
+            }
+
+            for (int j = 0; j < N_ACT; ++j) {
+                if ((allCommands[i]).motors[j]) {
+                   motorArr[j].writeMicroseconds(y);
+                } else {
+                   motorArr[j].writeMicroseconds(1500);
+                }
+            }
             delay(500);
-            break;
-          case 0:
-             digitalWrite(LEDR, HIGH);
-             digitalWrite(LEDG, HIGH);
-             digitalWrite(LEDB, LOW);
-            motorArr[1].writeMicroseconds(1500);
-            delay(500);
-            break;
-          default:
-             digitalWrite(LEDR, HIGH);
-             digitalWrite(LEDG, HIGH);
-             digitalWrite(LEDB, HIGH);           
-            //Serial.println(F("LED off"));
-            digitalWrite(LED_BUILTIN, LOW);          // will turn the LED off
-            motorArr[1].writeMicroseconds(1500);
-            delay(500);
-            break;
-        }
+         }
+         digitalWrite(LED_BUILTIN, LOW); // turn off LED
       }
-      
     }
 
     // when the central disconnects, print it out:
