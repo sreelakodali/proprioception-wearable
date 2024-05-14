@@ -32,8 +32,10 @@ cmd initializeCmd(char* s, int* m) {
 }
 
 BLEService motorService("01D"); // Bluetooth® Low Energy, motorized device
-const int uSCommandValues[10] = {1500, 1300, 1375, 1400, 1425, 1500, 1575, 1600, 1625, 1700};
+const int uSCommandValues[10] = {1500, 1300, 1375, 1425, 1445, 1500, 1575, 1600, 1625, 1700};
 
+const int neutralCMD_min = 1440;
+const int neutralCMD_max = 1550;
 // which motors will be on for each command
 // FIX or something to think about later: motors might be on, but base/tcw might have opposite directions and different speeds
 // maybe combine some of the commands, like instead of base* and tcw*, perhaps individual motors
@@ -85,7 +87,7 @@ void setup() {
     BLE.addService(motorService); // add service
     BLE.advertise(); // start advertising
 
-    //Serial.println("Initialized.");
+//    Serial.println("Initialized.");
 }
 
 void loop() {
@@ -146,15 +148,15 @@ void loop() {
               digitalWrite(LED_BUILTIN, LOW); 
             }
 
-            if (y > 1425 && y < 1525) {
+            if (y > neutralCMD_min && y < neutralCMD_max) {
               digitalWrite(LEDR, HIGH);
               digitalWrite(LEDG, HIGH);
               digitalWrite(LEDB, LOW); 
-            } else if (y <= 1425) {
+            } else if (y < neutralCMD_min) {
               digitalWrite(LEDR, LOW);
               digitalWrite(LEDG, HIGH);
               digitalWrite(LEDB, HIGH);
-            } else if (y >= 1525){
+            } else if (y > neutralCMD_max){
               digitalWrite(LEDR, HIGH);
               digitalWrite(LEDG, LOW);
               digitalWrite(LEDB, HIGH);
@@ -164,13 +166,19 @@ void loop() {
               digitalWrite(LEDB, HIGH); 
             }
 
+            unsigned long myTime[N_ACT];
             for (int j = 0; j < N_ACT; ++j) {
                 if ((allCommands[i]).motors[j]) {
                    motorArr[j].writeMicroseconds(y);
+                   myTime[j] = micros();
                 } else {
                    motorArr[j].writeMicroseconds(1500);
+                   myTime[j] = micros();
                 }
             }
+//            Serial.println(String(myTime[0]) + ", " +  String(myTime[1]) + ", " +  String(myTime[2]) + ", " +
+//              String(myTime[3]) + ", " +  String(myTime[4]) + ", " +  String(myTime[5]) + ", " +  String(myTime[5])
+//              + ", " +  String(myTime[6]) + ", " +  String(myTime[7]));
             delay(500);
          }
          digitalWrite(LED_BUILTIN, LOW); // turn off LED
