@@ -12,17 +12,17 @@
 #include <Servo.h>
 
 
-# define N_ACT 2
-# define N_CMDS 3
+# define N_ACT 8
+# define N_CMDS 4
 
 struct cmd
 {
   char* strname;
-  const int* motors;
+  int* motors;
   BLEIntCharacteristic ble;
 };
 
-cmd initializeCmd(char* s, const int* m) {
+cmd initializeCmd(char* s, int* m) {
   BLEIntCharacteristic bleCharacteristic("2A59", BLEWrite);
   BLEDescriptor des("2901", s);
   bleCharacteristic.addDescriptor(des);
@@ -34,12 +34,20 @@ cmd initializeCmd(char* s, const int* m) {
 BLEService motorService("01D"); // Bluetooth® Low Energy, motorized device
 const int uSCommandValues[10] = {1500, 1300, 1375, 1400, 1425, 1500, 1575, 1600, 1625, 1700};
 
-const int motors_CMD1[N_ACT] = {1, 0};
-const int motors_CMD2[N_ACT] = {0, 1};
-const int motors_CMD3[N_ACT] = {1, 1};
-cmd allCommands[N_CMDS] = {initializeCmd("motor1", motors_CMD1), initializeCmd("motor2", motors_CMD2), initializeCmd("both", motors_CMD3)};
+// which motors will be on for each command
+// FIX or something to think about later: motors might be on, but base/tcw might have opposite directions and different speeds
+// maybe combine some of the commands, like instead of base* and tcw*, perhaps individual motors
+
+int motors_CMD1[N_ACT] = {1, 1, 1, 1, 0, 0, 0, 0};
+int motors_CMD2[N_ACT] = {0, 0, 0, 0, 1, 1, 1, 1};
+int motors_CMD3[N_ACT] = {1, 1, 1, 1, 1, 1, 1, 1};
+int motors_CMD4[N_ACT] = {0, 0, 0, 0, 0, 0, 0, 0};
+
+cmd allCommands[N_CMDS] = {initializeCmd("ALLBase", motors_CMD1), initializeCmd("ALLTCW", motors_CMD2), initializeCmd("ALL", motors_CMD3), 
+                           initializeCmd("individualMotor", motors_CMD4)};
+
 Servo motorArr[N_ACT];
-const  int pins_CommandOUTArr[8] = {3, 5, 7, 9};
+const  int pins_CommandOUTArr[N_ACT] = {2, 3, 4, 5, 6, 7, 8, 9};
 
 void setup() {
 
@@ -101,10 +109,27 @@ void loop() {
           
             digitalWrite(LED_BUILTIN, HIGH); // turn on LED value for commmand being sent
           
-            int x = ((allCommands[i]).ble).value();
+            unsigned long x = ((allCommands[i]).ble).value();
+            unsigned long z = (x & 0b11110000) >> 4; 
+            x = (x & 0b00001111); 
             int y = 1500;
+//            Serial.println(x, HEX);
+
+            // if value > 16, change motorArr to make sure motor of MSB turns on
+            if (z) {
+              for (int j = 0; j < N_ACT; ++j) {
+
+                if (z-1 == j) {
+                   (allCommands[i]).motors[j] = 1;
+                } else {
+                  (allCommands[i]).motors[j] = 0;
+                }
+              }
+            }
+
+               // otherwise read LSB as motor command
             if (x >= 0 && x < 10) {
-              y = uSCommandValues[x]; //map(x, 0, 9, 1200, 1800);
+              y = uSCommandValues[(int)x]; //map(x, 0, 9, 1200, 1800);
               //Serial.println(y);
             } else {
               //Serial.println("Invalid input");
@@ -125,11 +150,11 @@ void loop() {
               digitalWrite(LEDR, HIGH);
               digitalWrite(LEDG, HIGH);
               digitalWrite(LEDB, LOW); 
-            } else if (y < 1425) {
+            } else if (y <= 1425) {
               digitalWrite(LEDR, LOW);
               digitalWrite(LEDG, HIGH);
               digitalWrite(LEDB, HIGH);
-            } else if (y > 1525){
+            } else if (y >= 1525){
               digitalWrite(LEDR, HIGH);
               digitalWrite(LEDG, LOW);
               digitalWrite(LEDB, HIGH);
