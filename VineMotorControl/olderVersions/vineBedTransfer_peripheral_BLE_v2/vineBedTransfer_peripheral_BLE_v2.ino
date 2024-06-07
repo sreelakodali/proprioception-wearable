@@ -12,6 +12,7 @@
 
 # define N_ACT 9 // Number of actuators, 8 motors + 1 pressure regulator = 9
 # define N_CMDS 6 // number of commands
+//# define N_LEVELS 10 // number of distinct speed commands
 
 // These are the range of PWM values the SPARK Max Controller understands
 // See PWM Input Specs here for more details:
@@ -78,13 +79,14 @@ BLEService motorService("01D"); // Bluetooth® Low Energy, motorized device
 // a "1" command via their phone to the motors, the motors would receive
 // writeMicroseconds(usCommandValues[1])=MOTOR_MIN.
 // If you'd like different values, feel free to change the content and/or length of USCommandVValues
-const int uSCommandValues[10] = {MOTOR_NEUTRAL, MOTOR_MIN, 1185, 1285, 1385, MOTOR_NEUTRAL, 1650, 1750, 1850, MOTOR_MAX};
-
+const int uSCommandValues[10] = {MOTOR_NEUTRAL, MOTOR_MIN, 1185, 1285, 1385, MOTOR_NEUTRAL, 1650, 1750, 1850, MOTOR_MAX}; // 5 is neutral
+const int uSCommandValues_V2[16] = {MOTOR_NEUTRAL, MOTOR_MIN, 1105, 1185, 1235, 1285, 1335, 1385, MOTOR_NEUTRAL, 1650, 1600, 1750, 1800, 1850, 1925, MOTOR_MAX}; // 8 is neutral
+//const int uSCommandValues_custom[N_LEVELS + 1];
 
 const int neutralCMD_min = 1450;
 const int neutralCMD_max = 1550;
-// which motors will be on for each command
 
+// which motors will be on for each command
 // tcw1, tcw2, tcw3, tcw4, base1, base2, base3, base4, pressure regulator
 int motors_CMD1[N_ACT] = {0, 0, 0, 0, 1, 1, 1, 1, 0};
 int motors_CMD2[N_ACT] = {1, 1, 1, 1, 0, 0, 0, 0, 0};
@@ -97,6 +99,7 @@ cmd allCommands[N_CMDS] = {initializeCmd("allBase", motors_CMD1), initializeCmd(
                           // initializeCmd("PreLoadValues_Acc", motors_CMD4)};
 
 Servo motorArr[N_ACT];
+// these pins correspond  to different motor's input 
 const  int pins_CommandOUTArr[N_ACT] = {2, 3, 4, 5, 6, 7, 8, 9, 10};
 
 void setup() {
@@ -122,6 +125,14 @@ void setup() {
   digitalWrite(LEDR, HIGH); // off
   digitalWrite(LEDG, HIGH); // off
   digitalWrite(LEDB, HIGH); // off
+
+
+//  // initialize custom uSCommandLevels_Custom
+//  uSCommandValues_custom[0] = MOTOR_NEUTRAL;
+//  int inc = (MOTOR_MAX - MOTOR_MIN)/N_LEVELS;
+//  for (int i = 0; i < (N_LEVELS + 1); ++i) {
+//    uSCommandValues_custom[i] = MOTOR_MIN + (i * (inc));
+//  }
 
   for (int i = 0; i < N_ACT; ++i) {
      motorArr[i].attach(pins_CommandOUTArr[i]);     // connect each motor to PWM output
@@ -179,19 +190,20 @@ void loop() {
               commands[6] = (x & 0xF0000000) >> 28;
               commands[7] = (x & 0x0F000000) >> 24;
 
-              int sendCommand = 0;
+              bool noSendCommand = false;
               for (int k = 0; k < N_ACT-1; ++k) {
                 int idx = commands[k];
                 //Serial.println(idx);
-                if (idx > 10 or idx < 1) {
-                  sendCommand = sendCommand + 1;
+                if (idx == 0 or idx > 15 or idx < 1) {
+                //if (idx > 10 or idx < 1) { // COMMENTING OUT TEMPORARILY FOR NEW CHANGE
+                  noSendCommand = true;
                 }
-              }
-              if (sendCommand == 0) {
+              } 
+              if (!(noSendCommand)) { // if valid commands and/or no zero sent, pass values
                 for (int k = 0; k < N_ACT-1; ++k) {
                     int idx = commands[k]; 
                     //Serial.println(commands[k]);
-                    motorArr[k].writeMicroseconds(uSCommandValues[idx]);
+                    motorArr[k].writeMicroseconds(uSCommandValues_V2[idx]);
                 }
                 // write commands
               } else {
@@ -202,62 +214,12 @@ void loop() {
                 
               }
 
-            //}
-
-          } else if  (n == "PreLoadValues_Acc"){
-            unsigned long x = ((allCommands[i]).ble).value();
-            
-              if (x == 0) {
-                for (int k = 0; k < N_ACT-1; ++k) {
-                  motorArr[k].writeMicroseconds(MOTOR_NEUTRAL);
-                }
-              } else { 
-              int commands[16];
-
-              commands[15] = (x & 0x000000F000000000) >> 36;
-              commands[14] = (x & 0x0000000F00000000) >> 32;
-              commands[13] = (x & 0x0000F00000000000) >> 44;
-              commands[12] = (x & 0x00000F0000000000) >> 40;
-              commands[11] = (x & 0x00F0000000000000) >> 52;
-              commands[10] = (x & 0x000F000000000000) >> 48;
-              commands[9] = (x & 0xF000000000000000) >> 60;
-              commands[8] = (x & 0x0F00000000000000) >> 56;
-              
-              commands[7] = (x & 0x000000F0) >> 4;
-              commands[6] = (x & 0x0000000F) >> 0;
-              commands[5] = (x & 0x0000F000) >> 12;
-              commands[4] = (x & 0x00000F00) >> 8;
-              commands[3] = (x & 0x00F00000) >> 20;
-              commands[2] = (x & 0x000F0000) >> 16;
-              commands[1] = (x & 0xF0000000) >> 28;
-              commands[0] = (x & 0x0F000000) >> 24;
-
-
-//              //      
-//              Serial.println(commands[0]);
-//              Serial.println(commands[1]);
-//              Serial.println(commands[2]);
-//              Serial.println(commands[3]);
-//              Serial.println(commands[4]);
-//              Serial.println(commands[5]);
-//              Serial.println(commands[6]);
-//              Serial.println(commands[7]);
-//              Serial.println(commands[8]);
-//              Serial.println(commands[9]);
-//              Serial.println(commands[10]);
-//              Serial.println(commands[11]);
-//              Serial.println(commands[12]);
-//              Serial.println(commands[13]);
-//              Serial.println(commands[14]);
-//              Serial.println(commands[15]);
-            
-              }
             // following logic holds for allBase, allTCWTurn, allBaseTCWTurn, individualMotors
          } else {
 
             unsigned long x = ((allCommands[i]).ble).value();
-            unsigned long z = (x & 0b11110000) >> 4; 
-            x = (x & 0b00001111); 
+            unsigned long z = (x & 0b11110000) >> 4;  // getting the left most digit
+            x = (x & 0b00001111);  // getting the rightmost digit
             int y = MOTOR_NEUTRAL; // Fix: if it's command for pressure, different default value
 //            Serial.println(x, HEX);
 
@@ -273,8 +235,8 @@ void loop() {
             }
 
                // otherwise read LSB as motor command
-            if (x >= 0 && x < 10) {
-              y = uSCommandValues[(int)x]; // Fix: if it's command for pressure, different value
+            if (x >= 0 && x < 16) {
+              y = uSCommandValues_V2[(int)x]; // Fix: if it's command for pressure, different value
               //Serial.println(y);
             } else {
               //Serial.println("Invalid input");
