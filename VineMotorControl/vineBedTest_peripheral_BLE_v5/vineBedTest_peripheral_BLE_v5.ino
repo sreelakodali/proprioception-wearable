@@ -394,11 +394,12 @@ void executeCommand(unsigned long commandValue) {
         runMotor(commandValue);
         break;
 
-      default:
-        Estop();
-       break;
-
+//      default:
+//        Estop();
+//       break;
     }
+
+    //
   }
 }
 
@@ -464,8 +465,13 @@ void AllTCW(unsigned long commandValue) {
     Serial.println(activeTCWS[i]);
     Serial.println(speedIdx);
   }
+    if (serialOn) {
+      Serial.println(activeTCWS[i]-1);
+      Serial.println(speed);
+    }
     motorArr[activeTCWS[i]-1].writeMicroseconds(speed);
   }
+  //delay(500);
 }
 
 //Control all Vine Bases simultaneously
