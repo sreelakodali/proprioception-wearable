@@ -35,9 +35,9 @@ this controller is able to access:
 
 // define winch control switch pins
 const int numWinches = 4;
-const int W[numWinches] = { 5, 4, 3, 2};       // digital pins controlling each winch
-int switchStates[numWinches] = { 1, 1, 1, 1 };  // default to all switches being open -- in reality set these in setup.
-int oldSwitchStates[numWinches] = { 1, 1, 1, 1 };
+const int W[numWinches] = {5, 4, 3, 2};       // digital pins controlling each winch
+int switchStates[numWinches] = {1, 1, 1, 1};  // default to all switches being open -- in reality set these in setup.
+int oldSwitchStates[numWinches] = {1, 1, 1, 1};
 
 // UUIDs (by convention, the same UUID with the final digit changed. Each of these UUIDs is given to a single peripheral, as explained in TCWPeripheral.ino)
 //const String UUID[numWinches] = { "19B10000-E8F2-537E-4F6C-D104768A1210", "19b10000-e8f2-537e-4f6c-d104768a1211", "19b10000-e8f2-537e-4f6c-d104768a1212", "19b10000-e8f2-537e-4f6c-d104768a1213" };
@@ -103,6 +103,45 @@ void loop() {
 //       blinkN(i,500);
       
 //      oldSwitchStates[i] = switchStates[i];
+//
+//      if (i == 4) {
+//        Serial.println("here");
+//        //change all of the tcws
+//        
+//        for (int j = 0; j < numWinches-1; j++) {
+//                String n = tcwPrefix + String(j);
+//        //      Serial.println(n);
+//              BLE.scanForName(n);
+//        //      BLE.scanForUuid(UUID[i]);
+//        
+//              // search for a peripheral with the UUID specified in BLE.scanForUUID
+//              BLEDevice peripheral = BLE.available();
+//              while (!peripheral) {  // keep searching until the controller accesses the peripheral
+//                peripheral = BLE.available();
+//              }
+//        
+//              // if we find the intended periphral
+//              if (peripheral && peripheral.hasLocalName()) {
+//        
+//                if (peripheral.localName() == n) {
+//
+//                  Serial.println(n);
+//                  // stop scanning
+//                  BLE.stopScan();
+//          
+//                  // indicate that we are connected to BLE
+//                  digitalWrite(bleLedPin, LOW);
+//        
+//                  // send the command to write to the peripheral
+//                  controlWinch(peripheral, j);
+//                  Serial.println(j);
+//                  // indicate that we are disconnected from ble
+//                  digitalWrite(bleLedPin, HIGH);
+//                }
+//              }  // end if(peripheral)
+//            }
+//        
+//      } else {
       String n = tcwPrefix + String(i);
 //      Serial.println(n);
       BLE.scanForName(n);
@@ -132,7 +171,7 @@ void loop() {
           digitalWrite(bleLedPin, HIGH);
         }
       }  // end if(peripheral)
-    
+     //}
     }  // end if(switchStates[i] != oldSwitchStates[i])
 
   }  // end for(int i = 0; i < numWinches; i++)

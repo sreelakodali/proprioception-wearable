@@ -37,9 +37,9 @@ typedef enum {
 
 const int maxParams = 4;  // Maximum parameters that can be sent in a single command
 const bool serialOn = false;
-const int activeVines[3] = {6, 7, 8};
+const int activeVines[4] = {5, 6, 7, 8};
 const int nVines = (sizeof(activeVines) / sizeof(activeVines[0]));
-const int activeTCWS[3] = {2, 3, 4};
+const int activeTCWS[4] = {1, 2, 3, 4};
 const int nTCWS = (sizeof(activeTCWS) / sizeof(activeTCWS[0]));
 
 // IF YOU WANT TO SEND THE SAME COMMAND TO GROUPS OF MOTORS
@@ -81,7 +81,8 @@ BLEService motorService("01D");  // Bluetooth® Low Energy, motorized device
 // a "1" command via their phone to the motors, the motors would receive
 // writeMicroseconds(usCommandValues[1])=MOTOR_MIN.
 // If you'd like different values, feel free to change the content and/or length of USCommandVValues
-const int uSCommandValues[10] = { MOTOR_NEUTRAL, MOTOR_MIN, 1185, 1285, 1385, MOTOR_NEUTRAL, 1650, 1750, 1850, MOTOR_MAX };
+//const int uSCommandValues[10] = { MOTOR_NEUTRAL, MOTOR_MIN, 1185, 1285, 1385, MOTOR_NEUTRAL, 1650, 1750, 1850, MOTOR_MAX };
+const int uSCommandValues[10] = { MOTOR_NEUTRAL, MOTOR_MIN, 1245, 1285, 1436, MOTOR_NEUTRAL, 1600, 1750, 1791, MOTOR_MAX };
 
 
 // which motors will be on for each command
@@ -522,11 +523,12 @@ void AllVines(unsigned long commandValue) {
       Serial.println(speedIdx);
     }
     int speed = uSCommandValues[speedIdx];
-    motorArr[i].writeMicroseconds(speed);
+    motorArr[activeVines[i]-1].writeMicroseconds(speed);
   }
 }
 
 
+const int uSCommandValues[10] = { MOTOR_NEUTRAL, MOTOR_MIN, 1245, 1285, 1436, MOTOR_NEUTRAL, 1600, 1750, 1791, MOTOR_MAX };
 
 //Initiate Lift and Return Sequence
 //Lifting subject from bed and putting back down with preset speeds
@@ -537,14 +539,16 @@ void LiftandReturn() {
   // this ratio.
   // I.E. TCW speed = NEUTRAL + 150 -> Base speed = NEUTRAL - (150*(R_TCW/R_base))
 
-  const int TCWSpeedLift[arraysz] = {1436, 1436, 1436, MOTOR_NEUTRAL };    // TCW speeds during lift
-  const int TCWSpeedReturn[arraysz] = { 1600, 1600, 1600, MOTOR_NEUTRAL };  // TCW speeds during return
-  const int BaseSpeedLift[arraysz] = { 1791, 1791, 1791, MOTOR_NEUTRAL };    // Base speeds during lift
-  const int BaseSpeedReturn[arraysz] = { 1245, 1245, 1245, MOTOR_NEUTRAL};  // Base speeds during return
+  const int TCWSpeedLift[arraysz] = {1436, 1436, 1436, 1436 };    // TCW speeds during lift. value < 1500 = cw
+  const int TCWSpeedReturn[arraysz] = { 1600, 1600, 1600, 1600 };  // TCW speeds during return. value > 1500 = ccw
+  
+  const int BaseSpeedLift[arraysz] = { 1245, 1245, 1245, 1245 };    // Base speeds during lift. Vines are retracting, hence, value < 1500
+  const int BaseSpeedReturn[arraysz] = { 1791, 1791, 1791, 1791 };    // Base speeds during return. Vines are extending, value > 1500
+  
   int duration = 5;                                                 // duration of lift and return respectively
   int carryTime = 3;
 
-  // Set first half of motors to speed1 and second half to speed2
+  // LIFT: TCWs are turning clockwise (values < 1500) and vines are retracting on the base (values < 1500)
   AllTCW_arr(TCWSpeedLift);
   AllVines_arr(BaseSpeedLift);
   delay(duration * 1000);  // Convert duration of lift to seconds
@@ -553,7 +557,7 @@ void LiftandReturn() {
   Estop();
   delay(carryTime * 1000);  // 3 second delay between commands
 
-  // Reverse the direction: Set first half to speed2 and second half to speed1
+  // Return: TCWs are turning counter clockwise (values > 1500) and vines are extending from the base (values > 1500)
   AllTCW_arr(TCWSpeedReturn);
   AllVines_arr(BaseSpeedReturn);
   delay(duration * 1000);  // Convert duration of return to seconds
