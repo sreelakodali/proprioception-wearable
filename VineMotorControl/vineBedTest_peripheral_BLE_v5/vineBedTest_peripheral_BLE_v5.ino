@@ -36,7 +36,7 @@ typedef enum {
 } MOTOR_LIMITS;
 
 const int maxParams = 4;  // Maximum parameters that can be sent in a single command
-const bool serialOn = false;
+const bool serialOn = true;
 const int activeVines[4] = {5, 6, 7, 8};
 const int nVines = (sizeof(activeVines) / sizeof(activeVines[0]));
 const int activeTCWS[4] = {1, 2, 3, 4};
@@ -359,7 +359,7 @@ void executeCommand(unsigned long commandValue) {
         Estop();
         break;
 
-      // TUNEDVINEDEP // FIX: FLIP
+      // TUNEDVINEDEP
       case 13: // IF any 'D' is DETECTED, TUNEDVINEDEP. D IS 13 in HEX
         if (serialOn) { 
           Serial.println("TunedVineDep");
@@ -371,7 +371,8 @@ void executeCommand(unsigned long commandValue) {
         if (serialOn) { 
           Serial.println("LiftAndReturn");
         }
-        LiftandReturn();
+        LiftandReturn2(commandValue);
+        //LiftandReturn();
         break;
 
       case 12: // IF any 'C' is DETECTED, AllTCW. C is 12
@@ -460,16 +461,20 @@ void AllTCW(unsigned long commandValue) {
     command[i] = extractByte(n, i, commandValue);
   }
   int speedIdx = command[1];
-  int speed = uSCommandValues[speedIdx];
-  for (int i = 0; i < nTCWS; ++i) {
-    if (serialOn) {
-    Serial.println(activeTCWS[i]);
+  if (serialOn) {
+    Serial.println("TCWs");
     Serial.println(speedIdx);
   }
-    if (serialOn) {
-      Serial.println(activeTCWS[i]-1);
-      Serial.println(speed);
-    }
+  int speed = uSCommandValues[speedIdx];
+  for (int i = 0; i < nTCWS; ++i) {
+//    if (serialOn) {
+//    Serial.println(activeTCWS[i]);
+//    Serial.println(speedIdx);
+//  }
+//    if (serialOn) {
+//      Serial.println(activeTCWS[i]-1);
+//      Serial.println(speed);
+//    }
     motorArr[activeTCWS[i]-1].writeMicroseconds(speed);
   }
   //delay(500);
@@ -509,26 +514,28 @@ void AllVines(unsigned long commandValue) {
   for (int i = 0; i < n; ++i) {
     command[i] = extractByte(n, i, commandValue);
   }
-
+  
+  if (serialOn) {
+      Serial.println("Vines");
+      Serial.println(command[1]);
+    } 
   for (int i = 0; i < nVines; ++i) {
     int speedIdx = command[1];
+    
       // for motors 6 and 8, flip the values
     if (speedIdx != 0) {
       if ( (activeVines[i] == 6) || (activeVines[i] == 8)) {
         speedIdx = 5 + (5 - speedIdx);
       } 
     }
-    if (serialOn) {
-      Serial.println(activeVines[i]); 
-      Serial.println(speedIdx);
-    }
+//    if (serialOn) {
+//      Serial.println(activeVines[i]); 
+//      Serial.println(speedIdx);
+//    }
     int speed = uSCommandValues[speedIdx];
     motorArr[activeVines[i]-1].writeMicroseconds(speed);
   }
 }
-
-
-const int uSCommandValues[10] = { MOTOR_NEUTRAL, MOTOR_MIN, 1245, 1285, 1436, MOTOR_NEUTRAL, 1600, 1750, 1791, MOTOR_MAX };
 
 //Initiate Lift and Return Sequence
 //Lifting subject from bed and putting back down with preset speeds
@@ -567,11 +574,28 @@ void LiftandReturn() {
 }
 
 
+void LiftandReturn2(unsigned long commandValue) {
+    // 2 param, 1 cmd = 3
+    // MSB (command), mid byte (tcw speed), LSB (base speed)
+
+    if (serialOn) {
+      Serial.println(commandValue, HEX);
+    }
+    // shifting 3 byte value one byte to the right so only
+    // 2 bytes and LSB is tcwSpeed
+    unsigned long tcwIdx = ((commandValue & 0xFF00) >> 12); // mid byte 
+    unsigned long vineIdx = ((commandValue & 0xFF00) >> 8);// lsb byte
+
+    AllTCW(tcwIdx);
+    AllVines(vineIdx);
+}
+  
+
 //Function deploys all vines simultaneously with unique hard coded speeds.
 // Written to address initial growth of vine down and under subject
 void TunedVineDep() {
   int arraysz = N_ACT / 2;
-  const int BaseSpeedDep[arraysz] = { 1385, 1385, 1385, MOTOR_NEUTRAL };  // Base speeds during initial deployment
+  const int BaseSpeedDep[arraysz] = { 1385, 1385, 1385, 1385 };  // Base speeds during initial deployment
   AllVines_arr(BaseSpeedDep);
 }
 
