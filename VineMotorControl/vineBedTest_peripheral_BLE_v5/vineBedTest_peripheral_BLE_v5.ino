@@ -35,12 +35,14 @@ typedef enum {
   MOTOR_NEUTRAL_MID = 1518
 } MOTOR_LIMITS;
 
+const bool serialOn = false;
+const int nVines = 3;
+const int nTCWS = 3;
+const int activeVines[nVines] = {5, 6, 7};
+const int activeTCWS[nTCWS] = {1, 2, 3};
 const int maxParams = 4;  // Maximum parameters that can be sent in a single command
-const bool serialOn = true;
-const int activeVines[4] = {5, 6, 7, 8};
-const int nVines = (sizeof(activeVines) / sizeof(activeVines[0]));
-const int activeTCWS[4] = {1, 2, 3, 4};
-const int nTCWS = (sizeof(activeTCWS) / sizeof(activeTCWS[0]));
+//const int nVines = (sizeof(activeVines) / sizeof(activeVines[0]));
+//const int nTCWS = (sizeof(activeTCWS) / sizeof(activeTCWS[0]));
 
 // IF YOU WANT TO SEND THE SAME COMMAND TO GROUPS OF MOTORS
 // I created a little structure "cmd" (short for "command") where you give it a name,
@@ -82,7 +84,10 @@ BLEService motorService("01D");  // Bluetooth® Low Energy, motorized device
 // writeMicroseconds(usCommandValues[1])=MOTOR_MIN.
 // If you'd like different values, feel free to change the content and/or length of USCommandVValues
 //const int uSCommandValues[10] = { MOTOR_NEUTRAL, MOTOR_MIN, 1185, 1285, 1385, MOTOR_NEUTRAL, 1650, 1750, 1850, MOTOR_MAX };
-const int uSCommandValues[10] = { MOTOR_NEUTRAL, MOTOR_MIN, 1245, 1285, 1436, MOTOR_NEUTRAL, 1600, 1750, 1791, MOTOR_MAX };
+//const int uSCommandValues[10] = { MOTOR_NEUTRAL, 1285, 1300, 1350, 1436, MOTOR_NEUTRAL, 1600, 1686, 1736, 1750};
+const int uSCommandValues[10] = { MOTOR_NEUTRAL, 1400, 1436, 1450, 1475, MOTOR_NEUTRAL, 1600, 1686, 1736, 1750};
+
+//const int uSCommandValues[10] = { MOTOR_NEUTRAL, MOTOR_MIN, 1245, 1285, 1436, MOTOR_NEUTRAL, 1600, 1750, 1791, MOTOR_MAX };
 
 
 // which motors will be on for each command
@@ -573,7 +578,7 @@ void LiftandReturn() {
   Estop();
 }
 
-
+//const int uSCommandValues[10] = { MOTOR_NEUTRAL, MOTOR_MIN, 1245, 1285, 1436, MOTOR_NEUTRAL, 1600, 1750, 1791, MOTOR_MAX };
 void LiftandReturn2(unsigned long commandValue) {
     // 2 param, 1 cmd = 3
     // MSB (command), mid byte (tcw speed), LSB (base speed)
