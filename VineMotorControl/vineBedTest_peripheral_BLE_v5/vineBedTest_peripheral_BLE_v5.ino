@@ -32,7 +32,7 @@ typedef enum {
   MOTOR_MIN = 1025,
   MOTOR_NEUTRAL = 1500,
   MOTOR_MAX = 2000,
-  MOTOR_NEUTRAL_MID = 1518
+  MOTOR_NEUTRAL_MID = 1513
 } MOTOR_LIMITS;
 
 const bool serialOn = false;
@@ -526,15 +526,16 @@ void AllVines(unsigned long commandValue) {
     } 
   for (int i = 0; i < nVines; ++i) {
     int speedIdx = command[1];
-    
+    int s = uSCommandValues[speedIdx];
       // for motors 6 and 8, flip the values
     if (speedIdx != 0) {
       if ( (activeVines[i] == 6) || (activeVines[i] == 8)) {
-        speedIdx = 5 + (5 - speedIdx);
+        //speedIdx = 5 + (5 - speedIdx);
+        s = MOTOR_NEUTRAL_MID + (MOTOR_NEUTRAL_MID - s);
       } 
     }
 //    if (serialOn) {
-//      Serial.println(activeVines[i]); 
+//      AASerial.println(activeVines[i]); 
 //      Serial.println(speedIdx);
 //    }
     int speed = uSCommandValues[speedIdx];
@@ -600,7 +601,7 @@ void LiftandReturn2(unsigned long commandValue) {
 // Written to address initial growth of vine down and under subject
 void TunedVineDep() {
   int arraysz = N_ACT / 2;
-  const int BaseSpeedDep[arraysz] = { 1385, 1385, 1385, 1385 };  // Base speeds during initial deployment
+  const int BaseSpeedDep[arraysz] = { 1600, 1600, 1600, MOTOR_NEUTRAL };  // Base speeds during initial deployment
   AllVines_arr(BaseSpeedDep);
 }
 
