@@ -117,37 +117,36 @@ def staircase(start, reference, stepDown, stepUp, wait, retract, nUp, nDown, N_T
 			packetA = test #A will be test target
 			packetB = reference #B will be reference
 		
-		w = 0
+		# w = 0
 
 		# apply stimuli
 		print("Receiving Stimulus A: " + str(packetA))
 		skG.writeText(sc, -350, 230, "Stimulus A in progress", skG.COLOR)
-		# mcu.write(str(packetA).encode()) # Send poke A
-		endTime = datetime.datetime.now() + datetime.timedelta(seconds=wait)
-		while (datetime.datetime.now() < endTime):
-			w = w + 1
-		#time.sleep(wait) # hold the poke
+		mcu.write(str(packetA).encode()) # Send poke A
+		# endTime = datetime.datetime.now() + datetime.timedelta(seconds=wait)
+		# while (datetime.datetime.now() < endTime):
+		# 	w = w + 1
+		time.sleep(wait) # hold the poke
 	
-		# mcu.write(str(retract).encode()) # then retract
-		endTime = datetime.datetime.now() + datetime.timedelta(seconds=wait/2)
-		while (datetime.datetime.now() < endTime):
-			w = w + 1
-		#time.sleep(wait) # wait
+		mcu.write(str(retract).encode()) # then retract
+		# endTime = datetime.datetime.now() + datetime.timedelta(seconds=wait/2)
+		# while (datetime.datetime.now() < endTime):
+		# 	w = w + 1
+		time.sleep(wait) # wait
 
 
 		print("Receiving Stimulus B: " + str(packetB))
 		skG.writeText(sc, -350, 180, "Stimulus B in progress", skG.COLOR)
-		# mcu.write(str(packetB).encode()) # Send poke B
-		endTime = datetime.datetime.now() + datetime.timedelta(seconds=wait)
-		while (datetime.datetime.now() < endTime):
-			w = w + 1
-
-		#time.sleep(wait) # hold the poke
-		# mcu.write(str(retract).encode()) # then retract
-		endTime = datetime.datetime.now() + datetime.timedelta(seconds=wait/2)
-		while (datetime.datetime.now() < endTime):
-			w = w + 1
-		#time.sleep(wait/2) # wait
+		mcu.write(str(packetB).encode()) # Send poke B
+		# endTime = datetime.datetime.now() + datetime.timedelta(seconds=wait)
+		# while (datetime.datetime.now() < endTime):
+		# 	w = w + 1
+		time.sleep(wait) # hold the poke
+		mcu.write(str(retract).encode()) # then retract
+		# endTime = datetime.datetime.now() + datetime.timedelta(seconds=wait/2)
+		# while (datetime.datetime.now() < endTime):
+		# 	w = w + 1
+		time.sleep(wait/2) # wait
 
 		# find the real answer
 		# 1 means A > B, 2 means A == B, 3 means A < B

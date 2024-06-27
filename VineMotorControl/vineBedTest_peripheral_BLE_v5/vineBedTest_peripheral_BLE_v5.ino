@@ -535,7 +535,7 @@ void AllVines(unsigned long commandValue) {
       } 
     }
 //    if (serialOn) {
-//      AASerial.println(activeVines[i]); 
+//      Serial.println(activeVines[i]); 
 //      Serial.println(speedIdx);
 //    }
     int speed = uSCommandValues[speedIdx];
