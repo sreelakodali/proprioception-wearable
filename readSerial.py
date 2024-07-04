@@ -1,4 +1,4 @@
-# Reading and Saving Serial Data from MCU
+	# Reading and Saving Serial Data from MCU
 # Written by: Sreela Kodali (kodali@stanford.edu) 
 
 import serial
@@ -31,8 +31,10 @@ writer = csv.writer(f)
 endTime = datetime.datetime.now() + datetime.timedelta(seconds=RUNTIME_LENGTH)
 while (datetime.datetime.now() < endTime):
 	value = mcu.readline()
-	value = str(value, "utf-8").split()
-	if (value):
-		print(value[0]) # can also print(value) too
-		writer.writerow(value)
+	value = str(value, "utf-8").split(",")
+	if (len(value) == 8):
+		raw = [j.rstrip() for j in value]
+		print(raw)
+		#print(value[0]) # can also print(value) too
+		writer.writerow(raw)
 f.close()
