@@ -8,33 +8,116 @@ color7 = "#880ED4";
 
 
 close all;
+
+%file = '2024-04-24_16-19'; % 1000 commands
+fileOG = '2024-04-24_17-49'; % original commands
+file = '2024-07-09_18-30'; % new data to check if repeatable
+path = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/JND_Study/additionalData/';
+dataOG = readmatrix(strcat(path,fileOG, '/v2_', fileOG,'.csv'),'NumHeaderLines',0);
+dataOG = dataOG(1:94,:);
+cmdOG = dataOG(1:93,2);
+
+measuredPosOG = interp1([976, 7],[0, 20],dataOG(2:94,3));
+gradOG = [diff(measuredPosOG);0];
+idxOG = find(abs(gradOG) == 0); % regular commands
+
+consolidatedCMDOG = cmdOG;
+consolidatedMeasuredOG = measuredPosOG;
+consolidatedCMDOG(idxOG,:) = [];
+consolidatedMeasuredOG(idxOG,:) = [];
+disp(consolidatedCMDOG);
+
+%------------------------------------------------------------
+
+data = readmatrix(strcat(path,file, '/raw_', file,'.csv'),'NumHeaderLines',0);
+data = data(1:94,:);
+cmd = data(1:93,2);
+measuredPos = interp1([981, 40],[0, 20],data(2:94,3));
+grad = [diff(measuredPos);0];
+idx = find(abs(grad) == 0.00); % regular commands
+
+consolidatedCMD = cmd;
+consolidatedMeasured = measuredPos;
+consolidatedCMD(idx,:) = [];
+consolidatedMeasured(idx,:) = [];
+
+%------------------------------------------------------------
 figure;
 set(gcf,'color','white')
 s1 = gca(gcf); 
-grad = [diff(measuredPos);0];
-idx = find(abs(grad) <=0.024);
 
-idx2 = 1025:25:2000;
-
-idx3 = islocalmax(grad, 'MinSeparation',25);
-idx3 = find(idx3);
-
+% works great for 1000 us commands
+% idx = find(abs(grad) <=0.024);
+% idx3 = islocalmax(grad, 'MinSeparation',25);
+% idx3 = find(idx3);
 % idx4 = [];
 % for i = 1:(length(idx3) - 1)
 %     idx4 = [idx4; floor((idx3(i) + idx3(i+1))/2) ];
 % end
-scatter(cmd, (measuredPos), 5, "cyan", 'filled'); hold on;
-plot(cmd, grad); hold on;
-scatter(cmd(idx), measuredPos(idx), 5, "red", 'filled'); hold on;
-%scatter(cmd(idx3), grad(idx3), 10, "black", 'filled');
-scatter(cmd(idx4), measuredPos(idx4), 10, "black", 'filled');
 
-consolidatedCMD = cmd(idx4);
-consolidatedMeasured = measuredPos(idx4);
+scatter(cmd, measuredPos, 30, [0.8500 0.3250 0.0980], 'filled'); hold on;
+plot(cmd, grad, 3, [0.3010 0.7450 0.9330]); hold on;
+scatter(cmd(idx), measuredPos(idx), 30, "cyan", 'filled'); hold on;
+xlim([47,139]);
+ylim([0,20]);
+% % %scatter(cmd(idx3), grad(idx3), 10, "black", 'filled');
+%scatter(cmd(idx4), measuredPos(idx4), 10, "black", 'filled');
+
+% consolidatedCMD = cmd(idx4); % for 1000 us commands 
+% consolidatedMeasured = measuredPos(idx4); % for 1000 us commands
+%------------------------------------------------------------
+figure;
+set(gcf,'color','white')
+s2 = gca(gcf);
+scatter(cmdOG, measuredPosOG, 30, [0.8500 0.3250 0.0980], 'filled'); hold on;
+plot(cmdOG, gradOG, 3, [0.3010 0.7450 0.9330]); hold on;
+scatter(cmdOG(idxOG), measuredPosOG(idxOG), 30, "cyan", 'filled'); hold on;
+xlim([47,139]);
+ylim([0,20]);
+%------------------------------------------------------------
 
 figure;
 set(gcf,'color','white')
-s2 = gca(gcf); 
-scatter(consolidatedCMD, consolidatedMeasured, 10, "cyan", 'filled'); hold on;
+s3 = gca(gcf); 
+scatter(consolidatedCMD, consolidatedMeasured, 30, [0.8500 0.3250 0.0980], 'filled'); hold on; 
+% trueCommands = cmd(idx4)
 
-trueCommands = cmd(idx4)
+%------------------------------------------------------------
+figure;
+set(gcf,'color','white')
+s4 = gca(gcf); 
+scatter(consolidatedCMDOG, consolidatedMeasuredOG, 30, [0.8500 0.3250 0.0980], 'filled'); hold on; 
+%------------------------------------------------------------
+
+consolidatedCMD2 = cmd;
+consolidatedMeasured2 = measuredPos;
+consolidatedCMD2(idxOG,:) = [];
+consolidatedMeasured2(idxOG,:) = [];
+
+consolidatedCMDOG2 = cmdOG;
+consolidatedMeasuredOG2 = measuredPosOG;
+consolidatedCMDOG2(idx,:) = [];
+consolidatedMeasuredOG2(idx,:) = [];
+%disp(consolidatedCMDOG);
+
+figure;
+set(gcf,'color','white')
+s5 = gca(gcf); 
+scatter(consolidatedCMD, consolidatedMeasured, 30, [0.8500 0.3250 0.0980], 'filled'); hold on; 
+% trueCommands = cmd(idx4)
+
+%------------------------------------------------------------
+figure;
+set(gcf,'color','white')
+s6 = gca(gcf); 
+scatter(consolidatedCMDOG2, consolidatedMeasuredOG2, 30, [0.8500 0.3250 0.0980], 'filled'); hold on; 
+%------------------------------------------------------------
+diff = zeros(size(consolidatedMeasured));
+diff(end,:) = [];
+for i = 1:(length(consolidatedMeasured) - 1)
+       diff(i,1) = consolidatedMeasured(i+1) - consolidatedMeasured(i);
+end
+
+figure;
+set(gcf,'color','white')
+plot(diff);

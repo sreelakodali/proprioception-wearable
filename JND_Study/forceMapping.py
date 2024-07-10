@@ -74,7 +74,7 @@ plt.scatter(x1, y1)
 plt.plot(x1, ypred)
 plt.show()
 
-distMapped = sk.mapFloat()
+#distMapped = sk.mapFloat()
 plt.scatter(x1, dist1)
 plt.plot(x1, ypred1)
 plt.show()

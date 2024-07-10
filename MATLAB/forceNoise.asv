@@ -1,8 +1,8 @@
 close all;
 %file = '2024-07-03_20-45_60Hz';
-%file = '2024-07-03_20-40_30Hz';
+file = '2024-07-03_20-40_30Hz';
 %file = '2024-07-03_20-28_12Hz';
-file = '2024-07-01_17-04_6Hz';
+%file = '2024-07-01_17-04_6Hz';
 path = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/JND_Study/additionalData/';
 onePoke = readmatrix(strcat(path,file, '/raw_', file,'.csv'),'NumHeaderLines',1);
 
@@ -30,7 +30,7 @@ Fs = 1000/mean(diff);
 %filtered = medfilt1(force_1p);
 filtered6 = medfilt1(force_1p,10);
 
-f_filter = 0.1; % 1 Hz
+f_filter = 0.25; % 1 Hz
 
 filtered2 = lowpass(force_1p, f_filter*2/Fs);
 filtered3 = round(filtered2);
@@ -38,8 +38,7 @@ w = 5;
 coeffWindow = ones(1,w)/w;
 filtered4 = filter(coeffWindow, 1, force_1p);
 filtered5 = floor(filtered4);
-filtered6 = medfilt1(force_1p,20);
-filtered6 = floor(filtered6);
+filtered6 = medfilt1(force_1p,10);
 %filtered =  lowpass(force_1p, 2*2/Fs);
 %filtered3 = bandpass(force_1p, [.1, .167], Fs);
 %filtered3 = highpass(force_1p, .167, Fs);

@@ -18,12 +18,13 @@ DeepPressureWearableArr device(in, serialON, calibrateOn);
 
 void setup() {
     Serial.println("Device initialized.");
-    device.blinkN(20, 500);
+    device.blinkN(10, 500);
+    device.beginTimer();
 }
 
 void loop() {
   // pressing button can turn feedback on and off
-  device.sweep(500, 0);
+  device.sweep(5000, 0);
   //device.sweep(500,0); // single actuator control
   //device.directActuatorControl(1); // single actuator control
 }
