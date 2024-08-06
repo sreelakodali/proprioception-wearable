@@ -24,7 +24,6 @@ twoPokeReversal = twoPokeReversalMask .* twoPokeTestMM;
 onePokeReversal = onePokeReversalMask .* onePokeTestMM;
 
 
-
 % map command to actuator position
 
 noStdev = zeros(size(twoPokeTest));
@@ -129,3 +128,16 @@ ylabel('Actuator Command (mm)')
 s2.FontSize = 15;
 leg = legend('', '', '', 'Reference', 'JND', '', '', 'Reversal');
 set(leg, 'edgeColor','w', 'Location','northeast');
+
+figure;
+fig = gcf;
+set(gcf,'color','white')
+ax = gca(gcf);
+sort(twoPokeTest(idx_twoPokeReversals))
+histogram(sort(twoPokeTest(idx_twoPokeReversals)));
+
+a = onePokeTest(idx_onePokeReversals);
+b = twoPokeTest(idx_twoPokeReversals);
+
+a = mean(a(end-2:end,1))
+b = mean(b(end-2:end,1))

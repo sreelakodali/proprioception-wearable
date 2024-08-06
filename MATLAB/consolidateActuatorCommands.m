@@ -1,3 +1,5 @@
+clear;
+
 color="#0C1446";%reversal
 color2 = "#29A0B1";%staircase
 color3 = "#FF9636"; %JND
@@ -9,7 +11,7 @@ color7 = "#880ED4";
 
 close all;
 
-%file = '2024-04-24_16-19'; % 1000 commands
+fileUS = '2024-04-24_16-19'; % 1000 commands
 fileOG = '2024-04-24_17-49'; % original commands
 file = '2024-07-09_18-30'; % new data to check if repeatable
 path = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/JND_Study/additionalData/';
@@ -29,12 +31,49 @@ disp(consolidatedCMDOG);
 
 %------------------------------------------------------------
 
+dataUS = readmatrix(strcat(path,fileUS, '/v2_', fileUS,'.csv'),'NumHeaderLines',0);
+dataUS = dataUS(1:1002,:);
+cmdUS = dataUS(1:1001,2);
+measuredPosUS = interp1([976, 7],[0, 20],dataUS(2:1002,3));
+gradUS = [diff(measuredPosUS);0];
+%------------------------------------------------------------
+% figure;
+% set(gcf,'color','white')
+
+% works great for 1000 us commands
+idxUS = find((abs(gradUS) >=.03) & (abs(gradUS) <= 0.1));
+
+ 
+idx3US = islocalmax(gradUS, 'MinSeparation',25);
+idx3US = find(idx3US);
+
+% common = intersect(idxUS,idx3US);
+% idxUS = setxor(idxUS, common);
+idx4 = [];
+for i = 1:(length(idx3US) - 1)
+    idx4 = [idx4; floor((idx3US(i) + idx3US(i+1))/2) ];
+end
+
+% US plot
+% scatter(cmdUS, measuredPosUS, 30, 'cyan', 'filled'); hold on;
+% plot(cmdUS, gradUS, 3, [0.3010 0.7450 0.9330]); hold on;
+% scatter(cmdUS(idxUS), measuredPosUS(idxUS), 30, [0.8500 0.3250 0.0980], 'filled'); hold on;
+% xlim([1000,2000]);
+% ylim([0,20]);
+% % % %scatter(cmd(idx3), grad(idx3), 10, "black", 'filled');
+% scatter(cmdUS(idx4), measuredPosUS(idx4), 10, "black", 'filled');
+
+consolidatedCMDUS = cmdUS(idx4); % for 1000 us commands 
+consolidatedMeasuredUS = measuredPosUS(idx4); % for 1000 us commands
+
+% for non us files
 data = readmatrix(strcat(path,file, '/raw_', file,'.csv'),'NumHeaderLines',0);
 data = data(1:94,:);
 cmd = data(1:93,2);
 measuredPos = interp1([981, 40],[0, 20],data(2:94,3));
 grad = [diff(measuredPos);0];
-idx = find(abs(grad) == 0.00); % regular commands
+idx = find(abs(grad) <= 0.022); % regular commands
+idxConsolidated = find(abs(grad) > 0.022);
 
 consolidatedCMD = cmd;
 consolidatedMeasured = measuredPos;
@@ -55,63 +94,63 @@ s1 = gca(gcf);
 %     idx4 = [idx4; floor((idx3(i) + idx3(i+1))/2) ];
 % end
 
-scatter(cmd, measuredPos, 30, [0.8500 0.3250 0.0980], 'filled'); hold on;
+scatter(cmd(idxConsolidated), measuredPos(idxConsolidated), 30, [0.8500 0.3250 0.0980], 'filled'); hold on;
 plot(cmd, grad, 3, [0.3010 0.7450 0.9330]); hold on;
-scatter(cmd(idx), measuredPos(idx), 30, "cyan", 'filled'); hold on;
+%scatter(cmd(idx), measuredPos(idx), 30, "cyan", 'filled'); hold on;
 xlim([47,139]);
 ylim([0,20]);
 % % %scatter(cmd(idx3), grad(idx3), 10, "black", 'filled');
 %scatter(cmd(idx4), measuredPos(idx4), 10, "black", 'filled');
-
-% consolidatedCMD = cmd(idx4); % for 1000 us commands 
-% consolidatedMeasured = measuredPos(idx4); % for 1000 us commands
-%------------------------------------------------------------
-figure;
-set(gcf,'color','white')
-s2 = gca(gcf);
-scatter(cmdOG, measuredPosOG, 30, [0.8500 0.3250 0.0980], 'filled'); hold on;
-plot(cmdOG, gradOG, 3, [0.3010 0.7450 0.9330]); hold on;
-scatter(cmdOG(idxOG), measuredPosOG(idxOG), 30, "cyan", 'filled'); hold on;
-xlim([47,139]);
-ylim([0,20]);
-%------------------------------------------------------------
-
-figure;
-set(gcf,'color','white')
-s3 = gca(gcf); 
-scatter(consolidatedCMD, consolidatedMeasured, 30, [0.8500 0.3250 0.0980], 'filled'); hold on; 
-% trueCommands = cmd(idx4)
-
-%------------------------------------------------------------
-figure;
-set(gcf,'color','white')
-s4 = gca(gcf); 
-scatter(consolidatedCMDOG, consolidatedMeasuredOG, 30, [0.8500 0.3250 0.0980], 'filled'); hold on; 
-%------------------------------------------------------------
-
-consolidatedCMD2 = cmd;
-consolidatedMeasured2 = measuredPos;
-consolidatedCMD2(idxOG,:) = [];
-consolidatedMeasured2(idxOG,:) = [];
-
-consolidatedCMDOG2 = cmdOG;
-consolidatedMeasuredOG2 = measuredPosOG;
-consolidatedCMDOG2(idx,:) = [];
-consolidatedMeasuredOG2(idx,:) = [];
-%disp(consolidatedCMDOG);
-
-figure;
-set(gcf,'color','white')
-s5 = gca(gcf); 
-scatter(consolidatedCMD, consolidatedMeasured, 30, [0.8500 0.3250 0.0980], 'filled'); hold on; 
-% trueCommands = cmd(idx4)
-
-%------------------------------------------------------------
-figure;
-set(gcf,'color','white')
-s6 = gca(gcf); 
-scatter(consolidatedCMDOG2, consolidatedMeasuredOG2, 30, [0.8500 0.3250 0.0980], 'filled'); hold on; 
-%------------------------------------------------------------
+% 
+% % consolidatedCMD = cmd(idx4); % for 1000 us commands 
+% % consolidatedMeasured = measuredPos(idx4); % for 1000 us commands
+% %------------------------------------------------------------
+% figure;
+% set(gcf,'color','white')
+% s2 = gca(gcf);
+% scatter(cmdOG, measuredPosOG, 30, [0.8500 0.3250 0.0980], 'filled'); hold on;
+% plot(cmdOG, gradOG, 3, [0.3010 0.7450 0.9330]); hold on;
+% scatter(cmdOG(idxOG), measuredPosOG(idxOG), 30, "cyan", 'filled'); hold on;
+% xlim([47,139]);
+% ylim([0,20]);
+% %------------------------------------------------------------
+% 
+% figure;
+% set(gcf,'color','white')
+% s3 = gca(gcf); 
+% scatter(consolidatedCMD, consolidatedMeasured, 30, [0.8500 0.3250 0.0980], 'filled'); hold on; 
+% % trueCommands = cmd(idx4)
+% 
+% %------------------------------------------------------------
+% figure;
+% set(gcf,'color','white')
+% s4 = gca(gcf); 
+% scatter(consolidatedCMDOG, consolidatedMeasuredOG, 30, [0.8500 0.3250 0.0980], 'filled'); hold on; 
+% %------------------------------------------------------------
+% 
+% consolidatedCMD2 = cmd;
+% consolidatedMeasured2 = measuredPos;
+% consolidatedCMD2(idxOG,:) = [];
+% consolidatedMeasured2(idxOG,:) = [];
+% 
+% consolidatedCMDOG2 = cmdOG;
+% consolidatedMeasuredOG2 = measuredPosOG;
+% consolidatedCMDOG2(idx,:) = [];
+% consolidatedMeasuredOG2(idx,:) = [];
+% %disp(consolidatedCMDOG);
+% 
+% figure;
+% set(gcf,'color','white')
+% s5 = gca(gcf); 
+% scatter(consolidatedCMD, consolidatedMeasured, 30, [0.8500 0.3250 0.0980], 'filled'); hold on; 
+% % trueCommands = cmd(idx4)
+% 
+% %------------------------------------------------------------
+% figure;
+% set(gcf,'color','white')
+% s6 = gca(gcf); 
+% scatter(consolidatedCMDOG2, consolidatedMeasuredOG2, 30, [0.8500 0.3250 0.0980], 'filled'); hold on; 
+% %------------------------------------------------------------
 diff = zeros(size(consolidatedMeasured));
 diff(end,:) = [];
 for i = 1:(length(consolidatedMeasured) - 1)
@@ -120,4 +159,16 @@ end
 
 figure;
 set(gcf,'color','white')
-plot(diff);
+scatter(1:length(diff),diff);
+ylim([0,2.5]);
+
+diffUS = zeros(size(consolidatedMeasuredUS));
+diffUS(end,:) = [];
+for i = 1:(length(consolidatedMeasuredUS) - 1)
+       diffUS(i,1) = consolidatedMeasuredUS(i+1) - consolidatedMeasuredUS(i);
+end
+
+% figure;
+% set(gcf,'color','white')
+% scatter(1:length(diffUS),diffUS);
+% ylim([0,2.5]);
