@@ -1,4 +1,4 @@
-clear;
+%clear;
 close all;
 
 file = '2024-07-16_20-35'; % without rigid
@@ -106,6 +106,8 @@ filteredAVG = filter(coeffWindow, 1, force);
 filteredAVGf = floor(filteredAVG);
 filteredMedian = medfilt1(force,25);
 filteredMedianf = floor(filteredMedian);
+filteredHd = round(filter(Hd,force));
+filteredHd2 = round(skFilter(force));
 
 % [z,p,k] = butter(3,f_filter*2/Fs);
 % [s, g]  = zp2sos(z,p,k);
@@ -204,8 +206,11 @@ plot(time, force, LineStyle="-", Color='red'); hold on; % without rigid
 
 plot(time, filteredLPFr+10, LineStyle="-", Color='blue'); hold on;
 plot(time, filteredButter+15, LineStyle="-", Color='green'); hold on;
+plot(time, filteredHd+20, LineStyle="-", Color='magenta'); hold on;
+plot(time, filteredHd2+30, LineStyle="-", Color='blue', Marker='none'); hold on;
 
-scatter(time(idx4), filteredLPFr(idx4) + 10, 20, "black", 'filled'); hold on;   
+
+%scatter(time(idx4), filteredLPFr(idx4) + 10, 20, "black", 'filled'); hold on;   
 
 %plot(time, filteredAVGf+10, LineStyle="-", Color='magenta'); hold on;
 %plot(time, filteredMedianf+15, LineStyle="-", Color='green'); hold on;

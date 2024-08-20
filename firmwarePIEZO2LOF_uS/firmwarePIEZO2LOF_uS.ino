@@ -24,7 +24,8 @@ void setup() {
 
 void loop() {
   // pressing button can turn feedback on and off
-  device.sweep(100, 0);
-  //device.sweep(500,0); // single actuator control
-  //device.directActuatorControl(1); // single actuator control
+  //device.sweep(500, 0);
+  //device.sweep_uS(500, 0);
+  device.sweep(500,0); // single actuator control
+  //device.directActuatorControl(0); // single actuator control
 }

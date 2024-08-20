@@ -1,4 +1,4 @@
-function [P1] = plotFreqSpectrum(file, str, fileType, varargin)
+function [command, measured] = plotFreqSpectrum(file, str, fileType, varargin)
 
 %close all;
 path = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/JND_Study/additionalData/';
@@ -22,6 +22,7 @@ elseif fileType == "staircasing"
     force = data(:,5);
 end
 
+force = (force - min(force)) * 45/512;
 tdiff = diff(time);
 Fs = 1/mean(tdiff);
 
@@ -53,9 +54,15 @@ L = length(signal);
 figure;
 set(gcf,'color','white')
 gca(gcf);
-plot(time,signal);
-title(strcat(str, " vs. time"), 'FontSize',18);
-xlabel("time (s)", 'FontSize',18)
+scatter(measured,signal);
+P = polyfit(measured,signal,1);
+yfit = polyval(P,measured);
+hold on;
+plot(measured,yfit,'r-.');
+eqn = string(" Linear: y = " + P(1)) + "x + " + string(P(2));
+text(min(measured),max(signal),eqn,"HorizontalAlignment","left","VerticalAlignment","top")
+title(strcat(str, " vs. displacement"), 'FontSize',18);
+xlabel("displacement (mm)", 'FontSize',18)
 ylabel(str, 'FontSize',18)
 
 magY = abs(fftY);
