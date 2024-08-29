@@ -1,8 +1,8 @@
 #include <MightyZap.h>
-#define ID_NUM 1
+#define ID_NUM 2
 
 //int ID_NUM = 0;
-MightyZap m_zap(&Serial4, 2);
+MightyZap m_zap(&Serial4, 12);
 
 int Position;
 int cPosition;
@@ -36,18 +36,18 @@ void loop() {
 //    Serial.println(ID_NUM);
     Serial.read(); 
     Serial.println(Position);    
-    delay(200);
+    //delay(200);
 
     m_zap.GoalPosition(ID_NUM,Position);
     m_zap.GoalPosition(2,Position);
-    delay(50);
+    //delay(50);
 //    while(m_zap.Moving(ID_NUM)) {
 //      cPosition = m_zap.presentPosition(ID_NUM);
 //      Serial.print("  - Position : ");
 //      Serial.println(cPosition);
 //    }
     delay(5000);   
-    delay(200);
+    //delay(200);
     cPosition = m_zap.presentPosition(ID_NUM);
     cPosition2 = m_zap.presentPosition(2);
     Serial.print("  - final Position : ");
