@@ -12,10 +12,11 @@
 #include <SPI.h>
 #include <movingAvg.h>
 #include "IntervalTimerEx.h"
-#include "skFilter.h"
-#include "skFilter_terminate.h"
+#include "skFilter2.h"
+#include "skFilter2_terminate.h"
 
 # define N_ACT 2
+#define MAX_BUFFER_SIZE 10000
 # define T_SAMPLING 1000000
 #define WINDOW_SIZE 50
 
@@ -27,7 +28,7 @@ typedef enum {
 } ACTUATOR_LIMITS;
 
 //MightyZap* m_zap;
-movingAvg filter(WINDOW_SIZE);
+movingAvg filter50(50);
 
 int  user_position_MIN = POSITION_MIN;
 int  user_position_MAX = 1000;
@@ -45,9 +46,15 @@ const bool actuatorType = 1; // NEW. 0 = actuonix and 1 = MightyZap. CHANGE THIS
 const int mightyZapWen_OUT = 12; // FIX THIS: temporary write enable output signal for buffer
 
 
+// skFilter
+int test = 1;
+short xData[1] = {0};
+float yData[1] = {0};
+
 MightyZap m_zap(&Serial4, mightyZapWen_OUT);
 
-int WRITE_COUNT = 8;
+int cycleCount = 0;
+int WRITE_COUNT = 4;
 int T_CYCLE = 15; // minimum delay to ensure not sampling at too high a rate for sensors
 short zeroForceArr[N_ACT]; // should this be local?
 
@@ -80,7 +87,9 @@ void setup() {
 }
 
 void loop() {
-  sweep(1000,1);
+  
+  miniPilot_patternsCommandbyLetter();
+  //sweep(2000,1);
 }
 
 
@@ -100,21 +109,47 @@ int readFeedback(int idx) {
 }
 
 // sweeping actuator position, increasing and decreasing. infinite loop.
-// t_d is time between actuator steps. idx is which actuator
+// t_d is ti me between actuator steps. idx is which actuator
 int sweep(int t_d, int idx) {
-    unsigned long myTime;
     short data;
     short filteredData;
     bool retracting = false;
     int position_Measured = 0;
     int counter = user_position_MIN-1;
-    int inc = 50;
+    int inc = 10;
     int minValue = 1000;
     //bool localWriteOut;
-    unsigned long startTimeCmd = millis();
+    unsigned long startTimeCmd;
     unsigned long startTimeWriteOut = millis();
+    unsigned long startTime2 = millis();
+    unsigned long myTime = millis();
     String dataString;
-    int td_WriteOut = 100;
+    int td_filterInitialization = 25000;
+    int td_WriteOut = 50;
+    int i;
+
+
+    while((myTime-startTime2) < td_filterInitialization) {
+
+      
+      myTime = millis();
+      // update counter for writing out and reading data
+      if (int(myTime - startTimeWriteOut) > td_WriteOut) {
+        data = readDataFromSensor(I2C_ADDRArr[idx]);
+        filteredData = filter50.reading(data);
+        xData[0] = data;
+        skFilter2(xData, &test, yData, &test);
+        short filteredData1 = yData[0];
+        position_Measured = readFeedback(idx); // this adds 152 ms
+        dataString += (String(myTime) + "," + String(counter) + "," + String(position_Measured) + "," + data + "," + filteredData + "," + filteredData1);
+        if (serialON) Serial.println(dataString);
+        startTimeWriteOut = millis();
+        dataString = "";
+      }
+      
+    }
+    
+    startTimeCmd = millis();
 
     while(1) {
 
@@ -135,9 +170,12 @@ int sweep(int t_d, int idx) {
       // update counter for writing out and reading data
       if (int(myTime - startTimeWriteOut) > td_WriteOut) {
         data = readDataFromSensor(I2C_ADDRArr[idx]);
-        //filteredData = filter.reading(data);
+        filteredData = filter50.reading(data);
+        xData[0] = data;
+        skFilter2(xData, &test, yData, &test);
+        short filteredData1 = yData[0];
         position_Measured = readFeedback(idx); // this adds 152 ms
-        dataString += (String(myTime) + "," + String(counter) + "," + String(position_Measured) + "," + data);
+        dataString += (String(myTime) + "," + String(counter) + "," + String(position_Measured) + "," + data + "," + filteredData + "," + filteredData1);
         if (serialON) Serial.println(dataString);
         startTimeWriteOut = millis();
         dataString = "";
@@ -281,7 +319,7 @@ void initializeSystem(bool c) {
   Wire.begin(); // join i2c bus
   initializeSerial(); // start serial for output
   initializeMightyZap();
-  filter.begin();
+  initializeFilters();
   for (int i=0; i < N_ACT; ++i) writeActuator(i, POSITION_MIN); // initialize actuator and set in min position
   //flexSensor = 180; 
   initializeIO(); // initialize IO pins, i.e. button and led
@@ -289,6 +327,16 @@ void initializeSystem(bool c) {
 //  if (c) {
 //    Serial.println("Entering calibration...");
 //    calibration();
+//  }
+}
+
+void initializeFilters() {
+  filter50.begin();
+
+//  nDatapoints = 0; // size
+//  for (int i=0; i < MAX_BUFFER_SIZE; ++i) {
+//    xData[i] = 0;
+//    yData[i] = 0;
 //  }
 }
 
@@ -309,6 +357,77 @@ bool initializeIO() {
   pinMode(button_IN, INPUT); // set button and led
   pinMode(led_OUT, OUTPUT);
   return (true); 
+}
+
+
+// 8-2-24 : FYI this hasn't been updated to the interrupt based data output
+// Note: this is a fixed mapping for two tactor and 9 combos A-I
+void miniPilot_patternsCommandbyLetter() {
+      int x;
+      int y;
+      int z;
+      int i;
+      int patterns[3] = {user_position_MIN, user_position_MIN + (user_position_MAX-user_position_MIN)/2, user_position_MAX};
+      unsigned long myTime;
+      short data[N_ACT];
+      int position_MeasuredArr[N_ACT];
+
+      myTime = millis(); // time for beginning of the loop
+
+      if (N_ACT != 2) {
+         Serial.println("Incorrect number of actuators.");
+         while(1);
+      }
+
+      // if command sent, move actuators
+      if (Serial.available() > 0) {
+        x = (Serial.read());
+        (Serial.read());
+        
+        // If less than A or greater than I
+        if ((x < 65) or (x > 73)) {
+          Serial.println("Error: invalid input. Try again.");
+        }
+        else {
+          Serial.println((char) x);
+          z = (x < 68) + (x >= 68 and x < 71)*2 + (x >= 71 and x <74)*3 - 1;
+          y = (x+1) % 3;
+
+          position_CommandArr[0] = patterns[z];
+          position_CommandArr[1] = patterns[y];
+
+          //temp
+          if (position_CommandArr[0] == user_position_MAX) position_CommandArr[0] = position_CommandArr[0] -350;
+          if (position_CommandArr[1] == user_position_MAX) position_CommandArr[1] = position_CommandArr[1];
+
+
+          if (!(buttonCount % 2)) {
+              for (i=0; i < N_ACT; ++i) writeActuator(i, position_CommandArr[i]);
+          } else {
+              for (i=0; i < N_ACT; ++i) writeActuator(i, POSITION_MIN);
+          }
+
+          // actuatorArr[0].write(patterns[z]);
+          // actuatorArr[1].write(patterns[y]);
+          // delay(2000); // new 
+          // actuatorArr[0].write(user_position_MIN);
+          // actuatorArr[1].write(user_position_MIN);
+        }
+      }
+      for (i=0; i < N_ACT; ++i) position_MeasuredArr[i] = readFeedback(i);//analogRead(position_INArr[i]);
+      cycleCount = cycleCount + 1;
+      // Serial.println(WRITE_COUNT);
+      if ((cycleCount == WRITE_COUNT)) {
+        // Serial.println(myTime);
+        for (i=0; i < N_ACT; ++i) data[i] = readDataFromSensor(I2C_ADDRArr[i]);
+        // powerOn = (data >= 150);
+        // if (powerOn) analogWrite(led_OUT, 255);
+        // else analogWrite(led_OUT, 30);
+        writeOutData(N_ACT, myTime, position_CommandArr, position_MeasuredArr, data);
+        cycleCount = 0;
+      }
+      // risingEdgeButton();
+      if (T_CYCLE > 0) delay(T_CYCLE);
 }
 
 

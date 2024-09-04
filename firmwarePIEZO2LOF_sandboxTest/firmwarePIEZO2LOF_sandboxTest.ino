@@ -42,35 +42,34 @@ void setup() {
     //Serial.println(sizeof(device));
 //    Serial.println(sizeof(*m));
 
-Serial.print("Model Number        : ");
-Serial.println((unsigned int)(*m).getModelNumber(2));
-      Serial.print("Firmware Version    : ");
-      Serial.println((*m).Version(2)*0.1);           
-      Serial.print("Present Temperature : ");
-      Serial.println((*m).presentTemperature(2));
+//Serial.print("Model Number        : ");
+//Serial.println((unsigned int)(*m).getModelNumber(2));
+//      Serial.print("Firmware Version    : ");
+//      Serial.println((*m).Version(2)*0.1);           
+//      Serial.print("Present Temperature : ");
+//      Serial.println((*m).presentTemperature(2));
 
 
-//    Serial.println((*m).getResult());
-//    (*m).GoalPosition(2,0);
-//    Serial.println((*m).getResult());
-//    delay(2000);
-//    (*m).GoalPosition(2,500);
-//    Serial.println((*m).getResult());
-//    delay(2000);
-//    
-//    int cPosition = (*m).presentPosition(2);
-//    Serial.println((*m).getResult());
-//    Serial.print("Present position = ");
-//   Serial.println(cPosition);
-//   delay(2000);
-//
-//   (*m).GoalPosition(2,0);
-//   Serial.println((*m).getResult());
-//   delay(2000);
-//   cPosition = (*m).presentPosition(2);
-//   Serial.println((*m).getResult());
-//    Serial.print("Present position = ");
-//   Serial.println(cPosition);
+    //Serial.println((*m).getResult());
+    (*m).GoalPosition(2,0);
+    ///Serial.println((*m).getResult());
+    delay(2000);
+    (*m).GoalPosition(2,500);
+    //Serial.println((*m).getResult());
+    delay(2000);
+    
+    
+    //Serial.println((*m).getResult());
+    int cPosition = (*m).presentPosition(2);
+    Serial.print("Present position = ");
+   Serial.println(cPosition);
+     delay(2000);
+
+   (*m).GoalPosition(2,0);
+   delay(2000);
+   cPosition = (*m).presentPosition(2);
+    Serial.print("Present position = ");
+   Serial.println(cPosition);
     Serial.println("fin");
 }
 

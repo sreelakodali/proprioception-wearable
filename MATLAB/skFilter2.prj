@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.coder" plugin-version="R2021a">
-  <configuration build-checksum="1810198847" file="/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/MATLAB/skFilter.prj" location="/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/MATLAB" name="skFilter" target="target.unifiedcoder" target-name="MATLAB Coder">
+  <configuration build-checksum="1031213962" file="/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/MATLAB/skFilter2.prj" location="/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/MATLAB" name="skFilter2" target="target.unifiedcoder" target-name="MATLAB Coder">
     <profile key="profile.mex">
       <param.BuiltInstrumentedMex>false</param.BuiltInstrumentedMex>
       <param.RanInstrumentedMex>false</param.RanInstrumentedMex>
@@ -567,13 +567,13 @@
       </unset>
     </profile>
     <param.objective>option.objective.c</param.objective>
-    <param.WorkflowStep>entryPoints</param.WorkflowStep>
+    <param.WorkflowStep>generateCode</param.WorkflowStep>
     <param.TestSnippets>
       <item>testing_skFilter</item>
     </param.TestSnippets>
     <param.ExternalFcnMajority>column</param.ExternalFcnMajority>
     <param.UseGlobals>option.UseGlobals.No</param.UseGlobals>
-    <param.outputfile>${PROJECT_ROOT}/codegen/lib/skFilter/skFilter.a</param.outputfile>
+    <param.outputfile>${PROJECT_ROOT}/codegen/lib/skFilter2/skFilter2.a</param.outputfile>
     <param.version>R2012a</param.version>
     <param.HasECoderFeatures>true</param.HasECoderFeatures>
     <param.HasGpuCoder>false</param.HasGpuCoder>
@@ -588,7 +588,7 @@
     <param.AutoInferUnboundedSizeThreshold>2048</param.AutoInferUnboundedSizeThreshold>
     <param.EnableFixedPointStep>false</param.EnableFixedPointStep>
     <param.EnableScreener>true</param.EnableScreener>
-    <param.AnnotationChecksum>3571084827</param.AnnotationChecksum>
+    <param.AnnotationChecksum>2992677037</param.AnnotationChecksum>
     <var.LegacyTarget />
     <var.MirrorOnOpen>false</var.MirrorOnOpen>
     <param.FixedPointEnabled>false</param.FixedPointEnabled>
@@ -596,15 +596,15 @@
     <var.DismissScreener>false</var.DismissScreener>
     <param.unifiedParamStorage />
     <param.hdlParamStorage />
-    <var.gc.lastOutputRoot>codegen/lib/skFilter</var.gc.lastOutputRoot>
+    <var.gc.lastOutputRoot>codegen/lib/skFilter2</var.gc.lastOutputRoot>
     <var.gc.lastOutputType>C_CODE</var.gc.lastOutputType>
-    <var.gc.preBuildChecksum>1810198847</var.gc.preBuildChecksum>
-    <var.cfi.lastOutputRoot>codegen/mex/skFilter</var.cfi.lastOutputRoot>
-    <var.cfi.preBuildChecksum>2427702377</var.cfi.preBuildChecksum>
+    <var.gc.preBuildChecksum>4131143247</var.gc.preBuildChecksum>
+    <var.cfi.lastOutputRoot>codegen/mex/skFilter2</var.cfi.lastOutputRoot>
+    <var.cfi.preBuildChecksum>1031213962</var.cfi.preBuildChecksum>
     <var.lastCfiTestSnippet>testing_skFilter</var.lastCfiTestSnippet>
     <var.outdatedOnRestore>false</var.outdatedOnRestore>
-    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/MATLAB/skFilter.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;3796232321&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
-    <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/MATLAB/skFilter.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
+    <var.lastUserSourceChecksum>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;checksum&gt;&lt;includedFiles&gt;&lt;file&gt;/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/MATLAB/skFilter2.m&lt;/file&gt;&lt;/includedFiles&gt;&lt;value&gt;3825963406&lt;/value&gt;&lt;/checksum&gt;</var.lastUserSourceChecksum>
+    <var.sourceSetState>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;sourceModel&gt;&lt;primarySourceFiles&gt;&lt;file&gt;/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/MATLAB/skFilter2.m&lt;/file&gt;&lt;/primarySourceFiles&gt;&lt;fixedPointSourceFiles/&gt;&lt;fixedPointSourceRegistered&gt;false&lt;/fixedPointSourceRegistered&gt;&lt;fixedPointSourceSelected&gt;false&lt;/fixedPointSourceSelected&gt;&lt;/sourceModel&gt;</var.sourceSetState>
     <param.forceMexBuild>false</param.forceMexBuild>
     <param.NoDefaultJIT>false</param.NoDefaultJIT>
     <param.configImportActive>false</param.configImportActive>
@@ -618,10 +618,10 @@
     <param.EnableStructExplosion>true</param.EnableStructExplosion>
     <param.ForceANSIC>false</param.ForceANSIC>
     <param.NumCompileJobs>1</param.NumCompileJobs>
-    <param.mex.outputfile>skFilter_mex</param.mex.outputfile>
-    <param.grt.outputfile>skFilter</param.grt.outputfile>
+    <param.mex.outputfile>skFilter2_mex</param.mex.outputfile>
+    <param.grt.outputfile>skFilter2</param.grt.outputfile>
     <param.artifact>option.target.artifact.lib</param.artifact>
-    <param.outputfile>${PROJECT_ROOT}/codegen/lib/skFilter/skFilter.a</param.outputfile>
+    <param.outputfile>${PROJECT_ROOT}/codegen/lib/skFilter2/skFilter2.a</param.outputfile>
     <param.CppNamespace />
     <param.CppPackagesToNamespaces>true</param.CppPackagesToNamespaces>
     <param.CppNamespaceForMathworksCode>coder</param.CppNamespaceForMathworksCode>
@@ -852,24 +852,24 @@
       <param.FixedPointUseDesignRanges />
     </unset>
     <fileset.entrypoints>
-      <file custom-data-expanded="false" value="${PROJECT_ROOT}/skFilter.m">
-        <Marker>1724126375161</Marker>
+      <file custom-data-expanded="false" value="${PROJECT_ROOT}/skFilter2.m">
+        <Marker>1724988380042</Marker>
       </file>
     </fileset.entrypoints>
     <fileset.testbench>
       <file>${PROJECT_ROOT}/testing_skFilter.m</file>
     </fileset.testbench>
     <fileset.inputtypes>
-      <file custom-data-expanded="false" value="${PROJECT_ROOT}/skFilter.m">
-        <Inputs fileName="skFilter.m" functionName="skFilter">
+      <file custom-data-expanded="false" value="${PROJECT_ROOT}/skFilter2.m">
+        <Inputs fileName="skFilter2.m" functionName="skFilter2">
           <Input Name="x" typeId="0" />
           <idpTable>
             <type typeId="0">
               <Class>int16</Class>
-              <Size>:5000 x 1</Size>
+              <Size>:10000 x 1</Size>
               <Value />
               <InitialValue />
-              <UserDefined>true</UserDefined>
+              <UserDefined>false</UserDefined>
               <Complex>false</Complex>
             </type>
           </idpTable>
@@ -877,7 +877,7 @@
       </file>
     </fileset.inputtypes>
     <build-deliverables>
-      <file location="${PROJECT_ROOT}/codegen/lib/skFilter" name="skFilter.a" optional="false">/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/MATLAB/codegen/lib/skFilter/skFilter.a</file>
+      <file location="${PROJECT_ROOT}/codegen/lib/skFilter2" name="skFilter2.a" optional="false">/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/MATLAB/codegen/lib/skFilter2/skFilter2.a</file>
     </build-deliverables>
     <workflow />
     <matlab>

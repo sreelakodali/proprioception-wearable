@@ -10,9 +10,9 @@ from scipy import signal
 
 ## CONSTANTS
 PATH = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/JND_Study/additionalData/' # change this to your path!
-PORT_NAME = "/dev/cu.usbmodem131754901" # change this to Arduino/teeny's port
+PORT_NAME = "/dev/cu.usbmodem131752901" # change this to Arduino/teeny's port
 BAUD_RATE = 4608000
-RUNTIME_LENGTH = 60 # seconds
+RUNTIME_LENGTH = 120#570 # seconds
 
 
 #DIRECTORY
@@ -32,9 +32,13 @@ endTime = datetime.datetime.now() + datetime.timedelta(seconds=RUNTIME_LENGTH)
 while (datetime.datetime.now() < endTime):
 	value = mcu.readline()
 	value = str(value, "utf-8").split(",")
-	if (len(value) == 4):
+	
+	if (len(value) in [3,6]):
 		raw = [j.rstrip() for j in value]
-		print(raw)
+		#print(raw)
 		#print(value[0]) # can also print(value) too
 		writer.writerow(raw)
+
+	if (len(value) > 0):
+		print(value)
 f.close()
