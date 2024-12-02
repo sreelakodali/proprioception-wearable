@@ -26,7 +26,6 @@ N_TOTAL_TRIALS = 10#50
 waitTime = 6
 
 stepSizeRatio = {1:0.2845, 2:0.5488, 3:0.7393 , 4:0.8415}
-
 stepUp = stepDown/stepSizeRatio[nDown]
 
 
@@ -36,7 +35,7 @@ t = 1
 sc = turtle.Screen()
 
 # # connect with device
-mcu = serial.Serial(port=CONST.PORT_NAME, baudrate=CONST.BAUD_RATE, timeout=.1)
+# mcu = serial.Serial(port=CONST.PORT_NAME, baudrate=CONST.BAUD_RATE, timeout=.1)
 
 # # Initialize GUI
 sc.tracer(0)
@@ -97,10 +96,10 @@ def staircase(start, reference, stepDown, stepUp, wait, retract, nUp, nDown, N_T
 
 	for i in range(0,N_Trials):
 
-		value = mcu.readlines()
-		for j in value:
-			#skP.writeOutData(j,dataFunc, 0, 0, trialCount)
-			skP.writeOutData(j,dataFunc, writer2, writer, trialCount)
+		# value = mcu.readlines()
+		# for j in value:
+		# 	#skP.writeOutData(j,dataFunc, 0, 0, trialCount)
+		# 	skP.writeOutData(j,dataFunc, writer2, writer, trialCount)
 
 		print("----- TRIAL #" + str(i) + " -----")
 		print("test: " + str(test))
@@ -122,13 +121,13 @@ def staircase(start, reference, stepDown, stepUp, wait, retract, nUp, nDown, N_T
 		# apply stimuli
 		print("Receiving Stimulus A: " + str(packetA))
 		skG.writeText(sc, -350, 230, "Stimulus A in progress", skG.COLOR)
-		mcu.write(str(packetA).encode()) # Send poke A
+		# mcu.write(str(packetA).encode()) # Send poke A
 		# endTime = datetime.datetime.now() + datetime.timedelta(seconds=wait)
 		# while (datetime.datetime.now() < endTime):
 		# 	w = w + 1
 		time.sleep(wait) # hold the poke
 	
-		mcu.write(str(retract).encode()) # then retract
+		# mcu.write(str(retract).encode()) # then retract
 		# endTime = datetime.datetime.now() + datetime.timedelta(seconds=wait/2)
 		# while (datetime.datetime.now() < endTime):
 		# 	w = w + 1
@@ -137,12 +136,12 @@ def staircase(start, reference, stepDown, stepUp, wait, retract, nUp, nDown, N_T
 
 		print("Receiving Stimulus B: " + str(packetB))
 		skG.writeText(sc, -350, 180, "Stimulus B in progress", skG.COLOR)
-		mcu.write(str(packetB).encode()) # Send poke B
+		# mcu.write(str(packetB).encode()) # Send poke B
 		# endTime = datetime.datetime.now() + datetime.timedelta(seconds=wait)
 		# while (datetime.datetime.now() < endTime):
 		# 	w = w + 1
 		time.sleep(wait) # hold the poke
-		mcu.write(str(retract).encode()) # then retract
+		# mcu.write(str(retract).encode()) # then retract
 		# endTime = datetime.datetime.now() + datetime.timedelta(seconds=wait/2)
 		# while (datetime.datetime.now() < endTime):
 		# 	w = w + 1
@@ -226,12 +225,12 @@ def staircase(start, reference, stepDown, stepUp, wait, retract, nUp, nDown, N_T
 			else:
 				writer3.writerow([trialCount, test, reference, packetA, packetB, answerKey, userAnswer, 0, rightStreak])
 	
-	value = mcu.readlines()
-	for j in value:
-		#skP.writeOutData(j,dataFunc, 0, 0, trialCount)
-		skP.writeOutData(j,dataFunc, writer2, writer, trialCount)	
-		# # and compute test value
-		# test = test + inc
+	# value = mcu.readlines()
+	# for j in value:
+	# 	#skP.writeOutData(j,dataFunc, 0, 0, trialCount)
+	# 	skP.writeOutData(j,dataFunc, writer2, writer, trialCount)	
+	# 	# # and compute test value
+	# 	# test = test + inc
 
 # STAGE 0: Introduction
 EXPERIMENT_TEXT_0 = ["Welcome!", "Let's begin the experiment", "", "", "", "", "", "", "", "", "", "", "Please click the red key to continue."]
