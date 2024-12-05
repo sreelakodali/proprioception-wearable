@@ -9,9 +9,9 @@ import datetime
 from scipy import signal
 import constants as CONST
 from operator import itemgetter
-# import matplotlib   #FIX: fix for newer python environment
-# matplotlib.use("TkAgg")
-# from matplotlib import pyplot as plt
+import matplotlib   #FIX: fix for newer python environment
+matplotlib.use("TkAgg")
+from matplotlib import pyplot as plt
 from scipy.signal import lfilter, lfilter_zi, filtfilt, butter
 import random
 import sys

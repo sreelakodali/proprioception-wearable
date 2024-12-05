@@ -44,9 +44,9 @@ def writeOutDataBLE(i,dataFunc, writer, trialCount, verbose):
 
 def formatBLEPacket(value, nAct):
 	if (nAct == 1):
-		buf = str("X")+str(value) 
+		buf = str("x")+str(value) 
 	else:
-		buf = str("Y")+str(value)
+		buf = str("y")+str(value)
 	return buf.encode()
 
 # default: staircase(120, 80, -5, 5, 47, 1, 3, 15)
