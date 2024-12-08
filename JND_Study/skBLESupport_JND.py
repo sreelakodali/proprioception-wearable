@@ -1,7 +1,7 @@
 # BLE support functions for JND experiment
 # Written by: Sreela Kodali (kodali@stanford.edu) 
 
-import serial, datetime, csv, sys, getopt, os, shutil, turtle, random, time, keyboard, asyncio
+import serial, datetime, csv, sys, getopt, os, shutil, turtle, random, time, keyboard, asyncio, socket
 import numpy as np
 #from scipy import signal
 from bleak import BleakScanner, BleakClient
@@ -23,9 +23,12 @@ dataFunc = {'time':sk.millisToSeconds, 'setpoint':sk.doNothing,'set-err':sk.doNo
 
 
 EXPERIMENT_TEXT_0 = ["Welcome!", "Let's begin the experiment", "", "", "", "", "", "", "", "", "", "", "Please click the red key to continue."]
-EXPERIMENT_TEXT_1 = ["Experiment", "Task: Identify whether Stimulus A feels more,", "intense, the same, or less intense than Stimulus B.", "", "",  "", "", "", "", "", "Use >, =, and < keys to indicate your answer,", "and then click the red key to go to the next trial.", "Please click the red key to start."]
+EXPERIMENT_TEXT_1 = ["Experiment", "Task: Identify whether Stimulus A feels more,", "intense, the same, or less intense than Stimulus B.", "", "",  "", "", "", "", "", "Use >, =, and < keys to indicate your answer,", "and then click the red key to go to the next trial.", "Please click the red key to proceed."]
 EXPERIMENT_TEXT = [EXPERIMENT_TEXT_0, EXPERIMENT_TEXT_1]
 EXPERIMENT_TEXT_3 = ["JND Study", ""]
+EXPERIMENT_TEXT_2 = ["Initializing", "Please wait 20 seconds until we begin"]
+EXPERIMENT_TEXT_4 = ["", "Please click the red key to start."]
+
 
 addr_Adafruit1 = "026B8104-5A8F-E8AF-518E-B778DB1C9CE2"
 addr_Adafruit2 = "380FFB6A-AB04-7634-8A6C-C8E255F7A26C"
@@ -54,6 +57,9 @@ def instructionsGUI(sc, tr):
 	turtle.update()
 	keyboard.wait('down')
 
+async def waitGUI(sc):
+	skG.initializeWindow(sc,EXPERIMENT_TEXT_2)
+	await waitSK(20)
 
 def prepareExperimentGUI(sc, n):
 	skG.initializeWindow(sc,EXPERIMENT_TEXT_3)
@@ -65,9 +71,9 @@ def closeFiles(arr):
 	for i in arr:
 		i.close()
 
-def randomizeStimuli(ref, test):
+def randomizeStimuli(ref, test, c):
 	r = random.randrange(0,2)
-	print("r: " + str(r))
+	c.send(("r: " + str(r)+ "\n").encode())
 	if (r == 1):
 		return (ref, test)
 	else:
@@ -93,25 +99,25 @@ def createDataFiles(p, name, idx_Act):
 
 def writeOutDataBLE(i, writer, f, trialCount, verbose):
 	f.write(i+"," + str(trialCount) + "\n")
+	writer.write(i+"," + str(trialCount) + "\n")
+	# i = i.split(",")
+	# if (len(i) == len(dataFunc)): 
+	# 	# raw = [j.rstrip() for j in i]
+	# 	# raw = raw + [trialCount]	
+	# 	#writer2.writerow(raw)
 
-	i = i.split(",")
-	if (len(i) == len(dataFunc)): 
-		# raw = [j.rstrip() for j in i]
-		# raw = raw + [trialCount]	
-		#writer2.writerow(raw)
-
-		newRow = sk.processNewRow(dataFunc, i)	
-		newRow = newRow + [trialCount]
-		writer.writerow(newRow)
-		if (verbose):
-			print(newRow)
+	# 	newRow = sk.processNewRow(dataFunc, i)	
+	# 	newRow = newRow + [trialCount]
+	# 	writer.writerow(newRow)
+	# 	if (verbose):
+	# 		print(newRow)
 
 def formatBLEPacket(value, nAct):
 	if (nAct == 1):
-		buf = str("X")+str(value) 
+		buf = str("x")+str(value)+"\n" 
 	else:
-		buf = str("Y")+str(value)
-	return buf.encode()
+		buf = str("y")+str(value)+"\n"
+	return buf.encode(encoding="ascii")
 
 def updateUserAnswerGUI(sc, userAnswer):
 	skG.eraseLine(sc,-350,40)
@@ -128,17 +134,18 @@ def displayAnswerOptionsGUI(sc):
 	skG.writeText(sc, -350,-120, "Press the red key to confirm your answer", skG.COLOR)
 	skG.writeText(sc, -350,-170, "and proceed to the next trial.", skG.COLOR_GREEN)
 
-def waitSK(td):
+async def waitSK(td):
 	w = 0
 	endTime = datetime.datetime.now() + datetime.timedelta(seconds=td)
 	while (datetime.datetime.now() < endTime):
+		await asyncio.sleep(0.01)
 		w = w + 1
 	#time.sleep(td)
 
 async def sendSetpoint(value, client, rx_char, idx):
-	await client.write_gatt_char(rx_char, formatBLEPacket(value,idx)) 
+	await client.write_gatt_char(rx_char, formatBLEPacket(value,idx), response=False) 
 
-def sendPoke(sc, value, retract, wait, clientArr, rx_charArr, stimulus1):
+async def sendPoke(sc, c, value, retract, wait, client, rx_char, stimulus1, idx_Act):
 
 	if (stimulus1):
 		outputStr = "Receiving Stimulus A: "
@@ -148,15 +155,17 @@ def sendPoke(sc, value, retract, wait, clientArr, rx_charArr, stimulus1):
 		outputStr = "Receiving Stimulus B: "
 		outputStr2 = "Stimulus B in progress"
 		h = 180
-	print(outputStr + str(value))
+	c.send((outputStr + str(value) + "\n").encode())
 	skG.writeText(sc, -350, h, outputStr2, skG.COLOR)
 
 	# Send poke A and wait
-	for k in range(0,len(clientArr)):
-		sendSetpoint(value, clientArr[k], rx_charArr[k], k) 	
-	waitSK(wait) 	# hold the poke	
+	# for k in range(0,len(clientArr)):
+	# 	await sendSetpoint(value, clientArr[k], rx_charArr[k], k+1)
+	await sendSetpoint(value, client, rx_char, idx_Act) 	
+	await waitSK(wait) 	# hold the poke	
 
 	# Retract and wait
-	for k in range(0,len(clientArr)):
-		sendSetpoint(retract, clientArr[k], rx_charArr[k], k)
-	waitSK(wait/2) 	# hold the poke
+	# for k in range(0,len(clientArr)):
+	# 	await sendSetpoint(retract, clientArr[k], rx_charArr[k], k+1)
+	await sendSetpoint(retract, client, rx_char, idx_Act) 	
+	await waitSK(wait/2) 	# hold the poke

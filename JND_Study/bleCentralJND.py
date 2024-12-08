@@ -60,7 +60,8 @@ def handle_rx1(_: BleakGATTCharacteristic, data: bytearray):
     global linebuf
 
     strData = data.decode("ascii")
-    if (strData[-1] == "\n"):
+
+    if ((strData[-1] == "\n") and not(strData[0] in ["x", "y"])):
         if (len(linebuf) != 0):
             print(linebuf)
             linebuf = ""
@@ -70,7 +71,7 @@ def handle_rx1(_: BleakGATTCharacteristic, data: bytearray):
         f.write(databuf+strData)
         #writer.writerow([databuf+strData[:-1]])
         databuf = ""
-    else:
+    elif (not(strData[0] in ["x", "y"])):
         databuf += strData
 
 def handle_rx2(_: BleakGATTCharacteristic, data: bytearray):
@@ -79,7 +80,8 @@ def handle_rx2(_: BleakGATTCharacteristic, data: bytearray):
     global linebuf
 
     strData = data.decode("ascii")
-    if (strData[-1] == "\n"):
+
+    if ((strData[-1] == "\n") and not(strData[0] in ["x", "y"])):
 
         if (len(linebuf) != 0):
             linebuf = linebuf + ", "
@@ -93,7 +95,7 @@ def handle_rx2(_: BleakGATTCharacteristic, data: bytearray):
         g.write(databuf2+strData)
         #writer.writerow([databuf+strData[:-1]])
         databuf2 = ""
-    else:
+    elif (not(strData[0] in ["x", "y"])):
         databuf2 += strData
 
 
@@ -152,9 +154,9 @@ async def main():
 
                         # device1 = X, device2 = Y
                         elif "x" in strSentData: # check if for device1 or device2
-                            print("sent to device 1:", data)
+                            #print("sent to device 1:", data)
                             f.write(strSentData)
-                            await client1.write_gatt_char(rx_char1, data)
+                            await client1.write_gatt_char(rx_char1, data, response=False)
 
                             # for s in sliced(data, rx_char1.max_write_without_response_size):
                             #     #print(s)
@@ -162,9 +164,9 @@ async def main():
 
 
                         elif "y" in strSentData:
-                            print("sent to device 2:", data)
+                            #print("sent to device 2:", data)
                             g.write(strSentData)
-                            await client2.write_gatt_char(rx_char2, data)
+                            await client2.write_gatt_char(rx_char2, data, response=False)
                             # for s in sliced(data, rx_char2.max_write_without_response_size):
                             #     #print(s)
                             #     await client2.write_gatt_char(rx_char2, s)

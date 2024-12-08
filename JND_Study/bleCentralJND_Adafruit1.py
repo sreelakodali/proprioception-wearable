@@ -1,4 +1,4 @@
-	# Reading and Saving Serial Data from MCU
+    # Reading and Saving Serial Data from MCU
 # Written by: Sreela Kodali (kodali@stanford.edu) 
 
 import serial
@@ -11,11 +11,14 @@ import asyncio
 from bleak import BleakScanner, BleakClient
 import time
 import sys
+import socket
 from itertools import count, takewhile
 from typing import Iterator
 from bleak.backends.characteristic import BleakGATTCharacteristic
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
+import skBLESupport_JND as skB
+
 
 
 # CONSTANTS
@@ -63,6 +66,18 @@ def sliced(data: bytes, n: int) -> Iterator[bytes]:
     """
     return takewhile(len, (data[i : i + n] for i in count(0, n)))
 
+def sendMySetpoints():
+    data = "x2\n"
+    s = data.encode(encoding="ascii")
+    
+    w = 0
+    endTime = datetime.datetime.now() + datetime.timedelta(seconds=10)
+    while (datetime.datetime.now() < endTime):
+        #await asyncio.sleep(0.01)
+        w = w + 1
+    return(s)
+                   
+
 async def main():
     
     device = await BleakScanner.find_device_by_address(addr_Adafruit1)
@@ -97,20 +112,31 @@ async def main():
             loop = asyncio.get_running_loop()
             nus = client.services.get_service(UART_SERVICE_UUID_BLE1)
             rx_char = nus.get_characteristic(UART_RX_CHAR_UUID_BLE1)         
+            
 
             while True:
                 await asyncio.sleep(0.01)
+
+                # for i in data:
+                #     s = str(i).encode(encoding="ascii")
+                #     await asyncio.sleep(0.01)
+                #     print("sent:", s)
+                #     await client.write_gatt_char(rx_char, s)
+                #     #print(type(s))
+                #     await skB.waitSK(10)
                   #data = input()
                   #print("Sending: " + str(data))
                   #data = data.encode(encoding="ascii")
                   #await client.write_gatt_char(rx_char, data, response=False)
-            #     # This waits until you type a line and press ENTER.
-            #     # A real terminal program might put stdin in raw mode so that things
-            #     # like CTRL+C get passed to the remote device.
+                # This waits until you type a line and press ENTER.
+                # A real terminal program might put stdin in raw mode so that things
+                # like CTRL+C get passed to the remote device.
 
-                data = await loop.run_in_executor(None, sys.stdin.buffer.readline)
+                #data = await loop.run_in_executor(None, sys.stdin.buffer.readline)
+                data = await loop.run_in_executor(None, sendMySetpoints)
 
-            # # data will be empty on EOF (e.g. CTRL+D on *nix)
+
+            # data will be empty on EOF (e.g. CTRL+D on *nix)
                 if not data:
                     break
 
@@ -120,7 +146,7 @@ async def main():
             #     #data = data.rstrip()
                 for s in sliced(data, rx_char.max_write_without_response_size):
                     #print(s)
-                    await client.write_gatt_char(rx_char, s)
+                    await client.write_gatt_char(rx_char, s, response=False)
 
                 if (data.isascii()):
                     strSentData = data.decode("ascii")

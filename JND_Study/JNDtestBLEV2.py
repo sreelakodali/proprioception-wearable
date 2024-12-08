@@ -1,7 +1,8 @@
 # JND Test - BLE Version
 # Written by: Sreela Kodali (kodali@stanford.edu) 
 
-import serial, datetime, csv, sys, getopt, os, shutil, turtle, random, time, keyboard, asyncio, threading
+import serial, datetime, csv, sys, getopt, os, shutil, turtle
+import random, time, keyboard, asyncio, socket, re
 import numpy as np
 #from scipy import signal
 from bleak import BleakScanner, BleakClient
@@ -22,8 +23,13 @@ trialCount = 0 # counter
 
 # ------- CONSTANTS, DIRECTORY, & setting up files
 PATH = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/JND_Study/bleData/' # change this to your path!
+
+print("Welcome to the study! Please enter subject number:")
+nSubject = input()
+nSubject = "subject" + nSubject + "_"
 fileName = str(datetime.datetime.now())[0:16] # default name is date and time
 fileName = ((fileName.replace('/', '_')).replace(' ', '_')).replace(':','-')
+fileName = nSubject + fileName
 p = PATH +fileName+'/'
 if not (os.path.exists(p)):
     os.makedirs(p)
@@ -52,7 +58,7 @@ stepDown=0.3
 nUp = 1
 nDown = 2
 N_TOTAL_TRIALS = 10#50
-waitTime = 6 # seconds
+waitTime = 10 # seconds
 stepSizeRatio = {1:0.2845, 2:0.5488, 3:0.7393 , 4:0.8415}
 stepUp = stepDown/stepSizeRatio[nDown]
 
@@ -72,7 +78,7 @@ sc = turtle.Screen()
 
 # ----- SUPPORTING FUNCTIONS
 # default: staircase(120, 80, -5, 5, 47, 1, 3, 15)
-def staircaseBLE(start, reference, stepDown, stepUp, wait, retract, nUp, nDown, N_Trials, clientArr, rx_charArr):
+async def staircaseBLE(c, start, reference, stepDown, stepUp, wait, retract, nUp, nDown, N_Trials, client1, rx_char1, client2, rx_char2):
 	# start = 120 # actuator pwm unit
 	# reference = 80# 6 N
 	# inc = -5 # start increment
@@ -94,6 +100,7 @@ def staircaseBLE(start, reference, stepDown, stepUp, wait, retract, nUp, nDown, 
 	# start Value for method of limits
 	test = start
 
+
 	for i in range(0,N_Trials):
 
 		# ---- READ AND PRINT/SAVE DATA
@@ -101,27 +108,34 @@ def staircaseBLE(start, reference, stepDown, stepUp, wait, retract, nUp, nDown, 
 		# for j in value:
 		# 	#skP.writeOutData(j,dataFunc, 0, 0, trialCount)
 		# 	skP.writeOutData(j,dataFunc, writer2, writer, trialCount)
+		await asyncio.sleep(0.01)
 
-		print("----- TRIAL #" + str(i) + " -----")
-		print("test: " + str(test))
-		print("rightStreak: " + str(rightStreak))
+		c.send( ( "----- TRIAL #" + str(i) + " -----\n").encode())
+		c.send(("test: " + str(test) + "\n" ).encode())
+		c.send(("rightStreak: " + str(rightStreak) + "\n").encode())
 
 		# randomize order presented
-		packetA, packetB = skB.randomizeStimuli(reference, test)
+		packetA, packetB = skB.randomizeStimuli(reference, test, c)
 
 		# apply stimuli
-		await skB.sendPoke(sc, packetA, retract, wait, clientArr, rx_charArr, 1)  # Send poke A
-		await skB.sendPoke(sc, packetB, retract, wait, clientArr, rx_charArr, 0) # Send poke B
+		await skB.sendPoke(sc, c, packetA, retract, wait, client1, rx_char1, 1, 1)  # Send poke A
+		if (N_ACTUATORS == 2):
+			await skB.sendPoke(sc, c, packetA, retract, wait, client2, rx_char2, 1, 2)  # Send poke A
+
+		await skB.sendPoke(sc, c, packetB, retract, wait, client1, rx_char1, 0, 1)  # Send poke B
+		if (N_ACTUATORS == 2):
+			await skB.sendPoke(sc, c, packetB, retract, wait, client2, rx_char2, 0, 2)  # Send poke B
+
 
 		# find the real answer
 		# 1 means A > B, 2 means A == B, 3 means A < B
 		answerKey = (packetA > packetB)*1 + (packetA == packetB)*2 + (packetA < packetB)*3
-		print("The real answer is: " + str(answerKey))
+		c.send(("The real answer is: " + str(answerKey) + "\n").encode())
 
 		skB.displayAnswerOptionsGUI(sc)
 
 		while(1):
-
+			await asyncio.sleep(0.01)
 		# wait for user's input
 			k = keyboard.read_key()
 
@@ -154,24 +168,25 @@ def staircaseBLE(start, reference, stepDown, stepUp, wait, retract, nUp, nDown, 
 
 		# check the answer. depending on answer, determine next test value
 		# if answer wrong, reset streak and step up test value
-		print("User answer is: " + str(userAnswer))
+		c.send(("User answer is: " + str(userAnswer)+ "\n").encode())
+		await asyncio.sleep(0.01)
 
 		if (answerKey != userAnswer):
-			print("ANSWER WRONG!")
+			c.send(("ANSWER WRONG!\n").encode())
 			rightStreak = 0
 			writer.writerow([trialCount, test, reference, packetA, packetB, answerKey, userAnswer, stepUp, rightStreak])
 			test = round((test + stepUp), 2) # step up test value if wrong
-			print("stepSize: " + str(stepUp))
+			c.send(("stepSize: " + str(stepUp)+ "\n").encode())
 			# inc = abs(inc) + 1 
 			userAnswer = 0
 			wrongCount = wrongCount + 1
-			print("reversals:" + str(wrongCount))
+			c.send(("reversals:" + str(wrongCount)+ "\n").encode())
 			# if (wrongCount == 2):
 			# 	stepSize = stepSize2
 
 		# if answer correct, add to right streak
 		elif (answerKey == userAnswer):
-			print("ANSWER RIGHT!")
+			c.send(("ANSWER RIGHT!\n").encode())
 			rightStreak = rightStreak + 1
 			
 			# step down test if they get nDown right answers in a row
@@ -183,6 +198,7 @@ def staircaseBLE(start, reference, stepDown, stepUp, wait, retract, nUp, nDown, 
 				rightStreak = 0
 			else:
 				writer.writerow([trialCount, test, reference, packetA, packetB, answerKey, userAnswer, 0, rightStreak])
+	c.send(("DONE\n").encode())
 
 async def quickScan():
     devices = await BleakScanner.discover()
@@ -204,64 +220,96 @@ def sliced(data: bytes, n: int) -> Iterator[bytes]:
 # character as demarker of end of packet
 def handle_rx1(_: BleakGATTCharacteristic, data: bytearray):
     global databuf
-    global f
+    global f, h
     global linebuf
-    global writer1
+    #global writer1
     global trialCount
 
+    
+
     strData = data.decode("ascii")
-    if (strData[-1] == "\n"):
-        if (len(linebuf) != 0):
-            print(linebuf)
-            linebuf = ""
-        linebuf += ("1,"+databuf+strData[:-2])
+    #commaCount = strData.count(',')
+    strData = re.sub("K","",strData)
+    #packet = strData.split(",")
+    # and not(strData[0] in ["x", "y", "O", "E"])
 
-        outputStr = databuf+strData[:-2]
-        skB.writeOutDataBLE(outputStr, writer1, f, trialCount, 0) # FIX: need to add trialCount
-        databuf = ""
+    # find a substring, starts with x or y and ends with \n    
 
-    else:
-        databuf += strData
+    # remove = ["OK", "ERROR"]
+    # for txt in remove:
+    # 	strData.replace(txt, "")
+
+    # find the x's and y's
+
+    if (len(strData) ):
+	    if ((strData[-1] == "\n")):
+	        if (len(linebuf) != 0):
+	            print(linebuf)
+	            linebuf = ""
+	        linebuf += ("1,"+databuf+strData[:-2])
+
+	        outputStr = databuf+strData[:-2]
+	        #skB.writeOutDataBLE(outputStr, writer1, f, trialCount, 0) # FIX: need to add trialCount
+	        skB.writeOutDataBLE(outputStr, h, f, trialCount, 0) # FIX: need to add trialCount
+	        databuf = ""
+
+	    else:
+	        databuf += strData
 
 def handle_rx2(_: BleakGATTCharacteristic, data: bytearray):
     global databuf2
-    global g
+    global g, m
     global linebuf
-    global writer2
+    #global writer2
     global trialCount
 
     strData = data.decode("ascii")
-    if (strData[-1] == "\n"):
+    #commaCount = strData.count(',')
+    strData = re.sub("K","",strData)
+    # remove = ["OK", "ERROR"]
+    # for txt in remove:
+    # 	strData.replace(txt, "")
 
-        if (len(linebuf) != 0):
-            linebuf = linebuf + ", "
-        linebuf = linebuf + ("2,"+databuf2+strData[:-2])
-        if (linebuf[0] == ","):
-            linebuf = linebuf[2:]
-        print(linebuf)
-        linebuf = ""
+    if (len(strData)):
+	    if ((strData[-1] == "\n")):
 
-        #g.write(databuf2+strData)
-        outputStr = databuf+strData[:-2]
-        skB.writeOutDataBLE(outputStr, writer2, g, trialCount, 0) # FIX: need to add trialCount
-        databuf2 = ""
+	        if (len(linebuf) != 0):
+	            linebuf = linebuf + ", "
+	        linebuf = linebuf + ("2,"+databuf2+strData[:-2])
+	        if (linebuf[0] == ","):
+	            linebuf = linebuf[2:]
+	        print(linebuf)
+	        linebuf = ""
 
-    else:
-        databuf2 += strData
+	        #g.write(databuf2+strData)
+	        outputStr = databuf+strData[:-2]
+	        skB.writeOutDataBLE(outputStr, m, g, trialCount, 0) # FIX: need to add trialCount
+	        #skB.writeOutDataBLE(outputStr, writer2, g, trialCount, 0) # FIX: need to add trialCount
+	        databuf2 = ""
+
+	    else:
+	        databuf2 += strData
 
 
 
 async def main():
 
+	# write the staircase data via socket
+	s = socket.socket()
+	port = 12345
+	s.bind(('', port))
+	s.listen(2)
+	print("Waiting to connect to client to print JND data...")
+	c, addr = s.accept()
+
 	tr = skB.initializeGUI(sc) # initialize GUI
 	skB.instructionsGUI(sc, tr) # GUI for instructions
-
 
 	# look for BLE devices 
 	device1 = await BleakScanner.find_device_by_address(skB.addr_Adafruit1)
 
 	if (N_ACTUATORS == 2):
-		device2 = await BleakScanner.find_device_by_address(skBaddr_Adafruit2)
+		device2 = await BleakScanner.find_device_by_address(skB.addr_Adafruit2)
 	#device = await BleakScanner.find_device_by_name(bleName)
 
 	if ( (device1 is None) ) :
@@ -279,14 +327,16 @@ async def main():
 		if (N_ACTUATORS == 2):
 			print(device2)
 
-		# if devices found, proceed with JND gui
-		skB.prepareExperimentGUI(sc, N_TOTAL_TRIALS)
+
 
 		# if (True):
 		async with BleakClient(device1.address) as client1:
 			await client1.start_notify(skB.UART_TX_CHAR_UUID, handle_rx1)
 			nus1 = client1.services.get_service(skB.UART_SERVICE_UUID)
 			rx_char1 = nus1.get_characteristic(skB.UART_RX_CHAR_UUID)
+
+			client2 = 0
+			rx_char2 = 0
 
 			clientArr = [client1]
 			rx_charArr = [rx_char1]
@@ -303,15 +353,15 @@ async def main():
 					#loop = asyncio.get_running_loop()
 
 			print("Connected!")
-			#t1 = threading.Thread(target=staircaseBLE, args=(startValue, ref, stepDown, stepUp, waitTime, retractPos, nUp, nDown, N_TOTAL_TRIALS, clientArr, rx_charArr,))
-			# t2 = threading.Thread(target=waitReadBLEData)
-			#t1.start()
 
-			# t2.join()
-			while(1):
-				await asyncio.sleep(0.01)
-			# staircaseBLE(startValue, ref, stepDown, stepUp, waitTime, retractPos, nUp, nDown, N_TOTAL_TRIALS, clientArr, rx_charArr)
-			#t1.join()
+
+			# wait for filter to stabilize
+			await skB.waitGUI(sc)
+
+			# proceed with JND gui
+			skB.prepareExperimentGUI(sc, N_TOTAL_TRIALS)
+			
+			await staircaseBLE(c, startValue, ref, stepDown, stepUp, waitTime, retractPos, nUp, nDown, N_TOTAL_TRIALS, client1, rx_char1, client2, rx_char2)
 			skB.closeFiles([f, h, n])
 			if (N_ACTUATORS == 2):
 				skB.closeFiles([g, m])
