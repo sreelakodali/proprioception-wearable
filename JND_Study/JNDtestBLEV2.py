@@ -58,7 +58,7 @@ stepDown=0.3
 nUp = 1
 nDown = 2
 N_TOTAL_TRIALS = 10#50
-waitTime = 10 # seconds
+waitTime = 6 # seconds
 stepSizeRatio = {1:0.2845, 2:0.5488, 3:0.7393 , 4:0.8415}
 stepUp = stepDown/stepSizeRatio[nDown]
 

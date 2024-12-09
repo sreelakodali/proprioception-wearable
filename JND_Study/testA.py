@@ -27,9 +27,9 @@ if response in ["yes", "y", "Y", "YES"]:
 	 
 	# Define the port on which you want to connect 
 	port = 12345               
-	 
+	IPAddr = '10.36.81.32' #eduroam   # kuppa #'10.0.0.64'
 	# connect to the server on local computer 
-	s.connect(('10.0.0.64', port)) 
+	s.connect((IPAddr, port)) 
 	 
 	while(1):
 

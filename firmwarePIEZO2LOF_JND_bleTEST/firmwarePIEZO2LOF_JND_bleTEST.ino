@@ -3,24 +3,36 @@
  * Written by Sreela Kodali (kodali@stanford.edu) 
  * 
  * */
+#include <Arduino.h>
+//#include <SPI.h>
+#include "Adafruit_BLE.h"
+//#include "Adafruit_BluefruitLE_SPI.h"
+#include "Adafruit_BluefruitLE_UART.h"
+//
+//#include "BluefruitConfig.h"
+ 
 #include <MightyZap.h>
 #include "SparkFun_Displacement_Sensor_Arduino_Library.h"
-#include <MightyZap.h>
 #include <Servo.h>
 #include <Wire.h>
-#include <SD.h>
-#include <SPI.h>
-#include <movingAvg.h>
-#include "IntervalTimerEx.h"
 #include "skFilter2.h"
 #include "skFilter2_terminate.h"
 
+//#include <Arduino.h>
+//#include "Adafruit_BLE.h"
+//#include "Adafruit_BluefruitLE_UART.h"
+//#include "BluefruitConfig.h"
+
+//#include "IntervalTimerEx.h"
+
 # define N_ACT 1
 #define ID_NUM 1
-//#define MAX_BUFFER_SIZE 10000
-//# define T_SAMPLING 1000000
-//#define WINDOW_SIZE 50
 
+// BLE UART 
+#define BUFSIZE                        128   // Size of the read buffer for incoming data
+#define VERBOSE_MODE                   false  // If set to 'true' enables debug output
+#define BLUEFRUIT_HWSERIAL_NAME      Serial2
+#define BLUEFRUIT_UART_MODE_PIN        11    // Set to -1 if unused
 
 
 typedef enum {
@@ -38,7 +50,9 @@ int  buttonCount; // button count. global!
 //float  user_flex_MIN;
 //float  user_flex_MAX;
 //  IntervalTimerEx ForceSampleSerialWriteTimer;
-const bool serialON = true;
+const bool bleON = true;
+const bool serialON = false;
+const  byte I2C_ADDR = 0x04;
 const  byte I2C_ADDRArr[4] = {0x04, 0x08, 0x0A, 0x0C};
 const bool actuatorType = 1; // NEW. 0 = actuonix and 1 = MightyZap. CHANGE THIS for new actuator!
 const int mightyZapWen_OUT = 12; // FIX THIS: temporary write enable output signal for buffer
@@ -51,9 +65,11 @@ const int td_WriteOut = 100; // write out rate
 MightyZap m_zap(&Serial5, mightyZapWen_OUT);
 int  user_position_MIN = POSITION_MIN;
 int  user_position_MAX = 1000;
+int measuredPos;
 int position_CommandArr[N_ACT];
 short forceData[N_ACT];
 int position_MeasuredArrGlobal[N_ACT];
+
 
 
 // skFilter
@@ -69,26 +85,30 @@ int  oldButtonState; // old button state
 ADS  capacitiveFlexSensor;  // flex sensor and angle
 //float  flexSensor; // could be local(?)
 
+// BLE UART
+Adafruit_BluefruitLE_UART ble(BLUEFRUIT_HWSERIAL_NAME, BLUEFRUIT_UART_MODE_PIN);
+int idx_BLERx = 0;
+char* strBuf = "";
+char detectionChar = 'x';
 
 // PID
 
-// ACTUATOR 2
-double scaleF = 0.25;
-//double tScale = 3.34;
-double KpConst = 60*scaleF;//130.00;
-double KiConst = 310*scaleF;//0.031;
-double KdConst = 25;//50*scaleF;//30.0;
-double setPointTest = 6.0;
-double td = 0.02*tScale;
-
-//// ACTUATOR 1
-//double scaleF = 0.11;
-//double tScale = 3.34;
+//// ACTUATOR 2
+//double scaleF = 0.25;
+////double tScale = 3.34;
 //double KpConst = 60*scaleF;//130.00;
 //double KiConst = 310*scaleF;//0.031;
-//double KdConst = 0;//50*scaleF;//30.0;
+//double KdConst = 25;//50*scaleF;//30.0;
 //double setPointTest = 2.0;
 //double td = 0.02*tScale;
+
+// ACTUATOR 1
+double scaleF = 0.11;
+double KpConst = 60*scaleF;//130.00;
+double KiConst = 310*scaleF;//0.031;
+double KdConst = 0;//50*scaleF;//30.0;
+double setPointTest = 2.0;
+double td = 0.02*tScale;
 
 // PID
 // create struct of PID_sk type called myPID
@@ -108,24 +128,89 @@ struct PID_sk {
 
 void setup() {
     initializeSystem(0);
-    Serial.println("Device initialized.");
+    if (ID_NUM ==2 ) {
+          // ACTUATOR 2
+        scaleF = 0.25;
+        KpConst = 60*scaleF;//130.00;
+        KiConst = 310*scaleF;//0.031;
+        KdConst = 25;//50*scaleF;//30.0;
+        setPointTest = 2.0;
+        td = 0.02*tScale;
+        
+        detectionChar = 'y';
+    }
+    if (serialON) Serial.println("Device initialized.");
+//    if (bleON) ble.println("Device initialized.");
+    blinkN(5, 500);
 
-//    if (CrashReport) {
-//    /* print info (hope Serial Monitor windows is open) */
-//      Serial.print(CrashReport);
-//    }
-  blinkN(5, 500);
-
+    // initialize PID
+    initializePID(&myPID, KpConst, KiConst, KdConst, setPointTest);
+    myPID.zeroForce = initializeFilter();
+    blinkN(5, 500);
 }
 
 void loop() {
+
+ if (ble.isConnected()) {
+ unsigned long myTimeLoop = millis();
+ short data = readDataFromSensor(I2C_ADDR); // 1) read input
+ double filteredData1 = filterData(data, 1);
+ double error = computeError(&myPID, filteredData1); // 3) compute error between input and setpoint 
+ 
+ myPID.actuatorCommand = PIDcompute(&myPID, error);
+ m_zap.GoalPosition(ID_NUM, myPID.actuatorCommand);
+
+ if ((myTimeLoop - myPID.tLastWriteout) > td_WriteOut) { // writeout data
+  String dataString = "";
+  //dataString += (String(myTimeLoop));
+  //dataString +=  (String(myPID.setpoint)+ "," + String(myPID.setpoint - error));
+  // dataString += (String(myPID.setpoint) + "," + String(filteredData1)+ "," + String(myPID.setpoint - error));
+  dataString += (String(myTimeLoop) + "," + String(myPID.setpoint) + "," + String(myPID.setpoint - error) + "," + String(filteredData1)+ "," + String(myPID.actuatorCommand) + "," + String(measuredPos));
+  if (serialON) Serial.println(dataString);
+  if (bleON) ble.println(dataString);
+  //myPID.tLastWriteout = millis();
+ }
+
+ directActuatorControlForce();
+ measuredPos = m_zap.presentPosition(ID_NUM);
+  //if (T_CYCLE > 0) delay(T_CYCLE);  
+//  sweep(2000,ID_NUM-1);
+ } else {
   
-  //miniPilot_patternsCommandbyLetter();
-  sweep(2000,ID_NUM-1);
+ }
 }
 
 
 // -------------------- SUPPORT FUNCTIONS --------------------//
+
+// NEW FUNCTIONS
+
+void directActuatorControlForce() { 
+
+  while ( ble.available() ) {
+    char c = (char) ble.read();
+
+    strBuf[idx_BLERx] = c;
+    idx_BLERx = idx_BLERx + 1;
+    
+    if (c == '\n') {
+      if (strBuf[0] == detectionChar) {
+        char* strBuf2 = &strBuf[1];
+        float setpoint = atof(strBuf2);
+        if (serialON) Serial.print("NEW SETPOINT=");
+        if (serialON) Serial.println(setpoint);
+        if (bleON) ble.print("NEW SETPOINT=");
+        if (bleON) ble.println(setpoint);
+        blinkN(5, 500);
+        changeSetpoint(&myPID, setpoint);
+      }
+      idx_BLERx = 0;
+      strBuf = "";
+    }
+
+  }
+}
+
 
 // PID FUNCTIONS
 
@@ -141,13 +226,14 @@ short initializeFilter() {
     // every td_WriteOut seconds, read, filter and writeout data
     if ((myTimeSetup - myPID.tLastWriteout) > td_WriteOut)  {
       
-      short data = readDataFromSensor(I2C_ADDRArr[0]);
+      short data = readDataFromSensor(I2C_ADDR);
       filteredData1 = filterData(data, 1);
       
       
       String dataString = ""; // writeout       //dataString += (String(filteredData)+ "," + String(filteredData1) + "," + String(filteredData2));
-      dataString += (String(0.0)+ "," + String(4.0));
-      Serial.println(dataString);
+      dataString += (String(data)+ "," + String(filteredData1));
+      if (serialON) Serial.println(dataString);
+      if (bleON) ble.println(dataString);
       myPID.tLastWriteout = millis();
     }
     myTimeSetup = millis();
@@ -384,7 +470,6 @@ int sweep(int t_d, int idx) {
 }
 
 
-// FIX: need to add multiple filters
 void directActuatorControl(int n) {
     short data[n];
     int position_Measured[n];
@@ -491,28 +576,32 @@ void blinkN (int n, int t_d) {
 }
 
 void initializeSystem(bool c) {
+ // analogWrite(led_OUT, 10);
   Wire.begin(); // join i2c bus
+  blinkN(2,2000);
+  analogWrite(led_OUT, 10);
   initializeSerial(); // start serial for output
   initializeMightyZap();
-  initializeFilters();
-  for (int i=0; i < N_ACT; ++i) writeActuator(i, POSITION_MIN); // initialize actuator and set in min position
+  if (bleON) initializeBLE();
+  //for (int i=0; i < N_ACT; ++i) writeActuator(i, POSITION_MIN); // initialize actuator and set in min position
   //flexSensor = 180; 
   initializeIO(); // initialize IO pins, i.e. button and led
-  analogWrite(led_OUT, 10);
+  
 //  if (c) {
 //    Serial.println("Entering calibration...");
 //    calibration();
 //  }
 }
 
-void initializeFilters() {
-  //filter50.begin();
-
-//  nDatapoints = 0; // size
-//  for (int i=0; i < MAX_BUFFER_SIZE; ++i) {
-//    xData[i] = 0;
-//    yData[i] = 0;
-//  }
+void initializeBLE() {
+  ble.begin(VERBOSE_MODE);
+  ble.factoryReset();  
+  ble.echo(false);
+  while (! ble.isConnected()) {
+    delay(500);   /* Wait for connection */
+    m_zap.GoalPosition(ID_NUM, POSITION_MIN);
+  }
+  ble.setMode(BLUEFRUIT_MODE_DATA);
 }
 
 void initializeMightyZap(){
@@ -520,14 +609,14 @@ void initializeMightyZap(){
 //    m_zap = &m_zapObj;
     
     m_zap.begin(32);
-    m_zap.ledOn(0,RED);
+    //m_zap.ledOn(0,RED);
     m_zap.GoalPosition(ID_NUM, POSITION_MIN);
     
 }
 bool initializeSerial() {
-    Serial.begin(4608000);  
+     if (serialON) Serial.begin(4608000);  
     Serial.flush();
-    while (!Serial);
+     if (serialON) while (!Serial);
     return (true); 
 }
 

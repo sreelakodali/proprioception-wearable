@@ -45,7 +45,7 @@ void setup()
 
 void loop()
 {
-    byte i2cAddress = 0x08; // Peripheral address (SingleTact), default 0x04
+    byte i2cAddress = 0x04; // Peripheral address (SingleTact), default 0x04
     short data = readDataFromSensor(i2cAddress);
     //short filteredData = filter.reading(data);
     Serial.print("I2C Sensor Data:");

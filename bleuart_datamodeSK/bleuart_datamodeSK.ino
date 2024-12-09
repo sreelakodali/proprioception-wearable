@@ -20,9 +20,6 @@
 
 #include "BluefruitConfig.h"
 
-#if SOFTWARE_SERIAL_AVAILABLE
-  #include <SoftwareSerial.h>
-#endif
 
 /*=========================================================================
     APPLICATION SETTINGS
@@ -80,6 +77,9 @@ Adafruit_BluefruitLE_UART ble(BLUEFRUIT_HWSERIAL_NAME, BLUEFRUIT_UART_MODE_PIN);
 //Adafruit_BluefruitLE_SPI ble(BLUEFRUIT_SPI_SCK, BLUEFRUIT_SPI_MISO,
 //                             BLUEFRUIT_SPI_MOSI, BLUEFRUIT_SPI_CS,
 //                             BLUEFRUIT_SPI_IRQ, BLUEFRUIT_SPI_RST);
+
+int idx_BLERx = 0;
+char* strBuf = "";
 
 
 // A small helper
@@ -165,7 +165,7 @@ void loop(void)
 {
   // Check for user input
   char n, inputs[BUFSIZE+1];
-
+  
   if (Serial.available())
   {
     n = Serial.readBytes(inputs, BUFSIZE);
@@ -175,15 +175,37 @@ void loop(void)
     Serial.println(inputs);
 
     // Send input data to host via Bluefruit
-    ble.print(inputs);
+    ble.println(inputs);
   }
 
   // Echo received data
+  
+
+  
   while ( ble.available() )
   {
-    int c = ble.read();
 
+    // initial datamode default code
+    int c = ble.read();
     Serial.print((char)c);
+    
+//    char c = (char) ble.read();
+//
+//    strBuf[idx_BLERx] = c;
+//    idx_BLERx = idx_BLERx + 1;
+//    
+//    if (c == '\n') {
+//      if (strBuf[0] == 's') {
+//        //Serial.println(strBuf);
+//        char* strBuf2 = &strBuf[1];
+//        float setpoint = atof(strBuf2);
+//        Serial.println(setpoint);
+//      }
+//      idx_BLERx = 0;
+//      strBuf = "";
+//    }
+
+
 
 //    // Hex output too, helps w/debugging!
 //    Serial.print(" [0x");

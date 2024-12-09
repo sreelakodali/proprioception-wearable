@@ -66,16 +66,16 @@ typedef enum {
 //double KpConst = 60*scaleF;//130.00;
 //double KiConst = 310*scaleF;//0.031;
 //double KdConst = 25;//50*scaleF;//30.0;
-//double setPointTest = 6.0;
+//double setPointTest = 2.0;
 //double td = 0.02*tScale;
 
-// ACTUATOR 1
+//// ACTUATOR 1
 double scaleF = 0.11;
 double tScale = 3.34;
 double KpConst = 60*scaleF;//130.00;
 double KiConst = 310*scaleF;//0.031;
 double KdConst = 0;//50*scaleF;//30.0;
-double setPointTest = 6.0;
+double setPointTest = 2.0;
 double td = 0.02*tScale;
 
 int measuredPos = 0;
@@ -90,7 +90,7 @@ const int td_WriteOut = 100; // write out rate
 int test = 1; // skFilter
 short xData[1] = {0}; // skFilter
 float yData[1] = {0};// skFilter
-MightyZap m_zap(&Serial4, mightyZapWen_OUT);
+MightyZap m_zap(&Serial5, mightyZapWen_OUT);
 
 // create struct of PID_sk type called myPID
 struct PID_sk {
@@ -108,7 +108,6 @@ struct PID_sk {
 
 
 void setup() {
-  double filteredData1;
 
   // initialize i2c and serial  
     Wire.begin(); // join i2c bus
@@ -119,9 +118,51 @@ void setup() {
     // initialize filter and acutator
     m_zap.begin(32);
     m_zap.GoalPosition(ID_NUM, POSITION_MIN);
+  
+    // initialize PID
+  initializePID(&myPID, KpConst, KiConst, KdConst, setPointTest);
+  myPID.zeroForce = initializeFilter();
+  //Serial.println(myPID.zeroForce);
+}
 
 
-    // give the filters some time to begin
+void loop() {
+ unsigned long myTimeLoop = millis();
+ 
+ short data = readDataFromSensor(I2C_ADDR); // 1) read input
+ double filteredData1 = filterData(data, 1);
+
+ double error = computeError(&myPID, filteredData1); // 3) compute error between input and setpoint 
+ 
+ myPID.actuatorCommand = PIDcompute(&myPID, error);
+ m_zap.GoalPosition(ID_NUM, myPID.actuatorCommand);
+ 
+ if ((myTimeLoop - myPID.tLastWriteout) > td_WriteOut) { // writeout data
+  String dataString = "";
+  dataString +=  (String(myPID.setpoint)+ "," + String(myPID.setpoint - error));
+  // dataString += (String(myPID.setpoint) + "," + String(filteredData1)+ "," + String(myPID.setpoint - error));
+  //dataString += (String(myTimeLoop) + "," + String(myPID.setpoint) + "," + String(myPID.setpoint - error) + "," + String(filteredData1)+ "," + String(myPID.actuatorCommand) + "," + String(measuredPos));
+  Serial.println(dataString);
+  myPID.tLastWriteout = millis();
+ }
+
+ if (Serial.available() > 0) { // update setpoint via serial 
+    String test = Serial.readString();
+    test.trim();
+    Serial.println(test);
+    if (test == "set") serialChangeSetpoint();
+    else if (test == "param") serialChangeParams();
+  }
+  measuredPos = m_zap.presentPosition(ID_NUM);
+  //if (T_CYCLE > 0) delay(T_CYCLE);  
+}
+
+// -------------------- SUPPORT FUNCTIONS --------------------//
+
+
+short initializeFilter() {
+    double filteredData1;
+     // give the filters some time to begin
   unsigned long setupTime = millis();
   //tLastWriteout = millis();
   unsigned long myTimeSetup = millis();
@@ -142,47 +183,9 @@ void setup() {
     }
     myTimeSetup = millis();
   }
-    // initialize PID
-  initializePID(&myPID, KpConst, KiConst, KdConst, setPointTest);
-  myPID.zeroForce = filteredData1;
-  //Serial.println(myPID.zeroForce);
+
+  return filteredData1;
 }
-
-
-void loop() {
- unsigned long myTimeLoop = millis();
- 
- 
- short data = readDataFromSensor(I2C_ADDR); // 1) read input
- double filteredData1 = filterData(data, 1);
-
- double error = computeError(&myPID, filteredData1); // 3) compute error between input and setpoint 
- 
- myPID.actuatorCommand = PIDcompute(&myPID, error);
- m_zap.GoalPosition(ID_NUM, myPID.actuatorCommand);
- 
- if ((myTimeLoop - myPID.tLastWriteout) > td_WriteOut) { // writeout data
-  String dataString = "";
-  dataString +=  (String(myPID.setpoint)+ "," + String(myPID.setpoint - error));
-  //dataString += (String(myTimeLoop) + "," + String(myPID.setpoint) + "," + String(myPID.setpoint - error) + "," + String(filteredData1)+ "," + String(myPID.actuatorCommand) + "," + String(measuredPos));
-  Serial.println(dataString);
-  myPID.tLastWriteout = millis();
- }
-
- if (Serial.available() > 0) { // update setpoint via serial 
-    String test = Serial.readString();
-    test.trim();
-    Serial.println(test);
-    if (test == "set") serialChangeSetpoint();
-    else if (test == "param") serialChangeParams();
-  }
-  measuredPos = m_zap.presentPosition(ID_NUM);
-  //if (T_CYCLE > 0) delay(T_CYCLE);  
-}
-
-// -------------------- SUPPORT FUNCTIONS --------------------//
-
-
 
 // initialze PID
 void initializePID(PID_sk* pid, double p, double i, double d, double s) {
@@ -224,7 +227,7 @@ double computeError(PID_sk* pid, double input) {
 
 // compute
 int PIDcompute(PID_sk* pid, double err) {
-  // String dataString = "";
+   //String dataString = "";
   // compute the PID terms
   unsigned long myTime = millis();
   double Pcomponent = (*pid).Kp * err;
@@ -241,7 +244,7 @@ int PIDcompute(PID_sk* pid, double err) {
   if (out > POSITION_MAX) out = POSITION_MAX;
  
 //  //dataString += (myTimeLoop + "," + String(myPID.setpoint) + "," + String(myPID.setpoint - error) + "," + String(filteredData1) + "," + String(myPID.actuatorCommand) );
-  //Serial.println(dataString);
+ //Serial.println(dataString);
   
   (*pid).pErr = err;
   (*pid).pTime = myTime;

@@ -98,9 +98,16 @@ def createDataFiles(p, name, idx_Act):
 	return (f, h, writer)
 
 def writeOutDataBLE(i, writer, f, trialCount, verbose):
-	f.write(i+"," + str(trialCount) + "\n")
-	writer.write(i+"," + str(trialCount) + "\n")
-	# i = i.split(",")
+	
+	# if it has the word SETPOINT, write it 
+	s = i.split(",")
+	if "SETPOINT" in i:
+		f.write(i+ "\n")
+		writer.write(i+ "\n")
+	elif (len(s) > 2):
+		f.write(i+"," + str(trialCount) + "\n")
+		writer.write(i+"," + str(trialCount) + "\n")
+	
 	# if (len(i) == len(dataFunc)): 
 	# 	# raw = [j.rstrip() for j in i]
 	# 	# raw = raw + [trialCount]	
