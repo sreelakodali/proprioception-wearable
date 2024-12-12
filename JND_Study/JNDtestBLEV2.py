@@ -51,13 +51,13 @@ linebuf = ""
 # ------- SYSTEM & STAIRCASE values
 # start=120, ref=80, startStep=-5, wait=5, retract=47, nUp=1, nDown=3, N_Trials=30
 # start=120, ref=95, startStep=-5, wait=6, retract=47, nUp=1, nDown=3, N_Trials=10
-startValue = 7.0
+startValue = 12.0
 retractPos = 0.0
-ref = 3.50
-stepDown=0.3
+ref = 6.0
+stepDown=0.4
 nUp = 1
 nDown = 2
-N_TOTAL_TRIALS = 10#50
+N_TOTAL_TRIALS = 50
 waitTime = 6 # seconds
 stepSizeRatio = {1:0.2845, 2:0.5488, 3:0.7393 , 4:0.8415}
 stepUp = stepDown/stepSizeRatio[nDown]
@@ -65,7 +65,7 @@ stepUp = stepDown/stepSizeRatio[nDown]
 # ------- Display & GUI variables
 t = 1
 sc = turtle.Screen()
-
+#signal = ""
 
 # async def waitA():
 # 	await asyncio.sleep(0.01)
@@ -73,6 +73,8 @@ sc = turtle.Screen()
 # def waitReadBLEData():
 # 	while(1):
 # 		waitA()
+
+
 
 
 
@@ -229,7 +231,9 @@ def handle_rx1(_: BleakGATTCharacteristic, data: bytearray):
 
     strData = data.decode("ascii")
     #commaCount = strData.count(',')
-    strData = re.sub("K","",strData)
+    remove = ["K", "c", "z", "d", "ERROR"]
+    for r in remove:
+    	strData = re.sub(r,"",strData)
     #packet = strData.split(",")
     # and not(strData[0] in ["x", "y", "O", "E"])
 
@@ -265,7 +269,11 @@ def handle_rx2(_: BleakGATTCharacteristic, data: bytearray):
 
     strData = data.decode("ascii")
     #commaCount = strData.count(',')
-    strData = re.sub("K","",strData)
+
+    remove = ["K", "c", "z", "d", "ERROR"]
+    for r in remove:
+    	strData = re.sub(r,"",strData)
+
     # remove = ["OK", "ERROR"]
     # for txt in remove:
     # 	strData.replace(txt, "")
@@ -296,7 +304,7 @@ async def main():
 
 	# write the staircase data via socket
 	s = socket.socket()
-	port = 12345
+	port = 12346
 	s.bind(('', port))
 	s.listen(2)
 	print("Waiting to connect to client to print JND data...")
@@ -327,8 +335,6 @@ async def main():
 		if (N_ACTUATORS == 2):
 			print(device2)
 
-
-
 		# if (True):
 		async with BleakClient(device1.address) as client1:
 			await client1.start_notify(skB.UART_TX_CHAR_UUID, handle_rx1)
@@ -341,30 +347,59 @@ async def main():
 			clientArr = [client1]
 			rx_charArr = [rx_char1]
 
-			if (N_ACTUATORS == 2):
-				async with BleakClient(device2.address) as client2:
-					await client2.start_notify(skB.UART_TX_CHAR_UUID, handle_rx2)
-					nus2 = client2.services.get_service(skB.UART_SERVICE_UUID)
-					rx_char2 = nus2.get_characteristic(skB.UART_RX_CHAR_UUID)
-
-					clientArr.append(client2)
-					rx_charArr.append(rx_char2)
-
 					#loop = asyncio.get_running_loop()
 
 			print("Connected!")
 
-
-			# wait for filter to stabilize
+			# Calibration Filter: wait for filter to stabilize
 			await skB.waitGUI(sc)
 
-			# proceed with JND gui
-			skB.prepareExperimentGUI(sc, N_TOTAL_TRIALS)
+			# calibration min max force
+			skG.initializeCalibrationWindow(sc, skB.CALIBRATION_TEXT_MAX_PRESSURE)
+			calibrate = True
+			while (calibrate):
+				
+				k = keyboard.read_key()
+
+				if k == 'page up':
+					await client1.write_gatt_char(rx_char1, ("c\n").encode(encoding="ascii"), response=False)
+
+				elif k == 'right':
+					await client1.write_gatt_char(rx_char1, ("z\n").encode(encoding="ascii"), response=False)
+
+				elif k == 'page down':
+					await client1.write_gatt_char(rx_char1, ("w\n").encode(encoding="ascii"), response=False)
+
+				elif k == 'down':
+					await client1.write_gatt_char(rx_char1, ("d\n").encode(encoding="ascii"), response=False)		
+				
+				await asyncio.sleep(0.1)
+
+			# while True:
+			# 	await asyncio.sleep(0.1)
+
+			#await skB.waitSK(2)
+
+			# if (N_ACTUATORS == 2):
+			# 	async with BleakClient(device2.address) as client2:
+			# 		await client2.start_notify(skB.UART_TX_CHAR_UUID, handle_rx2)
+			# 		nus2 = client2.services.get_service(skB.UART_SERVICE_UUID)
+			# 		rx_char2 = nus2.get_characteristic(skB.UART_RX_CHAR_UUID)
+
+			# 		clientArr.append(client2)
+			# 		rx_charArr.append(rx_char2)
+			# 		print("Connected!")
+
+			# 		# Calibration Filter: wait for filter to stabilize
+			# 		await skB.waitGUI(sc)
+
+			# # proceed with JND gui
+			# skB.prepareExperimentGUI(sc, N_TOTAL_TRIALS)
 			
-			await staircaseBLE(c, startValue, ref, stepDown, stepUp, waitTime, retractPos, nUp, nDown, N_TOTAL_TRIALS, client1, rx_char1, client2, rx_char2)
-			skB.closeFiles([f, h, n])
-			if (N_ACTUATORS == 2):
-				skB.closeFiles([g, m])
+			# await staircaseBLE(c, startValue, ref, stepDown, stepUp, waitTime, retractPos, nUp, nDown, N_TOTAL_TRIALS, client1, rx_char1, client2, rx_char2)
+			# skB.closeFiles([f, h, n])
+			# if (N_ACTUATORS == 2):
+			# 	skB.closeFiles([g, m])
 
 asyncio.run(main())
 

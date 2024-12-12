@@ -31,7 +31,8 @@
 #define VERBOSE_MODE                   false  // If set to 'true' enables debug output
 #define BLUEFRUIT_HWSERIAL_NAME      Serial2
 #define BLUEFRUIT_UART_MODE_PIN        11    // Set to -1 if unused
-
+#define FORCE_MIN 0.0 
+#define FORCE_MAX 20.0//4095
 
 typedef enum {
   POSITION_MIN = 0, 
@@ -39,23 +40,24 @@ typedef enum {
 } ACTUATOR_LIMITS;
 
 
+// Calibration states
+typedef enum { NONE, LOADMINMAX, MAX_PRESSURE, FILTER 
+} CALIBRATION_OPTIONS;
+
 // System wide variables
 double tScale = 3.34;
-int cycleCount = 0;
-int WRITE_COUNT = 4;
-short zeroForceArr[N_ACT]; // should this be local?
-int  buttonCount; // button count. global!
+int  buttonCount = 0; // button count. global!
 //float  user_flex_MIN;
 //float  user_flex_MAX;
 //  IntervalTimerEx ForceSampleSerialWriteTimer;
-const bool bleON = false;
-const bool serialON = true;
+const bool bleON = true;
+const bool serialON = false;
 
-const bool calibratepidON = true;
+const bool calibratepidON = false;
 const  byte I2C_ADDR = 0x04;
 const  byte I2C_ADDRArr[4] = {0x04, 0x08, 0x0A, 0x0C};
 const bool actuatorType = 1; // NEW. 0 = actuonix and 1 = MightyZap. CHANGE THIS for new actuator!
-const int mightyZapWen_OUT = 12; // FIX THIS: temporary write enable output signal for buffer
+const int mightyZapWen_OUT = 12; // write enable output signal for buffer
 const int t_setup = 15000; // set up time for filter values to stabilize
 const int T_CYCLE = 15*tScale; // minimum delay to ensure not sampling at too high a rate for sensors
 const int td_WriteOut = 100; // write out rate
@@ -64,13 +66,11 @@ const int td_WriteOut = 100; // write out rate
 // MightyZap actuator
 MightyZap m_zap(&Serial5, mightyZapWen_OUT);
 int  user_position_MIN = POSITION_MIN;
-int  user_position_MAX = 1000;
+int  user_position_MAX = POSITION_MAX;
+float user_force_MIN = FORCE_MIN;
+float user_force_MAX = FORCE_MAX-3;
 int measuredPos;
-int position_CommandArr[N_ACT];
-short forceData[N_ACT];
-int position_MeasuredArrGlobal[N_ACT];
-
-
+short zeroForceGlobal = 255;
 
 // skFilter
 int test = 1;
@@ -81,6 +81,7 @@ float yData[1] = {0};
 const int  button_IN = 4;
 const int  led_OUT = 5;
 const int  ledPower_OUT = 13;
+//int buttonCount = 0;
 int  buttonState; // button state
 int  oldButtonState; // old button state  
 ADS  capacitiveFlexSensor;  // flex sensor and angle
@@ -104,10 +105,10 @@ char detectionChar = 'x';
 //double td = 0.02*tScale;
 
 // ACTUATOR 1
-double scaleF = 0.25;
-double KpConst = 60*scaleF;//130.00;
-double KiConst = 310*scaleF;//0.031;
-double KdConst = 0;//50*scaleF;//30.0;
+double scaleF = 2;
+double KpConst = 10*scaleF;//130.00;
+double KiConst = 32*scaleF;//0.031;
+double KdConst = 15;//50*scaleF;//30.0;
 double setPointTest = 0.0;
 double td = 0.02*tScale;
 
@@ -128,7 +129,7 @@ struct PID_sk {
 
 
 void setup() {
-    initializeSystem(0);
+    initializeSystem();
     if (ID_NUM ==2 ) {
           // ACTUATOR 2
         scaleF = 0.25;
@@ -146,16 +147,22 @@ void setup() {
 
     // initialize PID
     initializePID(&myPID, KpConst, KiConst, KdConst, setPointTest);
-    myPID.zeroForce = initializeFilter();
+    
+    // CALIBRATION
+    zeroForceGlobal = initializeFilter();
+    myPID.zeroForce = zeroForceGlobal;
+
     blinkN(5, 500);
+    //ble.println("in calibration");
+    calibration();
+    //FIX: INSERT MIN MAX PRESSURE CALIBRATION
+    blinkN(10, 100);
      //Serial.println(ble.isConnected());
 
 }
 
 void loop() {
 
- if ( 1 ) { //(ble.isConnected() && bleON) || (serialON)
-  //if (verboseON) 
  unsigned long myTimeLoop = millis();
  short data = readDataFromSensor(I2C_ADDR); // 1) read input
  double filteredData1 = filterData(data, 1);
@@ -176,13 +183,10 @@ void loop() {
   //myPID.tLastWriteout = millis();
  }
 
- directActuatorControlForce();
+ if (bleON) directActuatorControlForce();
+ if (serialON) serialActuatorControlForce();
  measuredPos = m_zap.presentPosition(ID_NUM);
-
- } else {
-  blinkN(2, 1000);
- }
-
+ 
 //if (T_CYCLE > 0) delay(T_CYCLE);  
 //  sweep(2000,ID_NUM-1);
  
@@ -190,6 +194,206 @@ void loop() {
 
 
 // -------------------- SUPPORT FUNCTIONS --------------------//
+
+
+// Calibration functions
+
+// FIX: FYI won't need this
+void calibrationActuatorFeedback() {
+  int i;
+  int ACTUATOR_FEEDBACK_MAX = 500;
+  int ACTUATOR_FEEDBACK_MIN = 500;
+
+  // Calibration: Sweep and record the actuator position feedback positions
+  writeActuator(ID_NUM-1, POSITION_MIN);
+
+  
+  delay(500);
+  ACTUATOR_FEEDBACK_MIN = readFeedback(ID_NUM);
+  ACTUATOR_FEEDBACK_MAX = sweep(300, ID_NUM);
+  if (serialON) Serial.println(ACTUATOR_FEEDBACK_MAX);
+  if (serialON) Serial.println(ACTUATOR_FEEDBACK_MIN);
+  if (bleON) ble.println(ACTUATOR_FEEDBACK_MAX);
+  if (bleON) ble.println(ACTUATOR_FEEDBACK_MIN);
+}
+
+
+int serialMinMaxCalibration() {
+  if (Serial.available()) {
+  int mode = (Serial.read() - '0');
+  Serial.read();
+    return mode;
+  }
+  return -1;
+}
+// Calibration Stage: Get the detection and pain thresholds
+int calibrationMaxDeepPressure() {
+   int counter = POSITION_MIN;
+   int x = 0;
+   short data;
+   int position_Measured;
+   String dataString;
+   int nClicks = 0;
+
+   writeActuator(ID_NUM-1, POSITION_MIN);
+   blinkN(5,1000);
+
+    while (counter <= POSITION_MAX) {
+       // Measure force and actuator position
+      dataString = "";
+      data = readDataFromSensor(I2C_ADDRArr[0]);
+      position_Measured = 0;//readFeedback(ID_NUM);
+      // Send command to actuator
+      writeActuator(ID_NUM-1, counter);
+      dataString += (String(counter) + "," + String((data - zeroForceGlobal) * (45.0)/512));
+      if (serialON) Serial.println(dataString);
+      if (bleON) ble.println(dataString);
+
+      if (serialON)  x = serialMinMaxCalibration();
+      if (bleON)  x = bleMinMaxCalibration();
+      //ble.println(x);
+      //if (Serial.available() > 0) x = (Serial.read() - '0');
+      // FIX: if I get signal from user. how to detect calibration click
+//      Serial.println(x);
+      if (x == 2) {
+        nClicks = nClicks + 1;
+        x = 0;
+      }
+      if (nClicks == 1) {
+          //Serial.println("min detected!");
+          user_position_MIN = counter;
+          delay(3000);
+          user_force_MIN = (readDataFromSensor(I2C_ADDRArr[0]) - zeroForceGlobal) * (45.0)/512;
+          //nClicks = nClicks + 1;
+          dataString = ("MINIMUM FOUND: " + String(user_position_MIN) + String(user_force_MIN));
+          if (bleON) ble.println(dataString);
+          if (bleON) ble.println(dataString);
+      }
+      if (nClicks == 2) { // NOTE: nClicks = 3 is deliebrate. rising edge of click
+          user_position_MAX = counter - 5; // NOTE: the -5 is arbitrary
+          user_force_MAX = (readDataFromSensor(I2C_ADDRArr[0]) - zeroForceGlobal) * (45.0)/512;
+          delay(3000);
+          writeActuator(ID_NUM-1, POSITION_MIN);
+          dataString = ("MAXIMUM FOUND: " + String(user_force_MIN) + "," + String(user_force_MAX) + "," + String(user_position_MIN) + "," + String(user_position_MAX));
+          if (serialON) Serial.println(dataString);
+          if (bleON) ble.println(dataString);
+          break;
+      }
+      delay(20);
+      counter = counter + 1;
+  }
+
+  writeActuator(ID_NUM-1, POSITION_MIN);
+  
+    dataString = ("CALIBRATION FOUND: " + String(user_force_MIN) + "," + String(user_force_MAX) + "," + String(user_position_MIN) + "," + String(user_position_MAX));
+  if (serialON) Serial.println(dataString);
+  if (bleON) ble.println(dataString);
+
+  return user_position_MAX;;
+}
+
+int calibrationIncrementActuator(int counter) {
+   //int x = 0;
+   short data;
+   //int position_Measured;
+   String dataString;
+   int nClicks = 0;
+
+//         if (serialON)  x = serialMinMaxCalibration();
+//      if (bleON)  x = bleMinMaxCalibration();
+   counter = counter + 1;
+   if (counter > POSITION_MAX) counter = POSITION_MAX;
+   if (counter < POSITION_MIN) counter = POSITION_MIN;
+   dataString = "";
+   data = readDataFromSensor(I2C_ADDRArr[0]);   
+   writeActuator(ID_NUM-1, counter);
+   dataString += (String(counter) + "," + String((data - zeroForceGlobal) * (45.0)/512));
+   if (serialON) Serial.println(dataString);
+   if (bleON) ble.println(dataString);
+
+}
+
+/* Calibration: Interfaces with python gui */
+void calibration() {
+  //CALIBRATION_OPTIONS mode;
+  int x;
+  bool calibrationComplete = false;
+  int nMaxPressure = 0;
+  int sum = 0;
+  String dataString = "";
+  int sum1 = 0;
+  float sum2 = 0.0;
+  float sum3 = 0.0;
+  int lenUserArr = 10; // User can do max of 10 attempts for deep pressure calibration
+  int user_position_MAX_arr[lenUserArr];
+  int user_position_MIN_arr[lenUserArr];
+  float user_force_MAX_arr[lenUserArr];
+  float user_force_MIN_arr[lenUserArr];
+
+  //ble.println("in calibration");
+  // initialize blank array
+  for (int j = 0; j< lenUserArr; j++) {
+     user_position_MAX_arr[j] = 0;
+     user_position_MIN_arr[j] = 0;
+     user_force_MAX_arr[j] = 0.0;
+     user_force_MIN_arr[j] = 0.0;
+  }
+          
+  // Reset position of actuator
+  writeActuator(ID_NUM-1, POSITION_MIN);
+  //ble.println("in calibration");
+  while(!(calibrationComplete)){
+
+      if (serialON) x = serialMinMaxCalibration();
+      if (bleON) x = bleMinMaxCalibration();
+      //if (x >= 0) ble.println(x);
+      //mode = CALIBRATION_OPTIONS(x);
+      //mode = CALIBRATION_OPTIONS(Serial.read() - '0');
+      switch (x) {
+
+        case 2: // mode 2, 5 for click
+//          blinkN(5, 500);
+//          user_position_MAX_arr[nMaxPressure] = calibrationMaxDeepPressure(); // FIX
+//          user_position_MIN_arr[nMaxPressure] = user_position_MIN;
+//          user_force_MAX_arr[nMaxPressure] = user_force_MAX;
+//          user_force_MIN_arr[nMaxPressure] = user_force_MIN;
+//          nMaxPressure = nMaxPressure + 1;
+//          sum = 0;
+//          sum1 = 0;
+//          sum2 = 0.0;
+//          sum3 = 0.0;
+//          for (int i = 0; i< nMaxPressure; i++) {
+//            sum = sum + user_position_MAX_arr[i];
+//            sum1 = sum1 + user_position_MIN_arr[i];
+//            sum2 = sum2 + user_force_MAX_arr[i];
+//            sum3 = sum3 + user_force_MIN_arr[i];
+//          }
+//          user_position_MAX = sum/nMaxPressure;
+//          user_position_MIN = sum1/nMaxPressure;
+//          user_force_MAX = sum/nMaxPressure;
+//          user_force_MIN = sum1/nMaxPressure;
+//
+//          
+//          dataString = "CALIBRATION ROUND " + String(nMaxPressure) + ": " + String(user_force_MIN) + "," + String(user_force_MAX) + "," + String(user_position_MIN) + "," + String(user_position_MAX);
+//          if (serialON) Serial.println(dataString);
+//          if (bleON) ble.println(dataString);
+          break;
+//        case 3:
+//          zeroForceGlobal = initializeFilter();
+//          break;
+        case 0:
+          calibrationComplete = true;
+          if (bleON) ble.println("DONE!");
+          break;
+        default:
+          break;
+      }
+      delay(50); 
+
+  }
+}
+
+
 
 // NEW FUNCTIONS
 
@@ -219,6 +423,56 @@ void directActuatorControlForce() {
   }
 }
 
+int bleMinMaxCalibration() { 
+
+  while ( ble.available() ) {
+    char c = (char) ble.read();
+    //ble.println(c);
+    strBuf[idx_BLERx] = c;
+    idx_BLERx = idx_BLERx + 1;
+    
+    if (c == '\n') {
+      if (strBuf[0] == 'c') {
+        idx_BLERx = 0;
+        strBuf = "";
+        return 2;
+      } else if (strBuf[0] == 'z') {
+        idx_BLERx = 0;
+      strBuf = "";
+        return 5; // click
+      } else if (strBuf[0] == 'd') {
+        idx_BLERx = 0;
+      strBuf = "";
+        return 0; // complete calibration
+      } else if (strBuf[0] == 'w') {
+        idx_BLERx = 0;
+        strBuf = "";
+        return 3; // complete calibration
+      }
+      idx_BLERx = 0;
+      strBuf = "";
+    }
+  }
+  return -1;
+}
+
+void serialActuatorControlForce() {
+  if (Serial.available() ) {
+
+    float setpoint = Serial.parseFloat();
+    Serial.read(); // for the carriage return
+
+    if (setpoint > 20) {
+      serialChangeParams();
+    } else {
+      if (serialON) Serial.print("NEW SETPOINT=");
+      if (serialON) Serial.println(setpoint);
+      blinkN(5, 200);
+      changeSetpoint(&myPID, setpoint);
+    } 
+  }
+}
+
 
 // PID FUNCTIONS
 
@@ -228,7 +482,8 @@ short initializeFilter() {
   unsigned long setupTime = millis();
   //tLastWriteout = millis();
   unsigned long myTimeSetup = millis();
-  
+
+  writeActuator(ID_NUM-1, POSITION_MIN);
   while ( (myTimeSetup - setupTime) < t_setup) {
 
     // every td_WriteOut seconds, read, filter and writeout data
@@ -268,6 +523,9 @@ void initializePID(PID_sk* pid, double p, double i, double d, double s) {
 
 // change setpoint
 void changeSetpoint(PID_sk* pid, float s) {
+
+  if (s < user_force_MIN) s = user_force_MIN;
+  if (s > user_force_MAX) s = user_force_MAX;
   (*pid).setpoint = s;
   (*pid).Iterm = 0.0;
   (*pid).pTime = millis();
@@ -305,8 +563,8 @@ int PIDcompute(PID_sk* pid, double err) {
   //dataString +=  (String((*pid).setpoint)+ "," + String((*pid).setpoint - err));//+ "," + String(out)
     
   // bound output and make sure out is an integer
-  if (out < POSITION_MIN) out = POSITION_MIN;
-  if (out > POSITION_MAX) out = POSITION_MAX;
+  if (out < user_position_MIN) out = user_position_MIN;
+  if (out > user_position_MAX) out = user_position_MAX;
  
 //  //dataString += (myTimeLoop + "," + String(myPID.setpoint) + "," + String(myPID.setpoint - error) + "," + String(filteredData1) + "," + String(myPID.actuatorCommand) );
   //Serial.println(dataString);
@@ -388,37 +646,15 @@ int sweep(int t_d, int idx) {
     int position_Measured = 0;
     int counter = user_position_MIN-1;
     int inc = 10;
-    int minValue = 1000;
+    int maxValue = 0;
     //bool localWriteOut;
     unsigned long startTimeCmd;
     unsigned long startTimeWriteOut = millis();
-    unsigned long startTime2 = millis();
     unsigned long myTime = millis();
     String dataString;
-    int td_filterInitialization = 25000;
-    int td_WriteOut = 50;
+    //int td_filterInitialization = 25000;
+    int td_WriteOut = 150;
     int i;
-
-
-//    while((myTime-startTime2) < td_filterInitialization) {
-//
-//      
-//      myTime = millis();
-//      // update counter for writing out and reading data
-//      if (int(myTime - startTimeWriteOut) > td_WriteOut) {
-//        data = readDataFromSensor(I2C_ADDRArr[idx]);
-//        //filteredData = filter50.reading(data);
-//        xData[0] = data;
-//        skFilter2(xData, &test, yData, &test);
-//        short filteredData1 = yData[0];
-//        position_Measured = readFeedback(idx); // this adds 152 ms
-//        dataString += (String(myTime) + "," + String(counter) + "," + String(position_Measured) + "," + data + "," + filteredData1);
-//        if (serialON) Serial.println(dataString);
-//        startTimeWriteOut = millis();
-//        dataString = "";
-//      }
-//      
-//    }
     
     startTimeCmd = millis();
 
@@ -446,43 +682,28 @@ int sweep(int t_d, int idx) {
         skFilter2(xData, &test, yData, &test);
         short filteredData1 = yData[0];
         position_Measured = readFeedback(idx); // this adds 152 ms
+        if (position_Measured > maxValue) maxValue = position_Measured;
         dataString += (String(myTime) + "," + String(counter) + "," + String(position_Measured) + "," + data + "," + filteredData1);
         if (serialON) Serial.println(dataString);
+        if (bleON) ble.println(dataString);
         startTimeWriteOut = millis();
         dataString = "";
       }
-
-
-//      noInterrupts();
-//      localWriteOut = writeOut;
-//      // read force data and write out data. writeOut is activated by IntervalTimer, interrupt based
-//    
-//      if (localWriteOut) {
-//        dataString = "";
-//        data = forceData[n];
-//        position_Measured = position_MeasuredArrGlobal[n];
-//        if (position_Measured < minValue) minValue = position_Measured;
-//        dataString += (String(myTime) + "," + String(counter) + "," + String(position_Measured) + "," + data);
-//        if (serialON) Serial.println(dataString);
-//        //writeOutData(N_ACTUATORS, myTime, flexSensor, position_CommandArr, position_MeasuredArr, data);
-//        writeOut = false;
-//      }
-//      interrupts(); 
 
       if (counter >= user_position_MAX) {
         inc = -1 * inc;
         retracting = true;
       }
       else if (counter <= (user_position_MIN) && retracting) break;
-
     }
-    return minValue;    
+    return maxValue;    
 }
 
 
 void directActuatorControl(int n) {
     short data[n];
     int position_Measured[n];
+    int position_CommandArr[n];
     unsigned long myTime;
     int i;
     bool localWriteOut;
@@ -585,7 +806,7 @@ void blinkN (int n, int t_d) {
   //interrupts();
 }
 
-void initializeSystem(bool c) {
+void initializeSystem() {
  // analogWrite(led_OUT, 10);
   Wire.begin(); // join i2c bus
   analogWrite(ledPower_OUT, 255);
@@ -594,7 +815,6 @@ void initializeSystem(bool c) {
   initializeSerial(); // start serial for output
   initializeMightyZap();
   if (bleON) initializeBLE();
-  //for (int i=0; i < N_ACT; ++i) writeActuator(i, POSITION_MIN); // initialize actuator and set in min position
   //flexSensor = 180; 
   initializeIO(); // initialize IO pins, i.e. button and led
   
@@ -635,77 +855,6 @@ bool initializeIO() {
   pinMode(button_IN, INPUT); // set button and led
   pinMode(led_OUT, OUTPUT);
   return (true); 
-}
-
-
-// 8-2-24 : FYI this hasn't been updated to the interrupt based data output
-// Note: this is a fixed mapping for two tactor and 9 combos A-I
-void miniPilot_patternsCommandbyLetter() {
-      int x;
-      int y;
-      int z;
-      int i;
-      int patterns[3] = {user_position_MIN, user_position_MIN + (user_position_MAX-user_position_MIN)/2, user_position_MAX};
-      unsigned long myTime;
-      short data[N_ACT];
-      int position_MeasuredArr[N_ACT];
-
-      myTime = millis(); // time for beginning of the loop
-
-      if (N_ACT != 2) {
-         Serial.println("Incorrect number of actuators.");
-         while(1);
-      }
-
-      // if command sent, move actuators
-      if (Serial.available() > 0) {
-        x = (Serial.read());
-        (Serial.read());
-        
-        // If less than A or greater than I
-        if ((x < 65) or (x > 73)) {
-          Serial.println("Error: invalid input. Try again.");
-        }
-        else {
-          Serial.println((char) x);
-          z = (x < 68) + (x >= 68 and x < 71)*2 + (x >= 71 and x <74)*3 - 1;
-          y = (x+1) % 3;
-
-          position_CommandArr[0] = patterns[z];
-          position_CommandArr[1] = patterns[y];
-
-          //temp
-          if (position_CommandArr[0] == user_position_MAX) position_CommandArr[0] = position_CommandArr[0] -350;
-          if (position_CommandArr[1] == user_position_MAX) position_CommandArr[1] = position_CommandArr[1];
-
-
-          if (!(buttonCount % 2)) {
-              for (i=0; i < N_ACT; ++i) writeActuator(i, position_CommandArr[i]);
-          } else {
-              for (i=0; i < N_ACT; ++i) writeActuator(i, POSITION_MIN);
-          }
-
-          // actuatorArr[0].write(patterns[z]);
-          // actuatorArr[1].write(patterns[y]);
-          // delay(2000); // new 
-          // actuatorArr[0].write(user_position_MIN);
-          // actuatorArr[1].write(user_position_MIN);
-        }
-      }
-      for (i=0; i < N_ACT; ++i) position_MeasuredArr[i] = readFeedback(i);//analogRead(position_INArr[i]);
-      cycleCount = cycleCount + 1;
-      // Serial.println(WRITE_COUNT);
-      if ((cycleCount == WRITE_COUNT)) {
-        // Serial.println(myTime);
-        for (i=0; i < N_ACT; ++i) data[i] = readDataFromSensor(I2C_ADDRArr[i]);
-        // powerOn = (data >= 150);
-        // if (powerOn) analogWrite(led_OUT, 255);
-        // else analogWrite(led_OUT, 30);
-        writeOutData(N_ACT, myTime, position_CommandArr, position_MeasuredArr, data);
-        cycleCount = 0;
-      }
-      // risingEdgeButton();
-      if (T_CYCLE > 0) delay(T_CYCLE);
 }
 
 

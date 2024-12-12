@@ -28,6 +28,7 @@ EXPERIMENT_TEXT = [EXPERIMENT_TEXT_0, EXPERIMENT_TEXT_1]
 EXPERIMENT_TEXT_3 = ["JND Study", ""]
 EXPERIMENT_TEXT_2 = ["Initializing", "Please wait 20 seconds until we begin"]
 EXPERIMENT_TEXT_4 = ["", "Please click the red key to start."]
+CALIBRATION_TEXT_MAX_PRESSURE = ["Calibration: Max Pressure", "Please wear the device. The actuator will extend", "into your arm and apply pressure. When you first", "feel the device, click the =. The device will", "pause and then continue to extend. When it is too", "uncomfortable, click on the = and the", "actuator will retract. We'll do this at least 3 times.", "Click > to begin each round and", "red key once you've completed at least 3 rounds.", "", ""]
 
 
 addr_Adafruit1 = "026B8104-5A8F-E8AF-518E-B778DB1C9CE2"
@@ -51,6 +52,14 @@ def initializeGUI(sc):
 
 def instructionsGUI(sc, tr):
 	skG.initializeWindow(sc,EXPERIMENT_TEXT_0)
+	keyboard.wait('down')
+	skG.initializeWindow(sc,EXPERIMENT_TEXT_1)
+	tr.shape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/keypadJND.gif')
+	turtle.update()
+	keyboard.wait('down')
+
+def calibrationMinMaxGUI(sc, tr):
+	skG.initializeWindow(sc,EXPERIMENT_TEXT_CALIBRATION)
 	keyboard.wait('down')
 	skG.initializeWindow(sc,EXPERIMENT_TEXT_1)
 	tr.shape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/keypadJND.gif')

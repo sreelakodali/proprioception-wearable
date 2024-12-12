@@ -1,0 +1,61 @@
+----- TRIAL #0 -----
+test: 12.0
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 6.0
+Receiving Stimulus B: 12.0
+The real answer is: 3
+User answer is: 3
+ANSWER RIGHT!
+----- TRIAL #1 -----
+test: 11.0
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 11.0
+Receiving Stimulus B: 6.0
+The real answer is: 1
+User answer is: 1
+ANSWER RIGHT!
+----- TRIAL #2 -----
+test: 10.0
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 10.0
+Receiving Stimulus B: 6.0
+The real answer is: 1
+User answer is: 1
+ANSWER RIGHT!
+----- TRIAL #3 -----
+test: 9.0
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 6.0
+Receiving Stimulus B: 9.0
+The real answer is: 3
+User answer is: 3
+ANSWER RIGHT!
+----- TRIAL #4 -----
+test: 8.0
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 6.0
+Receiving Stimulus B: 8.0
+The real answer is: 3
+User answer is: 3
+ANSWER RIGHT!
+----- TRIAL #5 -----
+test: 7.0
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 7.0
+Receiving Stimulus B: 6.0
+The real answer is: 1
+User answer is: 1
+ANSWER RIGHT!
+----- TRIAL #6 -----
+test: 6.0
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 6.0
+Receiving Stimulus B: 6.0
+The real answer is: 2
