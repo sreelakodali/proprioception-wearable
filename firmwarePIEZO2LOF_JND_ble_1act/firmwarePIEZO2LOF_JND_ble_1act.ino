@@ -156,7 +156,7 @@ void setup() {
     //ble.println("in calibration");
     calibration();
     //FIX: INSERT MIN MAX PRESSURE CALIBRATION
-    blinkN(10, 100);
+    blinkN(5, 500);
      //Serial.println(ble.isConnected());
 
 }
@@ -244,10 +244,10 @@ int calibrationMaxDeepPressure() {
       data = readDataFromSensor(I2C_ADDRArr[0]);
       position_Measured = 0;//readFeedback(ID_NUM);
       // Send command to actuator
-      writeActuator(ID_NUM-1, counter);
-      dataString += (String(counter) + "," + String((data - zeroForceGlobal) * (45.0)/512));
-      if (serialON) Serial.println(dataString);
-      if (bleON) ble.println(dataString);
+//      writeActuator(ID_NUM-1, counter);
+//      dataString += (String(counter) + "," + String((data - zeroForceGlobal) * (45.0)/512));
+//      if (serialON) Serial.println(dataString);
+//      if (bleON) ble.println(dataString);
 
       if (serialON)  x = serialMinMaxCalibration();
       if (bleON)  x = bleMinMaxCalibration();
@@ -255,7 +255,7 @@ int calibrationMaxDeepPressure() {
       //if (Serial.available() > 0) x = (Serial.read() - '0');
       // FIX: if I get signal from user. how to detect calibration click
 //      Serial.println(x);
-      if (x == 2) {
+      if (x == 5) {
         nClicks = nClicks + 1;
         x = 0;
       }
@@ -294,14 +294,13 @@ int calibrationMaxDeepPressure() {
 
 int calibrationIncrementActuator(int counter) {
    //int x = 0;
-   short data;
    //int position_Measured;
+   short data;
    String dataString;
-   int nClicks = 0;
 
-//         if (serialON)  x = serialMinMaxCalibration();
+//      if (serialON)  x = serialMinMaxCalibration();
 //      if (bleON)  x = bleMinMaxCalibration();
-   counter = counter + 1;
+   counter = counter + 5;
    if (counter > POSITION_MAX) counter = POSITION_MAX;
    if (counter < POSITION_MIN) counter = POSITION_MIN;
    dataString = "";
@@ -311,86 +310,87 @@ int calibrationIncrementActuator(int counter) {
    if (serialON) Serial.println(dataString);
    if (bleON) ble.println(dataString);
 
+  return counter;
+}
+
+int calibrationDecrementActuator(int counter) {
+   //int x = 0;
+   //int position_Measured;
+   short data;
+   String dataString;
+
+//      if (serialON)  x = serialMinMaxCalibration();
+//      if (bleON)  x = bleMinMaxCalibration();
+   counter = counter -5;
+   if (counter > POSITION_MAX) counter = POSITION_MAX;
+   if (counter < POSITION_MIN) counter = POSITION_MIN;
+   dataString = "";
+   data = readDataFromSensor(I2C_ADDRArr[0]);   
+   writeActuator(ID_NUM-1, counter);
+   dataString += (String(counter) + "," + String((data - zeroForceGlobal) * (45.0)/512));
+   if (serialON) Serial.println(dataString);
+   if (bleON) ble.println(dataString);
+
+  return counter;
 }
 
 /* Calibration: Interfaces with python gui */
 void calibration() {
-  //CALIBRATION_OPTIONS mode;
   int x;
   bool calibrationComplete = false;
-  int nMaxPressure = 0;
-  int sum = 0;
+  int nClicks = 0;
   String dataString = "";
-  int sum1 = 0;
-  float sum2 = 0.0;
-  float sum3 = 0.0;
-  int lenUserArr = 10; // User can do max of 10 attempts for deep pressure calibration
-  int user_position_MAX_arr[lenUserArr];
-  int user_position_MIN_arr[lenUserArr];
-  float user_force_MAX_arr[lenUserArr];
-  float user_force_MIN_arr[lenUserArr];
-
-  //ble.println("in calibration");
-  // initialize blank array
-  for (int j = 0; j< lenUserArr; j++) {
-     user_position_MAX_arr[j] = 0;
-     user_position_MIN_arr[j] = 0;
-     user_force_MAX_arr[j] = 0.0;
-     user_force_MIN_arr[j] = 0.0;
-  }
+  int counter = POSITION_MIN;
+  unsigned long clickTime = 0;
+  unsigned long previousClickTime = 0;
           
   // Reset position of actuator
   writeActuator(ID_NUM-1, POSITION_MIN);
-  //ble.println("in calibration");
+  
   while(!(calibrationComplete)){
 
       if (serialON) x = serialMinMaxCalibration();
       if (bleON) x = bleMinMaxCalibration();
       //if (x >= 0) ble.println(x);
-      //mode = CALIBRATION_OPTIONS(x);
-      //mode = CALIBRATION_OPTIONS(Serial.read() - '0');
       switch (x) {
 
-        case 2: // mode 2, 5 for click
-//          blinkN(5, 500);
-//          user_position_MAX_arr[nMaxPressure] = calibrationMaxDeepPressure(); // FIX
-//          user_position_MIN_arr[nMaxPressure] = user_position_MIN;
-//          user_force_MAX_arr[nMaxPressure] = user_force_MAX;
-//          user_force_MIN_arr[nMaxPressure] = user_force_MIN;
-//          nMaxPressure = nMaxPressure + 1;
-//          sum = 0;
-//          sum1 = 0;
-//          sum2 = 0.0;
-//          sum3 = 0.0;
-//          for (int i = 0; i< nMaxPressure; i++) {
-//            sum = sum + user_position_MAX_arr[i];
-//            sum1 = sum1 + user_position_MIN_arr[i];
-//            sum2 = sum2 + user_force_MAX_arr[i];
-//            sum3 = sum3 + user_force_MIN_arr[i];
-//          }
-//          user_position_MAX = sum/nMaxPressure;
-//          user_position_MIN = sum1/nMaxPressure;
-//          user_force_MAX = sum/nMaxPressure;
-//          user_force_MIN = sum1/nMaxPressure;
-//
-//          
-//          dataString = "CALIBRATION ROUND " + String(nMaxPressure) + ": " + String(user_force_MIN) + "," + String(user_force_MAX) + "," + String(user_position_MIN) + "," + String(user_position_MAX);
-//          if (serialON) Serial.println(dataString);
-//          if (bleON) ble.println(dataString);
+        case 2:
+          // alternate version sweep:
+          // calibrationMaxDeepPressure();
+          // increment forward
+          counter = calibrationIncrementActuator(counter);
+          //
           break;
-//        case 3:
-//          zeroForceGlobal = initializeFilter();
-//          break;
+        case 3:
+          //zeroForceGlobal = initializeFilter();
+          counter = calibrationDecrementActuator(counter);
+          break;
+        case 4:
+             writeActuator(ID_NUM-1, POSITION_MIN); // max retract
+              counter = POSITION_MIN;
+          break;
+          
+        case 5:
+          // LIMIT DETECTED
+          previousClickTime = clickTime;
+          clickTime = millis();
+          //if ((clickTime - previousClickTime) > 500) {
+            nClicks = nClicks + 1;
+            float f = (readDataFromSensor(I2C_ADDRArr[0]) - zeroForceGlobal) * (45.0)/512;
+            dataString = "LIMIT =" + String(counter) + "," + String(f);
+            if (bleON) ble.println(dataString);
+          break;
         case 0:
+          writeActuator(ID_NUM-1, POSITION_MIN);
           calibrationComplete = true;
-          if (bleON) ble.println("DONE!");
+          //if (bleON) ble.println("DONE!");
           break;
         default:
           break;
       }
-      delay(50); 
-
+      delay(25); 
   }
+  //writeActuator(ID_NUM-1, POSITION_MIN);
 }
 
 
@@ -448,6 +448,11 @@ int bleMinMaxCalibration() {
         idx_BLERx = 0;
         strBuf = "";
         return 3; // complete calibration
+
+      } else if (strBuf[0] == 'v') {
+        idx_BLERx = 0;
+        strBuf = "";
+        return 4; // complete calibration
       }
       idx_BLERx = 0;
       strBuf = "";

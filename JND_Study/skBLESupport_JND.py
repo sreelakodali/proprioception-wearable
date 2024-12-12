@@ -28,7 +28,11 @@ EXPERIMENT_TEXT = [EXPERIMENT_TEXT_0, EXPERIMENT_TEXT_1]
 EXPERIMENT_TEXT_3 = ["JND Study", ""]
 EXPERIMENT_TEXT_2 = ["Initializing", "Please wait 20 seconds until we begin"]
 EXPERIMENT_TEXT_4 = ["", "Please click the red key to start."]
-CALIBRATION_TEXT_MAX_PRESSURE = ["Calibration: Max Pressure", "Please wear the device. The actuator will extend", "into your arm and apply pressure. When you first", "feel the device, click the =. The device will", "pause and then continue to extend. When it is too", "uncomfortable, click on the = and the", "actuator will retract. We'll do this at least 3 times.", "Click > to begin each round and", "red key once you've completed at least 3 rounds.", "", ""]
+#CALIBRATION_TEXT_MAX_PRESSURE = ["Calibration: Max Pressure", "Please wear the device. The actuator will extend", "into your arm and apply pressure. When you first", "feel the device, click the =. The device will", "pause and then continue to extend. When it is too", "uncomfortable, click on the = and the", "actuator will retract. We'll do this at least 3 times.", "Click > to begin each round and", "red key once you've completed at least 3 rounds.", "", ""]
+#CALIBRATION_TEXT_MAX_PRESSURE = ["Calibration", "Please use the keypad to control the device and", "indicate the minimum detection and maximum", "comfortable pressures for yourself. The process is:", "", "Press > to extend the device into your arm and", "apply pressure. When you first feel contact, click =", "Then continue to press > to apply increasing", "pressure. When you've reached your maximum", "comfortable pressure, click =. You may use >", "and < keys to increase and decrease pressure, respectively", "to hone into your maximum comfortable pressure.", "Then click o to retract the device."]
+CALIBRATION_TEXT1 = ["Calibration", "Please indicate your minimum detection and", "maximum comfortable pressures. Controls are:", "", "", "", "", "", "", "", "> and < extend and retract the device", "8 retracts the device all the way and please use", "= to indicate when you feel a min/max pressure.", "Click the red key for more details."]
+CALIBRATION_TEXT2 = ["Calibration: Procedure", "Press > to extend the device into your arm and", "apply pressure. When you first feel contact, click =.", "", "Then continue to press > to apply increasing", "pressure. When you've reached your maximum", "comfortable pressure, click =. You may use >", "and < keys to increase/decrease pressure and", "hone into your maximum comfortable pressure.", "Then click 8 to retract the device. We'll repeat this", "process 3x. When done, click the red key."]
+
 
 
 addr_Adafruit1 = "026B8104-5A8F-E8AF-518E-B778DB1C9CE2"
@@ -47,28 +51,50 @@ def initializeGUI(sc):
 	tr = turtle.Turtle()
 	turtle.hideturtle()
 	sc.addshape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/keypadJND.gif')
-
+	skG.initializeWindow(sc,EXPERIMENT_TEXT_0)
+	keyboard.wait('down')
 	return tr
 
 def instructionsGUI(sc, tr):
-	skG.initializeWindow(sc,EXPERIMENT_TEXT_0)
-	keyboard.wait('down')
+	# skG.initializeWindow(sc,EXPERIMENT_TEXT_0)
+	# keyboard.wait('down')
 	skG.initializeWindow(sc,EXPERIMENT_TEXT_1)
 	tr.shape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/keypadJND.gif')
 	turtle.update()
 	keyboard.wait('down')
 
 def calibrationMinMaxGUI(sc, tr):
-	skG.initializeWindow(sc,EXPERIMENT_TEXT_CALIBRATION)
-	keyboard.wait('down')
-	skG.initializeWindow(sc,EXPERIMENT_TEXT_1)
+	skG.initializeWindow(sc,CALIBRATION_TEXT1) # EXPERIMENT_TEXT_0
 	tr.shape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/keypadJND.gif')
+	turtle.update()
+	keyboard.wait('down')
+	skG.initializeWindow(sc,CALIBRATION_TEXT2) # EXPERIMENT_TEXT_0
 	turtle.update()
 	keyboard.wait('down')
 
 async def waitGUI(sc):
 	skG.initializeWindow(sc,EXPERIMENT_TEXT_2)
 	await waitSK(20)
+
+
+def loadASRValues():
+	paramNames = ['Min1', 'Max1', 'Min2', 'Max2', 'Min3', 'Max3']
+	param = [0.0] * len(paramNames)
+	for i in range(0,len(paramNames)):
+		print(paramNames[i] + "?")
+		p = float(input())
+		param[i] = p
+
+  	# compute average min
+	avgMin = (param[0] + param[2] + param[4]) / 3.0
+	avgMax = (param[1] + param[3] + param[5]) / 3.0
+	rangeASR = avgMax - avgMin
+
+	q1 = avgMin + rangeASR/4.0
+	q2 = rangeASR/2.0 + avgMin
+	q3 = avgMax - rangeASR/4.0
+
+	return [avgMin, avgMax, q1, q2, q3]
 
 def prepareExperimentGUI(sc, n):
 	skG.initializeWindow(sc,EXPERIMENT_TEXT_3)

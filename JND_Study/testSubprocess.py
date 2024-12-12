@@ -3,37 +3,60 @@ import skPilotGraphics as skG
 EXPERIMENT_TEXT_0 = ["Welcome!", "Let's begin the experiment", "", "", "", "", "", "", "", "", "", "", "Please click the red key to continue."]
 CALIBRATION_TEXT_MAX_PRESSURE = ["Calibration: Max Pressure", "Please wear the device. The actuator will extend", "into your arm and apply pressure. When you first", "feel the device, click the screen. The device will", "pause and then continue to extend. When it is too", "uncomfortable, click on the screen and the", "actuator will retract. We'll do this at least 3 times.", "Click CALIBRATE to begin each round and", "DONE once you've completed at least 3 rounds.", "Calibrate", "Done"]
 
+
+def loadASRValues():
+  paramNames = ['Min1', 'Max1', 'Min2', 'Max2', 'Min3', 'Max3']
+  param = [0.0] * len(paramNames)
+  for i in range(0,len(paramNames)):
+    print(paramNames[i] + "?")
+    p = float(input())
+    param[i] = p
+
+  # compute average min
+  avgMin = (param[0] + param[2] + param[4]) / 3.0
+  avgMax = (param[1] + param[3] + param[5]) / 3.0
+  rangeASR = avgMax - avgMin
+
+  q1 = avgMin + rangeASR/4.0
+  q2 = rangeASR/2.0 + avgMin
+  q3 = avgMax - rangeASR/4.0
+
+  return [avgMin, avgMax, q1, q2, q3]
+
+a, b, c, d, e = loadASRValues()
+
+print(str(a) + "," + str(b) + "," + str(c) + "," + str(d) + "," + str(e))
 # server
 # next create a socket object 
   
-calibrate = True
-def on_click(x, y):
-  global calibrate
+# calibrate = True
+# def on_click(x, y):
+#   global calibrate
 
-  if (calibrate):
-    if ((x < -190) and (x > -355) and (y > -250) and (y < -195)):
-      # send start BLE command to device 
-      await client1.write_gatt_char(rx_char1, ("c\n").encode(encoding="ascii"), response=False) 
+#   if (calibrate):
+#     if ((x < -190) and (x > -355) and (y > -250) and (y < -195)):
+#       # send start BLE command to device 
+#       await client1.write_gatt_char(rx_char1, ("c\n").encode(encoding="ascii"), response=False) 
       
-    # Done button
-    elif((x < 280) and (x > 117) and (y > -250) and (y < -195)):
-      # send 'done' BLE command to device
-      await client1.write_gatt_char(rx_char1, ("d\n").encode(encoding="ascii"), response=False)
-      calibrate = False
+#     # Done button
+#     elif((x < 280) and (x > 117) and (y > -250) and (y < -195)):
+#       # send 'done' BLE command to device
+#       await client1.write_gatt_char(rx_char1, ("d\n").encode(encoding="ascii"), response=False)
+#       calibrate = False
 
-    else:
-      # send 'screenclick' ble signal to device
-      await client1.write_gatt_char(rx_char1, ("z\n").encode(encoding="ascii"), response=False)
+#     else:
+#       # send 'screenclick' ble signal to device
+#       await client1.write_gatt_char(rx_char1, ("z\n").encode(encoding="ascii"), response=False)
 
-sc = turtle.Screen()
-turtle.onscreenclick(on_click)
-skG.initializeCalibrationWindow(sc, CALIBRATION_TEXT_MAX_PRESSURE)
-skG.buttons(sc)
-# sc.tracer(0)
-# sc.title("Calibration")
-while (click != 3):
-  turtle.update()
-  time.sleep(.2)
+# sc = turtle.Screen()
+# turtle.onscreenclick(on_click)
+# skG.initializeCalibrationWindow(sc, CALIBRATION_TEXT_MAX_PRESSURE)
+# skG.buttons(sc)
+# # sc.tracer(0)
+# # sc.title("Calibration")
+# while (click != 3):
+#   turtle.update()
+#   time.sleep(.2)
 
 #keyboard.wait('down')
 
