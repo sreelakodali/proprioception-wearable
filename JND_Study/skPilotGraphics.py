@@ -186,7 +186,10 @@ def erase2(screen, c):
 	color(COLOR, COLOR)
 	update()
 
+
+
 def initializeCalibrationWindow(sc, arr):
+	update()
 	erase2(sc,'white')
 	hideturtle()
 	color(COLOR, COLOR)
@@ -398,6 +401,11 @@ def erase4(screen, c):
 	seth(0)
 	color(COLOR, COLOR)
 	drawUpperArm()
+	update()
+
+def erase5(screen):
+	for i in range(6):
+		undo()
 	update()
 
 def writeText(screen, x, y, txt, c):

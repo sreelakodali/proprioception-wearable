@@ -1,7 +1,10 @@
-import subprocess, sys, datetime, socket, turtle, keyboard, time
+import subprocess, sys, datetime, socket, turtle, keyboard, time, asyncio
 import skPilotGraphics as skG
+import skPilotGraphics as skG
+import skCalibrationFunctions as skC
+import skBLESupport_JND as skB
 EXPERIMENT_TEXT_0 = ["Welcome!", "Let's begin the experiment", "", "", "", "", "", "", "", "", "", "", "Please click the red key to continue."]
-CALIBRATION_TEXT_MAX_PRESSURE = ["Calibration: Max Pressure", "Please wear the device. The actuator will extend", "into your arm and apply pressure. When you first", "feel the device, click the screen. The device will", "pause and then continue to extend. When it is too", "uncomfortable, click on the screen and the", "actuator will retract. We'll do this at least 3 times.", "Click CALIBRATE to begin each round and", "DONE once you've completed at least 3 rounds.", "Calibrate", "Done"]
+#CALIBRATION_TEXT_MAX_PRESSURE = ["Calibration: Max Pressure", "Please wear the device. The actuator will extend", "into your arm and apply pressure. When you first", "feel the device, click the screen. The device will", "pause and then continue to extend. When it is too", "uncomfortable, click on the screen and the", "actuator will retract. We'll do this at least 3 times.", "Click CALIBRATE to begin each round and", "DONE once you've completed at least 3 rounds.", "Calibrate", "Done"]
 
 
 def loadASRValues():
@@ -23,9 +26,27 @@ def loadASRValues():
 
   return [avgMin, avgMax, q1, q2, q3]
 
-a, b, c, d, e = loadASRValues()
+# a, b, c, d, e = loadASRValues()
+# print(str(a) + "," + str(b) + "," + str(c) + "," + str(d) + "," + str(e))
 
-print(str(a) + "," + str(b) + "," + str(c) + "," + str(d) + "," + str(e))
+
+async def main():
+  t = 1
+  sc = turtle.Screen()
+  tr = skB.initializeGUI(sc) # initialize GUI
+  await skB.waitGUI(sc)
+
+  # calibration min max force
+  skB.calibrationMinMaxGUI(sc, tr)
+  skG.initializeCalibrationWindow(sc, skB.CALIBRATION_TEXT3)
+
+  await skB.waitSK(20)
+  skB.instructionsGUI(sc, tr) # GUI for instructions
+
+
+asyncio.run(main())
+
+
 # server
 # next create a socket object 
   
