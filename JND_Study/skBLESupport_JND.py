@@ -46,6 +46,16 @@ bleName = "Adafruit Bluefruit LE"
 
 t = 1
 
+#initial value is randomized 
+def generateInitialValue(increasing, minValue, maxValue, reference):
+	if (increasing): # 
+		Xo = random.uniform(minValue, reference); #initial value less than reference
+	else:
+		Xo = random.uniform(reference, maxValue); # initial value is greater than reference
+	Xo = round(Xo, 2)
+
+	return Xo
+
 def initializeGUI(sc):
 	sc.tracer(0)
 	sc.title("JND Study")
@@ -81,11 +91,16 @@ async def waitGUI(sc):
 	skG.initializeWindow(sc,EXPERIMENT_TEXT_2)
 	await waitSK(20)
 	
+def initializeTrialFiles(p, fileName, key):
+	n = open(p + 'trial' + key + "_" + fileName + '.csv', 'w+', encoding='UTF8', newline='')
+	writer = csv.writer(n) # csv writer for trials
+	writer.writerow(["trialCount", "Test", "Reference", "A", "B", "answerKey", "userAnswer", "reversals", "graphIcon"])
+	n.close()
 
 def loadASRValues(c):
 	print("LOAD ASR VALUES")
 	c.send(("LOAD ASR VALUES\n").encode())
-	
+
 	paramNames = ['Min1', 'Max1', 'Min2', 'Max2', 'Min3', 'Max3']
 	param = [0.0] * len(paramNames)
 	for i in range(0,len(paramNames)):
@@ -97,8 +112,8 @@ def loadASRValues(c):
 		param[i] = float(p)
 
   	# compute average min
-	avgMin = (param[0] + param[2] + param[4]) / 3.0
-	avgMax = (param[1] + param[3] + param[5]) / 3.0
+	avgMin = round(((param[0] + param[2] + param[4]) / 3.0), 2)
+	avgMax = round(((param[1] + param[3] + param[5]) / 3.0), 2)
 	rangeASR = avgMax - avgMin
 
 	q1 = round((avgMin + rangeASR/4.0), 2)
@@ -138,9 +153,9 @@ def randomizeStimuli(ref, test, c):
 	r = random.randrange(0,2)
 	c.send(("r: " + str(r)+ "\n").encode())
 	if (r == 1):
-		return (ref, test)
+		return (ref, test, r)
 	else:
-		return (test, ref)
+		return (test, ref, r)
 
 def createDataFiles(p, name, idx_Act):
 	f = open(p + 'raw_device' + str(idx_Act) + '_' + name + '.csv', 'w+', encoding='UTF8', newline='')

@@ -38,10 +38,10 @@ if not (os.path.exists(p)):
 f, h, writer1 = skB.createDataFiles(p, fileName, 1)
 if (N_ACTUATORS == 2):
 	g, m, writer2 = skB.createDataFiles(p, fileName, 2)
-n = open(p + 'trial_' + fileName + '.csv', 'w+', encoding='UTF8', newline='')
-writer = csv.writer(n) # csv writer for trials
-writer.writerow(["trialCount", "Test", "Reference", "A", "B", "answerKey", "userAnswer", "stepSize", "rightStreak"])
-
+# n = open(p + 'trial_' + fileName + '.csv', 'w+', encoding='UTF8', newline='')
+# writer = csv.writer(n) # csv writer for trials
+# writer.writerow(["trialCount", "Test", "Reference", "A", "B", "answerKey", "userAnswer", "reversals", "rightStreak"])
+# n.close()
 
 # ------- BLE values
 databuf = ""
@@ -59,8 +59,8 @@ stepDown=0.4
 # nDown = 2
 #N_TOTAL_TRIALS = 50
 waitTime = 6 # seconds
-stepSizeRatio = {1:0.2845, 2:0.5488, 3:0.7393 , 4:0.8415}
-stepUp = stepDown/stepSizeRatio[nDown]
+# stepSizeRatio = {1:0.2845, 2:0.5488, 3:0.7393 , 4:0.8415}
+# stepUp = stepDown/stepSizeRatio[nDown]
 
 # ------- Display & GUI variables
 t = 1
@@ -76,9 +76,12 @@ calibrate = True
 
 
 # provide staircasing parameters: going up or down (bounds); reference, nUP, nDown, retract, wait, c, clients and rxchars
-async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, reference, wait, retract, client1, rx_char1, client2, rx_char2):
-	global writer
+async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, wait, retract, client1, rx_char1, client2, rx_char2):
+	#global writer
 	global trialCount
+	global fileName
+	global p
+	#global n
 	packetA = 0
 	packetB = 0
 	rightStreak = 0
@@ -88,128 +91,202 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, reference, wait, 
 	trialCount = 0 # counter
 	reversals = 0
 
+
+	skB.initializeTrialFiles(p, fileName, key)
+
 	# we are assuming nUp, nDown: 2:1
 
 	testArr = [] # [0.0] * 50
 	Ldb = 4 #db
-	if (increasing): # 
-		Xo = random.uniform(avgMin, reference); #initial value is randomized
-	else:
-		Xo = random.uniform(reference, avgMax);
+	Xo = skB.generateInitialValue(increasing, avgMin, avgMax, reference)
 
-	# if (abs(Xo - reference) > 3.0): FIX
-	# 	# proceed
-	# else: # repeat
+	# FIX since some people's force range won't allow for 3.0 difference
+	while (abs(Xo - reference) < (avgMax-avgMin)/6):
+		Xo = skB.generateInitialValue(increasing, avgMin, avgMax, reference)
 
 	Xo = round(Xo, 2)
+	c.send(("STAIRCASE " + key + "\n").encode())
 	c.send(("INITIAL VALUE= " + str(Xo) + "\n").encode())
 	c.send(("REFERENCE= " + str(reference) + "\n").encode())
 
 	# response = input()
 	testArr.append(Xo)
 
+	keepGoing = True
 	# statistics.mean(testArr[-10:]) < 1.0
 
-	while ( 1): # FIX, last 10 are less than 0.5
-
+	while (keepGoing): # FIX, last 10 are less than 0.5
+		graphIcon = 0
 		await asyncio.sleep(0.01)
 
-		if (trialCount > 10):
-			if (statistics.mean(testArr[-10:]) < 1.0):
-				break
-		else:
-			test = testArr[trialCount]
+		test = testArr[trialCount]
 
-			c.send( ( "----- TRIAL #" + str(trialCount) + " -----\n").encode())
-			c.send(("test: " + str(test) + "\n" ).encode())
-			c.send(("rightStreak: " + str(rightStreak) + "\n").encode())
+		c.send( ( "----- TRIAL #" + str(trialCount) + " -----\n").encode())
+		c.send(("test: " + str(test) + "\n" ).encode())
+		c.send(("rightStreak: " + str(rightStreak) + "\n").encode())
 
-			packetA, packetB = skB.randomizeStimuli(reference, test, c)
+		packetA, packetB, r = skB.randomizeStimuli(reference, test, c)
+		# if r == 1, A=ref, B=test
+		# if r== 0, A=test, B=ref
 
-			# apply stimuli
-			await skB.sendPoke(sc, c, packetA, retract, wait, client1, rx_char1, 1, 1)  # Send poke A
-			if (N_ACTUATORS == 2):
-				await skB.sendPoke(sc, c, packetA, retract, wait, client2, rx_char2, 1, 2)  # Send poke A
+		# apply stimuli
+		await skB.sendPoke(sc, c, packetA, retract, wait, client1, rx_char1, 1, 1)  # Send poke A
+		if (N_ACTUATORS == 2):
+			await skB.sendPoke(sc, c, packetA, retract, wait, client2, rx_char2, 1, 2)  # Send poke A
 
-			await skB.sendPoke(sc, c, packetB, retract, wait, client1, rx_char1, 0, 1)  # Send poke B
-			if (N_ACTUATORS == 2):
-				await skB.sendPoke(sc, c, packetB, retract, wait, client2, rx_char2, 0, 2)  # Send poke B
+		await skB.sendPoke(sc, c, packetB, retract, wait, client1, rx_char1, 0, 1)  # Send poke B
+		if (N_ACTUATORS == 2):
+			await skB.sendPoke(sc, c, packetB, retract, wait, client2, rx_char2, 0, 2)  # Send poke B
 
-			# find the real answer
-			# 1 means A > B, 2 means A == B, 3 means A < B
-			answerKey = (packetA > packetB)*1 + (packetA == packetB)*2 + (packetA < packetB)*3
-			c.send(("The real answer is: " + str(answerKey) + "\n").encode())
+		# find the real answer
+		# 1 means A > B, 2 means A == B, 3 means A < B
+		answerKey = (packetA > packetB)*1 + (packetA == packetB)*2 + (packetA < packetB)*3
+		c.send(("The real answer is: " + str(answerKey) + "\n").encode())
 
-			skB.displayAnswerOptionsGUI(sc)
+		skB.displayAnswerOptionsGUI(sc)
 
-			while(1):
-				await asyncio.sleep(0.01)
-			# wait for user's input
-				k = keyboard.read_key()
-
-				if k == 'page up':
-					userAnswer = 1
-					skB.updateUserAnswerGUI(sc, userAnswer)
-
-				elif k == 'right':
-					userAnswer = 2
-					skB.updateUserAnswerGUI(sc, userAnswer)
-
-				elif k == 'page down':
-					userAnswer = 3
-					skB.updateUserAnswerGUI(sc, userAnswer)
-
-				elif k == 'down':
-
-					if (userAnswer == 0):
-						skG.writeText(sc, -350,-20, "You have to choose an answer to proceed.", skG.COLOR)					
-					else:
-						skG.eraseLine(sc,-350,40)
-						skG.erase(sc, 'white')
-						#skG.eraseLine(sc,-350,-20)
-						trialCount = trialCount + 1
-						if trialCount < N_Trials:
-							skG.updateTrialLabel(sc, trialCount)
-							skG.delay(sc, t)
-
-						break
-				
-			# check the answer. depending on answer, determine next test value
-			# if answer wrong, reset streak and step up test value
-			c.send(("User answer is: " + str(userAnswer)+ "\n").encode())
+		while(1):
 			await asyncio.sleep(0.01)
+		# wait for user's input
+			k = keyboard.read_key()
 
-			if (userAnswer == 1):
-				c.send(("User said TEST is greater than REFERENCE\n").encode())
+			if k == 'page up':
+				userAnswer = 1
+				skB.updateUserAnswerGUI(sc, userAnswer)
+
+			elif k == 'right':
+				userAnswer = 2
+				skB.updateUserAnswerGUI(sc, userAnswer)
+
+			elif k == 'page down':
+				userAnswer = 3
+				skB.updateUserAnswerGUI(sc, userAnswer)
+
+			elif k == 'down':
+
+				if (userAnswer == 0):
+					skG.writeText(sc, -350,-20, "You have to choose an answer to proceed.", skG.COLOR)					
+				else:
+					skG.eraseLine(sc,-350,40)
+					skG.erase(sc, 'white')
+					#skG.eraseLine(sc,-350,-20)
+					trialCount = trialCount + 1
+					#if trialCount < N_Trials:
+					skG.updateTrialLabel(sc, trialCount)
+					skG.delay(sc, t)
+					break
+			
+		# check the answer. depending on answer, determine next test value
+		# if answer wrong, reset streak and step up test value
+		c.send(("User answer is: " + str(userAnswer)+ "\n").encode())
+		await asyncio.sleep(0.01)
+
+		# if test < ref
+
+		## if r == 1, A=ref, B=test. --> to have ref > test, answer 1
+		# if r== 0, A=test, B=ref. --> to have test < ref, answer 3
+
+		## for decreasing staircase
+		# if test > ref, decrease. blue x
+		# if r == 1, A=ref, B=test --> if ref < test, answer 3. user says reduce. blue x
+		# if r == 0, A=test, B=ref --> if test > ref, answer 1. user says decrease. blue x
+		# if test < ref, increase. green o
+		## if r==1, A=ref, B=test. ref > test, answer1. user says increase
+		## if r==0, A=test, B=ref. test < ref, answer 3. user says decrease
+
+		
+		# test more than reference
+		# test > ref, ref < test
+		# r=0, answer1 r=1answer3
+
+		# if (increasing):
+		# 	condition1 = ((r==0) and (userAnswer==1)) or ((r==1) and (userAnswer==3))
+		# 	condition3 = ((r==0) and (userAnswer==3)) or ((r==1) and (userAnswer==1))
+		# else:
+		# 	condition1 = (((r==0) and (userAnswer==1)) or ((r==1) and (userAnswer==3))) # test > ref, decrease
+		# 	condition3 = (((r==0) and (userAnswer==3)) or ((r==1) and (userAnswer==1))) # test < ref, increase. reversal
+
+		if ((r==0) and (userAnswer==1)) or ((r==1) and (userAnswer==3)):
+			
+			c.send(("User said TEST is greater than REFERENCE\n").encode())
+			
+			if (increasing):
 				reversals = reversals + 1 # reversals
-				c.send(("reversals:" + str(reversals)+ "\n").encode())
-				newTest = testArr[trialCount-1] # next value is the previous one
+				rightStreak = 0
+				graphIcon = 3
+				newTest = testArr[trialCount-2] # next value is the previous one
 				Ldb = Ldb / 2 # Ldb is reduced
-				if (Ldb <= 0.5):
-					Ldb = 0.5
-
-			elif (userAnswer == 2):
-				c.send(("User said TEST equals REFERENCE\n").encode())
-
-				# compute next step using previous test
-				newTest = testArr[trialCount-1] * 10 ^ (Ldb/20)
-
-			elif (userAnswer == 3):
-				
-				c.send(("User said TEST is less than REFERENCE\n").encode())
-				rightStreak = rightStreak + 1
+				# if (Ldb <= 0.5):
+				# 	Ldb = 0.5
+				c.send(("reversals:" + str(reversals)+ "\n").encode())
+			else:
+				graphIcon = 1
+				if (userAnswer == answerKey):
+					rightStreak = rightStreak + 1
 
 				if (rightStreak == 2):
 					# change the stimulus pattern
-					newTest = test * 10 ^ (Ldb/20)
+					newTest = test *  (2 - 10 ** (Ldb/20))
 					rightStreak = 0
 				else:
 					newTest = test
-					
-			newTest = round(newTest, 2)
-			testArr.append(newTest)
-			writer.writerow([trialCount, test, reference, packetA, packetB, answerKey, userAnswer, reversals, rightStreak])
-			trialCount = trialCount + 1
+
+		#same as reference
+		elif (userAnswer == 2):
+			graphIcon = 2
+			c.send(("User said TEST equals REFERENCE\n").encode())
+			rightStreak = 0
+			# compute next step using previous test
+			if (increasing):
+				newTest = testArr[trialCount-2] * (10 **(Ldb/20))
+			else:
+				newTest = testArr[trialCount-2] * (2 - 10 ** (Ldb/20))
+
+		# test less than reference
+		# test < ref,  ref > test. 
+		# r=0, answer3 r=1, answer1
+		elif ((r==0) and (userAnswer==3)) or ((r==1) and (userAnswer==1)):
+			
+			c.send(("User said TEST is less than REFERENCE\n").encode())
+
+			if (increasing):
+				graphIcon = 1
+				if (userAnswer == answerKey):
+					rightStreak = rightStreak + 1
+
+				if (rightStreak == 2):
+					# change the stimulus pattern
+					newTest = test * 10 ** (Ldb/20)
+					rightStreak = 0
+				else:
+					newTest = test
+			else:
+				reversals = reversals + 1 # reversals
+				rightStreak = 0
+				graphIcon = 3
+				newTest = testArr[trialCount-2] # next value is the previous one
+				Ldb = Ldb / 2 # Ldb is reduced
+				# if (Ldb <= 0.5):
+				# 	Ldb = 0.5
+				c.send(("reversals:" + str(reversals)+ "\n").encode())
+		
+		if (trialCount > 14):
+			npTestArr = np.array(testArr[-10:])
+			if (abs(statistics.mean(testArr[-10:]) - reference) <  10**(0.1)):
+				keepGoing = False
+			elif ( sum(abs(np.gradient(npTestArr, 1))) < 0.3 ):
+				keepGoing = False
+		newTest = round(newTest, 2)
+		if (newTest > avgMax):
+			newTest = avgMax
+		elif (newTest < avgMin):
+			newTest = avgMin
+		testArr.append(newTest)
+		n = open(p + 'trial' + key + "_" + fileName + '.csv', 'a', encoding='UTF8', newline='')
+		n.write(str(trialCount-1) + "," + str(test) + "," + str(reference) + "," + str(packetA) + "," + str(packetB)+ "," + str(answerKey)+ "," + str(userAnswer)+ "," + str(reversals)+ "," + str(graphIcon) + "\n")
+		n.close()
+		#writer.writerow([trialCount-1, test, reference, packetA, packetB, answerKey, userAnswer, reversals, rightStreak])
+		#trialCount = trialCount + 1
 
 	c.send(("DONE\n").encode())
 
@@ -221,7 +298,7 @@ async def staircaseBLE(c, start, reference, stepDown, stepUp, wait, retract, nUp
 	# inc = -5 # start increment
 	# wait = 5
 	# retract = 47
-	global writer
+	# global writer
 	global trialCount
 
 	packetA = 0
@@ -311,7 +388,7 @@ async def staircaseBLE(c, start, reference, stepDown, stepUp, wait, retract, nUp
 		if (answerKey != userAnswer):
 			c.send(("ANSWER WRONG!\n").encode())
 			rightStreak = 0
-			writer.writerow([trialCount, test, reference, packetA, packetB, answerKey, userAnswer, stepUp, rightStreak])
+			#writer.writerow([trialCount, test, reference, packetA, packetB, answerKey, userAnswer, stepUp, rightStreak])
 			test = round((test + stepUp), 2) # step up test value if wrong
 			c.send(("stepSize: " + str(stepUp)+ "\n").encode())
 			# inc = abs(inc) + 1 
@@ -328,13 +405,14 @@ async def staircaseBLE(c, start, reference, stepDown, stepUp, wait, retract, nUp
 			
 			# step down test if they get nDown right answers in a row
 			if ((rightStreak == nDown) or (wrongCount == 0)): # FIX: check logic of wrongCount  
-				writer.writerow([trialCount, test, reference, packetA, packetB, answerKey, userAnswer, stepDown, rightStreak])
+				#writer.writerow([trialCount, test, reference, packetA, packetB, answerKey, userAnswer, stepDown, rightStreak])
 				test = round((test - stepDown), 2)
 				userAnswer = 0
 				# inc = (abs(inc) - 1)*-1
 				rightStreak = 0
 			else:
-				writer.writerow([trialCount, test, reference, packetA, packetB, answerKey, userAnswer, 0, rightStreak])
+				u = 1
+				#writer.writerow([trialCount, test, reference, packetA, packetB, answerKey, userAnswer, 0, rightStreak])
 	c.send(("DONE\n").encode())
 
 async def quickScan():
@@ -443,7 +521,7 @@ async def main():
 
 	# write the staircase data via socket
 	s = socket.socket()
-	port = 12345
+	port = 12346
 	s.bind(('', port))
 	s.listen(2)
 	print("Waiting to connect to client to print JND data...")
@@ -522,8 +600,15 @@ async def main():
 			await skB.waitSK(3)
 
 			avgMin, avgMax, q1, q2, q3 = skB.loadASRValues(c);
-			quartiles = [q1, q2, q3]
-			random.shuffle(quartiles)
+			quartiles = {"q1": q1, "q2": q2, "q3": q3}
+			keys = list(quartiles.keys())
+			random.shuffle(keys)
+
+			# for k in keys:
+			# 	skB.instructionsGUI(sc, tr)
+			# 	skB.prepareExperimentGUI(sc)
+			# 	#print ("this is staircase" + str(k))
+			# 	await staircaseNewBLE(c, N_ACTUATORS, 1, avgMin, avgMax, k, quartiles[k], waitTime, retractPos, client1, rx_char1, client2, rx_char2)
 			
 
 			# if (N_ACTUATORS == 2):
@@ -543,12 +628,11 @@ async def main():
 
 			# proceed with JND gui
 			skB.prepareExperimentGUI(sc)
-			
-
-			await staircaseNewBLE(c, N_ACTUATORS, 1, avgMin, avgMax, quartiles[0], waitTime, retractPos, client1, rx_char1, client2, rx_char2)
+			directionIncreasing = True
+			await staircaseNewBLE(c, N_ACTUATORS, directionIncreasing, avgMin, avgMax, 'q1', q1, waitTime, retractPos, client1, rx_char1, client2, rx_char2)
 			#await staircaseBLE(c, startValue, ref, stepDown, stepUp, waitTime, retractPos, nUp, nDown, N_TOTAL_TRIALS, client1, rx_char1, client2, rx_char2)
 			
-			skB.closeFiles([f, h, n])
+			skB.closeFiles([f, h])
 			if (N_ACTUATORS == 2):
 				skB.closeFiles([g, m])
 
