@@ -1,0 +1,20 @@
+LOAD ASR VALUES
+Min1 0.53
+Max1 14.24
+Min2 0.79
+Max2 14.24
+Min3 1.49
+Max3 13.45
+avgMin 0.94
+avgMax 13.98
+q1 4.2
+q2 7.46
+q3 10.72
+STAIRCASE q2
+INITIAL VALUE= 1.06
+REFERENCE= 7.46
+----- TRIAL #0 -----
+test: 1.06
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 1.06

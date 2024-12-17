@@ -33,8 +33,9 @@ CALIBRATION_TEXT1 = ["Calibration", "Please indicate your minimum detection and"
 
 #CALIBRATION_TEXT2 = ["Calibration: Procedure", "Press > to extend the device into your arm and", "apply pressure. When you first feel contact, click =.", "", "Then continue to press > to apply increasing", "pressure. When you've reached your maximum", "comfortable pressure, click =. You may use >", "and < keys to increase/decrease pressure and", "hone into your maximum comfortable pressure.", "Then click 8 to retract the device. We'll repeat this", "process 3x. When done, click the red key."]
 
-CALIBRATION_TEXT3 = ["Calibration: Procedure", "1. Apply pressure with >", "2. When you first feel contact, click =.",  "3. Continue to press > to apply more pressure.", "4. Use > and < keys to hone into your", "maximum comfortable pressure.", "5. Click = when you've reached your maximum", "comfortable pressure.", "6. Click 8 to retract the device.", "", "We'll repeat this process 3x. After 3x, please", "click the red key to move onto the next task."]
+CALIBRATION_TEXT3 = ["Calibration: Begin", "1. Apply pressure with >", "2. When you first feel contact, click =.",  "3. Continue to press > to apply more pressure.", "4. Use > and < keys to hone into your", "maximum comfortable pressure.", "5. Click = when you've reached your maximum", "comfortable pressure.", "6. Click 8 to retract the device.", "", "We'll repeat this process 3x. After 3x, please", "click the red key to move onto the next task."]
 
+DEVICE2_TEXT = ["Turn Device 2 On",  "Please click the red key to proceed."]
 
 addr_Adafruit1 = "026B8104-5A8F-E8AF-518E-B778DB1C9CE2"
 addr_Adafruit2 = "380FFB6A-AB04-7634-8A6C-C8E255F7A26C"
@@ -76,6 +77,10 @@ def instructionsGUI(sc, tr):
 	tr.shape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/keypadJND.gif')
 	turtle.update()
 	#turtle.penup()
+	keyboard.wait('down')
+
+def device2GUI(sc):
+	skG.initializeWindow(sc,DEVICE2_TEXT)
 	keyboard.wait('down')
 
 def calibrationMinMaxGUI(sc, tr):
@@ -254,3 +259,129 @@ async def sendPoke(sc, c, value, retract, wait, client, rx_char, stimulus1, idx_
 	# 	await sendSetpoint(retract, clientArr[k], rx_charArr[k], k+1)
 	await sendSetpoint(retract, client, rx_char, idx_Act) 	
 	await waitSK(wait/2) 	# hold the poke
+
+	
+# # ----- SUPPORTING FUNCTIONS
+# # default: staircase(120, 80, -5, 5, 47, 1, 3, 15)
+# async def staircaseBLE(c, start, reference, stepDown, stepUp, wait, retract, nUp, nDown, N_Trials, client1, rx_char1, client2, rx_char2):
+# 	# start = 120 # actuator pwm unit
+# 	# reference = 80# 6 N
+# 	# inc = -5 # start increment
+# 	# wait = 5
+# 	# retract = 47
+# 	# global writer
+# 	global trialCount
+
+# 	packetA = 0
+# 	packetB = 0
+# 	rightStreak = 0
+# 	answerKey = 0
+# 	userAnswer = 0
+# 	test = 0
+# 	trialCount = 0 # counter
+# 	wrongCount = 0
+# 	# stepType
+
+# 	# start Value for method of limits
+# 	test = start
+
+
+# 	for i in range(0,N_Trials):
+
+# 		# ---- READ AND PRINT/SAVE DATA
+# 		# value = mcu.readlines()
+# 		# for j in value:
+# 		# 	#skP.writeOutData(j,dataFunc, 0, 0, trialCount)
+# 		# 	skP.writeOutData(j,dataFunc, writer2, writer, trialCount)
+# 		await asyncio.sleep(0.01)
+
+# 		c.send( ( "----- TRIAL #" + str(i) + " -----\n").encode())
+# 		c.send(("test: " + str(test) + "\n" ).encode())
+# 		c.send(("rightStreak: " + str(rightStreak) + "\n").encode())
+
+# 		# randomize order presented
+# 		packetA, packetB = skB.randomizeStimuli(reference, test, c)
+
+# 		# apply stimuli
+# 		await skB.sendPoke(sc, c, packetA, retract, wait, client1, rx_char1, 1, 1)  # Send poke A
+# 		if (N_ACTUATORS == 2):
+# 			await skB.sendPoke(sc, c, packetA, retract, wait, client2, rx_char2, 1, 2)  # Send poke A
+
+# 		await skB.sendPoke(sc, c, packetB, retract, wait, client1, rx_char1, 0, 1)  # Send poke B
+# 		if (N_ACTUATORS == 2):
+# 			await skB.sendPoke(sc, c, packetB, retract, wait, client2, rx_char2, 0, 2)  # Send poke B
+
+
+# 		# find the real answer
+# 		# 1 means A > B, 2 means A == B, 3 means A < B
+# 		answerKey = (packetA > packetB)*1 + (packetA == packetB)*2 + (packetA < packetB)*3
+# 		c.send(("The real answer is: " + str(answerKey) + "\n").encode())
+
+# 		skB.displayAnswerOptionsGUI(sc)
+
+# 		while(1):
+# 			await asyncio.sleep(0.01)
+# 		# wait for user's input
+# 			k = keyboard.read_key()
+
+# 			if k == 'page up':
+# 				userAnswer = 1
+# 				skB.updateUserAnswerGUI(sc, userAnswer)
+
+# 			elif k == 'right':
+# 				userAnswer = 2
+# 				skB.updateUserAnswerGUI(sc, userAnswer)
+
+# 			elif k == 'page down':
+# 				userAnswer = 3
+# 				skB.updateUserAnswerGUI(sc, userAnswer)
+
+# 			elif k == 'down':
+
+# 				if (userAnswer == 0):
+# 					skG.writeText(sc, -350,-20, "You have to choose an answer to proceed.", skG.COLOR)					
+# 				else:
+# 					skG.eraseLine(sc,-350,40)
+# 					skG.erase(sc, 'white')
+# 					#skG.eraseLine(sc,-350,-20)
+# 					trialCount = trialCount + 1
+# 					if trialCount < N_Trials:
+# 						skG.updateTrialLabel(sc, trialCount)
+# 						skG.delay(sc, t)
+
+# 					break
+
+# 		# check the answer. depending on answer, determine next test value
+# 		# if answer wrong, reset streak and step up test value
+# 		c.send(("User answer is: " + str(userAnswer)+ "\n").encode())
+# 		await asyncio.sleep(0.01)
+
+# 		if (answerKey != userAnswer):
+# 			c.send(("ANSWER WRONG!\n").encode())
+# 			rightStreak = 0
+# 			#writer.writerow([trialCount, test, reference, packetA, packetB, answerKey, userAnswer, stepUp, rightStreak])
+# 			test = round((test + stepUp), 2) # step up test value if wrong
+# 			c.send(("stepSize: " + str(stepUp)+ "\n").encode())
+# 			# inc = abs(inc) + 1 
+# 			userAnswer = 0
+# 			wrongCount = wrongCount + 1
+# 			c.send(("reversals:" + str(wrongCount)+ "\n").encode())
+# 			# if (wrongCount == 2):
+# 			# 	stepSize = stepSize2
+
+# 		# if answer correct, add to right streak
+# 		elif (answerKey == userAnswer):
+# 			c.send(("ANSWER RIGHT!\n").encode())
+# 			rightStreak = rightStreak + 1
+			
+# 			# step down test if they get nDown right answers in a row
+# 			if ((rightStreak == nDown) or (wrongCount == 0)): # FIX: check logic of wrongCount  
+# 				#writer.writerow([trialCount, test, reference, packetA, packetB, answerKey, userAnswer, stepDown, rightStreak])
+# 				test = round((test - stepDown), 2)
+# 				userAnswer = 0
+# 				# inc = (abs(inc) - 1)*-1
+# 				rightStreak = 0
+# 			else:
+# 				u = 1
+# 				#writer.writerow([trialCount, test, reference, packetA, packetB, answerKey, userAnswer, 0, rightStreak])
+# 	c.send(("DONE\n").encode())
