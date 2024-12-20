@@ -18,7 +18,7 @@ import skCalibrationFunctions as skC
 import skBLESupport_JND as skB
 
 # ------------
-N_ACTUATORS = 2
+N_ACTUATORS = 1
 trialCount = 0 # counter
 
 # ------- CONSTANTS, DIRECTORY, & setting up files
@@ -35,40 +35,21 @@ if not (os.path.exists(p)):
     os.makedirs(p)
     print("New directory created: %s" % fileName)
 
-f, h, writer1 = skB.createDataFiles(p, fileName, 1)
+f, h = skB.createDataFiles(p, fileName, 1)
 if (N_ACTUATORS == 2):
-	g, m, writer2 = skB.createDataFiles(p, fileName, 2)
+	g, m = skB.createDataFiles(p, fileName, 2)
 
 # ------- BLE values
 databuf = ""
 databuf2 = ""
 linebuf = ""
 
-# ------- SYSTEM & STAIRCASE values
-# start=120, ref=80, startStep=-5, wait=5, retract=47, nUp=1, nDown=3, N_Trials=30
-# start=120, ref=95, startStep=-5, wait=6, retract=47, nUp=1, nDown=3, N_Trials=10
-startValue = 12.0
-retractPos = 0.0
-ref = 6.0
-stepDown=0.4
-# nUp = 1
-# nDown = 2
-#N_TOTAL_TRIALS = 50
-waitTime = 6 # seconds
-# stepSizeRatio = {1:0.2845, 2:0.5488, 3:0.7393 , 4:0.8415}
-# stepUp = stepDown/stepSizeRatio[nDown]
-
 # ------- Display & GUI variables
 t = 1
 sc = turtle.Screen()
 calibrate = True
-
-# async def waitA():
-# 	await asyncio.sleep(0.01)
-
-# def waitReadBLEData():
-# 	while(1):
-# 		waitA()
+waitTime = 6 # seconds
+retractPos = 0.0
 
 
 # provide staircasing parameters: going up or down (bounds); reference, nUP, nDown, retract, wait, c, clients and rxchars
@@ -86,14 +67,17 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 	test = 0
 	trialCount = 0 # counter
 	reversals = 0
+	nWrong = 0
+	nRight = 0
 
-
-	skB.initializeTrialFiles(p, fileName, key)
+	staircaseFileName = skB.initializeTrialFiles(p, fileName, key)
 
 	# we are assuming nUp, nDown: 2:1
 
 	testArr = [] # [0.0] * 50
 	Ldb = 4 #db
+	if (not (increasing)):
+		Ldb = 2
 	Xo = skB.generateInitialValue(increasing, avgMin, avgMax, reference)
 
 	# FIX since some people's force range won't allow for 3.0 difference
@@ -130,11 +114,13 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 		skG.writeText(sc, -350, 230, "Stimulus A in progress", skG.COLOR)
 
 		await skB.sendSetpoint(packetA, client1, rx_char1, 1) 	
-		await skB.sendSetpoint(packetA, client2, rx_char2, 2) 	
+		if (N_ACTUATORS == 2):
+			await skB.sendSetpoint(packetA, client2, rx_char2, 2) 	
 		await skB.waitSK(wait) 	# hold the poke	
 
 		await skB.sendSetpoint(retract, client1, rx_char1, 1)
-		await skB.sendSetpoint(retract, client2, rx_char2, 2)
+		if (N_ACTUATORS == 2):
+			await skB.sendSetpoint(retract, client2, rx_char2, 2)
 		await skB.waitSK(wait/2) 	# hold the poke
 
 		# send stimuli B
@@ -142,11 +128,13 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 		skG.writeText(sc, -350, 180, "Stimulus B in progress", skG.COLOR)
 
 		await skB.sendSetpoint(packetB, client1, rx_char1, 1) 	
-		await skB.sendSetpoint(packetB, client2, rx_char2, 2) 	
+		if (N_ACTUATORS == 2):
+			await skB.sendSetpoint(packetB, client2, rx_char2, 2) 	
 		await skB.waitSK(wait) 	# hold the poke	
 
 		await skB.sendSetpoint(retract, client1, rx_char1, 1)
-		await skB.sendSetpoint(retract, client2, rx_char2, 2)
+		if (N_ACTUATORS == 2):
+			await skB.sendSetpoint(retract, client2, rx_char2, 2)
 		await skB.waitSK(wait/2) 	# hold the poke	
 
 		# find the real answer
@@ -192,6 +180,10 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 		c.send(("User answer is: " + str(userAnswer)+ "\n").encode())
 		await asyncio.sleep(0.01)
 
+		if (userAnswer == answerKey):
+			nRight = nRight + 1
+		else:
+			nWrong = nWrong + 1
 		# if test < ref
 
 		## if r == 1, A=ref, B=test. --> to have ref > test, answer 1
@@ -226,6 +218,16 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 				rightStreak = 0
 				graphIcon = 3
 				newTest = testArr[trialCount-2] # next value is the previous one
+
+				# if newTest == Test
+				attempts = 0
+				while ((newTest == test) and (attempts < 3)):
+					attempts = attempts + 1
+					if (((trialCount - 2 - attempts) >=0) and (len(testArr) < (trialCount - 2 - attempts) ) ):
+						newTest = testArr[trialCount-2 - attempts]
+					else:
+						break
+
 				Ldb = Ldb / 2 # Ldb is reduced
 				# if (Ldb <= 0.5):
 				# 	Ldb = 0.5
@@ -276,25 +278,61 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 				rightStreak = 0
 				graphIcon = 3
 				newTest = testArr[trialCount-2] # next value is the previous one
+
+				# if newTest == Test
+				attempts = 0
+				while ((newTest == test) and (attempts < 3)):
+					attempts = attempts + 1
+					if (((trialCount - 2 - attempts) >=0) and (len(testArr) < (trialCount - 2 - attempts) ) ):
+						newTest = testArr[trialCount-2 - attempts]
+					else:
+						break
+
 				Ldb = Ldb / 2 # Ldb is reduced
 				# if (Ldb <= 0.5):
 				# 	Ldb = 0.5
 				c.send(("reversals:" + str(reversals)+ "\n").encode())
 		
-		if (trialCount > 14):
-			npTestArr = np.array(testArr[-10:])
-			if (abs(statistics.mean(testArr[-10:]) - reference) <  10**(0.1)):
+		# updated termination conditions
+		if (trialCount > 15):
+			#npTestArr = np.array(testArr[-10:])
+
+			# precomputation for condition #2
+			equalityCheckVal = testArr[-10]
+			nEqualityCheck = 0
+			for j in testArr[-10:]:
+				if (j==equalityCheckVal):
+					nEqualityCheck = nEqualityCheck + 1
+
+			# Condition #1: less than 2dB
+			# the range of the most recent 10 values
+			#if (abs(statistics.mean(testArr[-10:]) - reference) <  10**(0.1)):
+			if ( (max(testArr[-10]) - min(testArr[-10])) <  10**(0.1)):
 				keepGoing = False
-			elif ( sum(abs(np.gradient(npTestArr, 1))) < 0.3 ):
+
+			# Condition #2: if the last 10 values are the exact same
+			elif (nEqualityCheck == 10):
 				keepGoing = False
+			# elif ( sum(abs(np.gradient(npTestArr, 1))) < 0.3 ):
+			# 	keepGoing = False
+
 		newTest = round(newTest, 2)
 		if (newTest > avgMax):
 			newTest = avgMax
 		elif (newTest < avgMin):
 			newTest = avgMin
 		testArr.append(newTest)
-		n = open(p + 'trial' + key + "_" + fileName + '.csv', 'a', encoding='UTF8', newline='')
-		n.write(str(trialCount-1) + "," + str(test) + "," + str(reference) + "," + str(packetA) + "," + str(packetB)+ "," + str(answerKey)+ "," + str(userAnswer)+ "," + str(reversals)+ "," + str(graphIcon) + "\n")
+
+		if (trialCount > 15):
+			npTestArr = np.array(testArr) 		# precomputation for condition #3
+			diffVal = np.diff(npTestArr)
+			diffVal[diffVal != 0]
+			# Condition #3: if the increment is smaller than the resolution of the system
+			if (min(abs(diffVal)) < skB.SYSTEM_MIN_RESOLUTION):
+				keepGoing = False
+
+		n = open(staircaseFileName, 'a', encoding='UTF8', newline='')
+		n.write(str(trialCount-1) + "," + str(test) + "," + str(reference) + "," + str(packetA) + "," + str(packetB)+ "," + str(answerKey)+ "," + str(userAnswer)+ "," + str(reversals)+ "," + str(graphIcon) + "," + str(nRight) + "," + str(nWrong) + "\n")
 		n.close()
 		#writer.writerow([trialCount-1, test, reference, packetA, packetB, answerKey, userAnswer, reversals, rightStreak])
 		#trialCount = trialCount + 1
@@ -324,7 +362,6 @@ def handle_rx1(_: BleakGATTCharacteristic, data: bytearray):
     global f, h
     global linebuf
     global calibrate
-    #global writer1
     global trialCount
 
     strData = data.decode("ascii")
@@ -354,8 +391,7 @@ def handle_rx1(_: BleakGATTCharacteristic, data: bytearray):
 	        	linebuf += ("1,"+databuf+strData[:-2])
 
 	        outputStr = databuf+strData[:-2]
-	        #skB.writeOutDataBLE(outputStr, writer1, f, trialCount, 0) # FIX: need to add trialCount
-	        skB.writeOutDataBLE(outputStr, h, f, trialCount, 0) # FIX: need to add trialCount
+	        skB.writeOutDataBLE(outputStr, f, h, trialCount, 0)
 	        databuf = ""
 
 	    else:
@@ -365,7 +401,6 @@ def handle_rx2(_: BleakGATTCharacteristic, data: bytearray):
     global databuf2
     global g, m
     global linebuf
-    #global writer2
     global trialCount
 
     strData = data.decode("ascii")
@@ -390,10 +425,8 @@ def handle_rx2(_: BleakGATTCharacteristic, data: bytearray):
 	        print(linebuf)
 	        linebuf = ""
 
-	        #g.write(databuf2+strData)
-	        outputStr = databuf+strData[:-2]
-	        skB.writeOutDataBLE(outputStr, m, g, trialCount, 0) # FIX: need to add trialCount
-	        #skB.writeOutDataBLE(outputStr, writer2, g, trialCount, 0) # FIX: need to add trialCount
+	        outputStr = databuf2+strData[:-2]
+	        skB.writeOutDataBLE(outputStr, g, m, trialCount, 0)
 	        databuf2 = ""
 
 	    else:
@@ -412,31 +445,12 @@ async def main():
 	c, addr = s.accept()
 
 	tr = skB.initializeGUI(sc) # initialize GUI
-	#skB.instructionsGUI(sc, tr) # GUI for instructions
-
-	# look for BLE devices 
-	device1 = await BleakScanner.find_device_by_address(skB.addr_Adafruit1)
-
-	# if (N_ACTUATORS == 2):
-	# 	device2 = await BleakScanner.find_device_by_address(skB.addr_Adafruit2)
-	# #device = await BleakScanner.find_device_by_name(bleName)
-
+	device1 = await BleakScanner.find_device_by_address(skB.addr_Adafruit1) 	# look for BLE devices 
 	if ( (device1 is None) ) :
 	    print("could not find device with address {}".format(skB.addr_Adafruit1))
-
-	# elif ( (N_ACTUATORS == 2) and (device2 is None) ):
-	# 	print("could not find device with address {}".format(skB.addr_Adafruit2))
 	
 	else:
-
-	# if (True):
-	# 	clientArr = []
-	# 	rx_charArr = []	
 		print(device1)
-		# if (N_ACTUATORS == 2):
-		# 	print(device2)
-
-		# if (True):
 		async with BleakClient(device1.address) as client1:
 			await client1.start_notify(skB.UART_TX_CHAR_UUID, handle_rx1)
 			nus1 = client1.services.get_service(skB.UART_SERVICE_UUID)
@@ -447,10 +461,6 @@ async def main():
 
 			client2 = 0
 			rx_char2 = 0
-			# clientArr = [client1]
-			# rx_charArr = [rx_char1]
-
-					#loop = asyncio.get_running_loop()
 
 			print("Connected!")
 			global calibrate
@@ -486,10 +496,12 @@ async def main():
 			await skB.waitSK(3)
 
 			avgMin, avgMax, q1, q2, q3 = skB.loadASRValues(c);
-			quartiles = {"q1": q1, "q2": q2, "q3": q3}
+			quartiles = {"q1": q1, "q2": q2}
 			keys = list(quartiles.keys())
 			random.shuffle(keys)
 
+			nUpCount = 0
+			nDownCount = 0
 
 			if (N_ACTUATORS == 2):
 				skB.device2GUI(sc)
@@ -502,35 +514,57 @@ async def main():
 						await client2.start_notify(skB.UART_TX_CHAR_UUID, handle_rx2)
 						nus2 = client2.services.get_service(skB.UART_SERVICE_UUID)
 						rx_char2 = nus2.get_characteristic(skB.UART_RX_CHAR_UUID)
-				# 		clientArr.append(client2)
-				# 		rx_charArr.append(rx_char2)
-				# 		print("Connected!")
 
 						# Calibration Filter: wait for filter to stabilize
 						await skB.waitGUI(sc)
+						#directionIncreasing = True
 
-						skB.instructionsGUI(sc, tr) # GUI for instructions
-						skB.prepareExperimentGUI(sc) # proceed with JND gui
-						directionIncreasing = True
-						await staircaseNewBLE(c, N_ACTUATORS, directionIncreasing, avgMin, avgMax, 'q2', q2, waitTime, retractPos, client1, rx_char1, client2, rx_char2)
+						# skB.instructionsGUI(sc, tr) # GUI for instructions
+						# skB.prepareExperimentGUI(sc) # proceed with JND gui
+						# await staircaseNewBLE(c, N_ACTUATORS, directionIncreasing, avgMin, avgMax, 'q2', q2, waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 
-						# for k in keys:
-						# 	skB.instructionsGUI(sc, tr)
-						# 	skB.prepareExperimentGUI(sc)
-						# 	#print ("this is staircase" + str(k))
-						# 	await staircaseNewBLE(c, N_ACTUATORS, 1, avgMin, avgMax, k, quartiles[k], waitTime, retractPos, client1, rx_char1, client2, rx_char2)
+						for k in keys:
+							skB.instructionsGUI(sc, tr)
+							skB.prepareExperimentGUI(sc)
+
+							rUp = random.randrange(0,2)
+							if (rUp):
+								nUpCount = nUpCount + 1
+							else:
+								nDownCount = nDownCount + 1
+
+							if ((rUp == 1) and (nUpCount == 3)) :
+								rUp = 0
+							if ((rUp == 0) and (nDownCount == 3)):
+								rUp = 1
+							#print ("this is staircase" + str(k))
+							await staircaseNewBLE(c, N_ACTUATORS, directionIncreasing, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 
 			else:
-			# for k in keys:
-			# 	skB.instructionsGUI(sc, tr)
-			# 	skB.prepareExperimentGUI(sc)
-			# 	#print ("this is staircase" + str(k))
-			# 	await staircaseNewBLE(c, N_ACTUATORS, 1, avgMin, avgMax, k, quartiles[k], waitTime, retractPos, client1, rx_char1, client2, rx_char2)
 
-			skB.instructionsGUI(sc, tr) # GUI for instructions
-			skB.prepareExperimentGUI(sc) # proceed with JND gui
-			directionIncreasing = True
-			await staircaseNewBLE(c, N_ACTUATORS, directionIncreasing, avgMin, avgMax, 'q2', q2, waitTime, retractPos, client1, rx_char1, client2, rx_char2)
+				for k in keys:
+					for l in list(range(0,6)):
+						skB.instructionsGUI(sc, tr)
+						skB.prepareExperimentGUI(sc)
+
+						rUp = random.randrange(0,2)
+						if (rUp):
+							nUpCount = nUpCount + 1
+						else:
+							nDownCount = nDownCount + 1
+
+						if ((rUp == 1) and (nUpCount == 3)) :
+							rUp = 0
+						if ((rUp == 0) and (nDownCount == 3)):
+							rUp = 1
+
+						#print ("this is staircase" + str(k))
+						await staircaseNewBLE(c, N_ACTUATORS, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+
+				# skB.instructionsGUI(sc, tr) # GUI for instructions
+				# skB.prepareExperimentGUI(sc) # proceed with JND gui
+				# directionIncreasing = True
+				# await staircaseNewBLE(c, N_ACTUATORS, directionIncreasing, avgMin, avgMax, 'q2', q2, waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 			
 			skB.closeFiles([f, h])
 			if (N_ACTUATORS == 2):

@@ -1,7 +1,7 @@
 # BLE support functions for JND experiment
 # Written by: Sreela Kodali (kodali@stanford.edu) 
 
-import serial, datetime, csv, sys, getopt, os, shutil, turtle, random, time, keyboard, asyncio, socket, re
+import serial, datetime, csv, sys, getopt, os, shutil, turtle, random, time, keyboard, asyncio, socket, re, datetime
 import numpy as np
 #from scipy import signal
 from bleak import BleakScanner, BleakClient
@@ -21,7 +21,7 @@ dataFunc = {'time':sk.millisToSeconds, 'setpoint':sk.doNothing,'set-err':sk.doNo
 			'filteredRawForce':sk.doNothing, 'commandedActuatorPos':sk.doNothing, \
 			'measuredActuatorPos':sk.doNothing} #sk.feedbackToPosition, sk.commandToPosition
 
-
+SYSTEM_MIN_RESOLUTION = 0.098
 EXPERIMENT_TEXT_0 = ["Welcome!", "Let's begin the experiment", "", "", "", "", "", "", "", "", "", "", "Please click the red key to continue."]
 EXPERIMENT_TEXT_1 = ["Experiment", "Task: Identify whether Stimulus A feels more,", "intense, the same, or less intense than Stimulus B.", "", "",  "", "", "", "", "", "Use >, =, and < keys to indicate your answer,", "and then click the red key to go to the next trial.", "Please click the red key to proceed."]
 EXPERIMENT_TEXT = [EXPERIMENT_TEXT_0, EXPERIMENT_TEXT_1]
@@ -95,12 +95,137 @@ def calibrationMinMaxGUI(sc, tr):
 async def waitGUI(sc):
 	skG.initializeWindow(sc,EXPERIMENT_TEXT_2)
 	await waitSK(20)
+
+async def orderingPairs(avgMin, avgMax, q2, wait):
+	
+	value1 = 0.0
+	value2 = 0.0
+
+	while (True):
+				
+		k = keyboard.read_key()
+
+		if k == '7': # 00
+			#await client1.write_gatt_char(rx_char1, ("c\n").encode(encoding="ascii"), response=False)
+			value1 = avgMin
+			value2 = avgMin
+
+			await skB.sendSetpoint(value1, client1, rx_char1, 1) 	
+			await skB.sendSetpoint(value2, client2, rx_char2, 2) 	
+			await skB.waitSK(wait) 	# hold the poke	
+
+			await skB.sendSetpoint(0.0, client1, rx_char1, 1)
+			await skB.sendSetpoint(0.0, client2, rx_char2, 2)
+			await skB.waitSK(wait/2) 	# hold the poke
+
+		elif k == '8': # 01
+			value1 = avgMin
+			value2 = q2
+
+			await skB.sendSetpoint(value1, client1, rx_char1, 1) 	
+			await skB.sendSetpoint(value2, client2, rx_char2, 2) 	
+			await skB.waitSK(wait) 	# hold the poke	
+
+			await skB.sendSetpoint(0.0, client1, rx_char1, 1)
+			await skB.sendSetpoint(0.0, client2, rx_char2, 2)
+			await skB.waitSK(wait/2) 	# hold the poke
+
+		elif k == '9': # 02
+			value1 = avgMin
+			value2 = avgMax
+
+			await skB.sendSetpoint(value1, client1, rx_char1, 1) 	
+			await skB.sendSetpoint(value2, client2, rx_char2, 2) 	
+			await skB.waitSK(wait) 	# hold the poke	
+
+			await skB.sendSetpoint(0.0, client1, rx_char1, 1)
+			await skB.sendSetpoint(0.0, client2, rx_char2, 2)
+			await skB.waitSK(wait/2) 	# hold the poke
+
+		elif k == '4': # 10
+			value1 = q2
+			value2 = avgMin
+
+			await skB.sendSetpoint(value1, client1, rx_char1, 1) 	
+			await skB.sendSetpoint(value2, client2, rx_char2, 2) 	
+			await skB.waitSK(wait) 	# hold the poke	
+
+			await skB.sendSetpoint(0.0, client1, rx_char1, 1)
+			await skB.sendSetpoint(0.0, client2, rx_char2, 2)
+			await skB.waitSK(wait/2) 	# hold the poke
+
+		elif k == '5': # reduce actuator position
+			value1 = q2
+			value2 = q2
+
+			await skB.sendSetpoint(value1, client1, rx_char1, 1) 	
+			await skB.sendSetpoint(value2, client2, rx_char2, 2) 	
+			await skB.waitSK(wait) 	# hold the poke	
+
+			await skB.sendSetpoint(0.0, client1, rx_char1, 1)
+			await skB.sendSetpoint(0.0, client2, rx_char2, 2)
+			await skB.waitSK(wait/2) 	# hold the poke
+
+		elif k == '6': # reset 
+			value1 = q2
+			value2 = avgMax
+
+			await skB.sendSetpoint(value1, client1, rx_char1, 1) 	
+			await skB.sendSetpoint(value2, client2, rx_char2, 2) 	
+			await skB.waitSK(wait) 	# hold the poke	
+
+			await skB.sendSetpoint(0.0, client1, rx_char1, 1)
+			await skB.sendSetpoint(0.0, client2, rx_char2, 2)
+			await skB.waitSK(wait/2) 	# hold the poke		
+
+		elif k == '1': # indicate limit
+			value1 = avgMax
+			value2 = avgMin
+
+			await skB.sendSetpoint(value1, client1, rx_char1, 1) 	
+			await skB.sendSetpoint(value2, client2, rx_char2, 2) 	
+			await skB.waitSK(wait) 	# hold the poke	
+
+			await skB.sendSetpoint(0.0, client1, rx_char1, 1)
+			await skB.sendSetpoint(0.0, client2, rx_char2, 2)
+			await skB.waitSK(wait/2) 	# hold the poke
+
+		elif k == '2': # reduce actuator position
+			value1 = avgMax
+			value2 = q2
+
+			await skB.sendSetpoint(value1, client1, rx_char1, 1) 	
+			await skB.sendSetpoint(value2, client2, rx_char2, 2) 	
+			await skB.waitSK(wait) 	# hold the poke	
+
+			await skB.sendSetpoint(0.0, client1, rx_char1, 1)
+			await skB.sendSetpoint(0.0, client2, rx_char2, 2)
+			await skB.waitSK(wait/2) 	# hold the poke
+
+		elif k == '3': # indicate limit
+			value1 = avgMax
+			value2 = avgMax
+
+			await skB.sendSetpoint(value1, client1, rx_char1, 1) 	
+			await skB.sendSetpoint(value2, client2, rx_char2, 2) 	
+			await skB.waitSK(wait) 	# hold the poke	
+
+			await skB.sendSetpoint(0.0, client1, rx_char1, 1)
+			await skB.sendSetpoint(0.0, client2, rx_char2, 2)
+			await skB.waitSK(wait/2) 	# hold the poke
+
+
+		await asyncio.sleep(0.1)
+
 	
 def initializeTrialFiles(p, fileName, key):
-	n = open(p + 'trial' + key + "_" + fileName + '.csv', 'w+', encoding='UTF8', newline='')
+	newTime = str(datetime.datetime.now())[11:16].replace(':','-')
+	newFileName = p + 'trial' + key + '_' + fileName + '_' + newTime + '.csv'
+	n = open(newFileName, 'w+', encoding='UTF8', newline='')
 	writer = csv.writer(n) # csv writer for trials
-	writer.writerow(["trialCount", "Test", "Reference", "A", "B", "answerKey", "userAnswer", "reversals", "graphIcon"])
+	writer.writerow(["trialCount", "Test", "Reference", "A", "B", "answerKey", "userAnswer", "reversals", "graphIcon", "nRight", "nWrong"])
 	n.close()
+	return newFileName
 
 def loadASRValues(c):
 	print("LOAD ASR VALUES")
@@ -165,11 +290,10 @@ def randomizeStimuli(ref, test, c):
 def createDataFiles(p, name, idx_Act):
 	f = open(p + 'raw_device' + str(idx_Act) + '_' + name + '.csv', 'w+', encoding='UTF8', newline='')
 	h = open(p + 'processed_device' + str(idx_Act) + '_' + name + '.csv', 'w+', encoding='UTF8', newline='')
-	writer = csv.writer(h)
+	#writer = csv.writer(h)
 
 	columnNames = list(dataFunc.keys())
 	columnNames.append("TrialCounter\n")
-	#columnNames = str(columnNames) + "\n"
 	for k in [f, h]:
 		for i in columnNames:
 			if (i == "TrialCounter\n"):
@@ -178,18 +302,20 @@ def createDataFiles(p, name, idx_Act):
 				k.write(str(i) + ",")
 			#k.write(columnNames)
 
-	return (f, h, writer)
+	return (f, h)
 
-def writeOutDataBLE(i, writer, f, trialCount, verbose):
+def writeOutDataBLE(i, raw, processed, trialCount, verbose):
 	
 	# if it has the word SETPOINT, write it 
 	s = i.split(",")
 	if "SETPOINT" in i:
-		f.write(i+ "\n")
-		writer.write(i+ "\n")
-	elif (len(s) > 2):
-		f.write(i+"," + str(trialCount) + "\n")
-		writer.write(i+"," + str(trialCount) + "\n")
+		raw.write(i+ "\n")
+		#writer.write(i+ "\n")
+	elif (len(s) >= 2):
+		raw.write(i+"," + str(trialCount) + "\n")
+		processed.write(i+"," + str(trialCount) + "\n")
+	else:
+		raw.write(i+"," + str(trialCount) + "\n")
 	
 	# if (len(i) == len(dataFunc)): 
 	# 	# raw = [j.rstrip() for j in i]
@@ -260,7 +386,7 @@ async def sendPoke(sc, c, value, retract, wait, client, rx_char, stimulus1, idx_
 	await sendSetpoint(retract, client, rx_char, idx_Act) 	
 	await waitSK(wait/2) 	# hold the poke
 
-	
+
 # # ----- SUPPORTING FUNCTIONS
 # # default: staircase(120, 80, -5, 5, 47, 1, 3, 15)
 # async def staircaseBLE(c, start, reference, stepDown, stepUp, wait, retract, nUp, nDown, N_Trials, client1, rx_char1, client2, rx_char2):

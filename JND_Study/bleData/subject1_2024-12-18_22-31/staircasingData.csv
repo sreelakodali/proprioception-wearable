@@ -1,0 +1,25 @@
+LOAD ASR VALUES
+Min1 0.05
+Max1 9.84
+Min2 0.09
+Max2 9.49
+Min3 0.26
+Max3 12.48
+avgMin 0.13
+avgMax 10.6
+q1 2.75
+q2 5.36
+q3 7.98
+STAIRCASE q1
+INITIAL VALUE= 0.82
+REFERENCE= 2.75
+----- TRIAL #0 -----
+test: 0.82
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 2.75
+Receiving Stimulus B: 0.82
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+DONE

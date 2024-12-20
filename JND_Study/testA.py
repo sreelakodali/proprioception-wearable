@@ -24,13 +24,14 @@ if response in ["yes", "y", "Y", "YES"]:
 	print("Let's create a socket and get started.")
 	# Create a socket object 
 	s = socket.socket()         
-	 
+	
 	# Define the port on which you want to connect 
 	port = 12346
-	IPAddr = '10.0.0.64'# kuppa ##'10.34.86.113'#stanford  #'10.36.81.32' #eduroam   
+	IPAddr = '10.34.87.223' #'10.34.86.113' #stanford  #'10.36.81.32' #eduroam  '10.0.0.64'# kuppa ##  
 	# connect to the server on local computer 
 	s.connect((IPAddr, port)) 
-	 
+	nDone = 0
+
 	while(1):
 
 	# receive data from the server and decoding to get the string.
@@ -39,7 +40,10 @@ if response in ["yes", "y", "Y", "YES"]:
 			print(data)
 			f.write(data)
 			if (data == "DONE\n"):
-				break
+				nDone = nDone + 1
+				if (nDone == 2):
+					break
+				#break
 		# print (s.recv(1024).decode())
 	# close the connection 
 	s.close()  

@@ -36,7 +36,7 @@
 
 typedef enum {
   POSITION_MIN = 0, 
-  POSITION_MAX = 2000//4095
+  POSITION_MAX = 4000//4095
 } ACTUATOR_LIMITS;
 
 
@@ -50,10 +50,10 @@ int  buttonCount = 0; // button count. global!
 //float  user_flex_MIN;
 //float  user_flex_MAX;
 //  IntervalTimerEx ForceSampleSerialWriteTimer;
-const bool bleON = true;
-const bool serialON = false;
+const bool bleON = false;
+const bool serialON = true;
 
-const bool calibratepidON = false;
+const bool calibratepidON = true;
 const  byte I2C_ADDR = 0x04;
 const  byte I2C_ADDRArr[4] = {0x04, 0x08, 0x0A, 0x0C};
 const bool actuatorType = 1; // NEW. 0 = actuonix and 1 = MightyZap. CHANGE THIS for new actuator!
@@ -104,11 +104,15 @@ char detectionChar = 'x';
 //double setPointTest = 2.0;
 //double td = 0.02*tScale;
 
+// 7 , 1, 2, 3
+// 5,  4, 5
+//  3, 6, 7, 8, 9
+//1.75, 12, 14
 // ACTUATOR 1
-double scaleF = 2;
-double KpConst = 10*scaleF;//130.00;
+double scaleF = 5; 
+double KpConst = 20*scaleF;//130.00;
 double KiConst = 32*scaleF;//0.031;
-double KdConst = 15;//50*scaleF;//30.0;
+double KdConst = 12*scaleF;//50*scaleF;//30.0;
 double setPointTest = 0.0;
 double td = 0.02*tScale;
 
@@ -131,13 +135,21 @@ struct PID_sk {
 void setup() {
     initializeSystem();
     if (ID_NUM ==2 ) {
-          // ACTUATOR 2
-        scaleF = 0.25;
-        KpConst = 60*scaleF;//130.00;
-        KiConst = 310*scaleF;//0.031;
-        KdConst = 25;//50*scaleF;//30.0;
-        setPointTest = 0.0;
-        td = 0.02*tScale;
+
+       scaleF = 7.5;
+       KpConst = 20*scaleF;//130.00;
+       KiConst = 32*scaleF;//0.031;
+       KdConst = 12*scaleF;//50*scaleF;//30.0;
+       setPointTest = 0.0;
+       td = 0.02*tScale;
+
+//          // ACTUATOR 2
+//        scaleF = 0.25;
+//        KpConst = 60*scaleF;//130.00;
+//        KiConst = 310*scaleF;//0.031;
+//        KdConst = 25;//50*scaleF;//30.0;
+//        setPointTest = 2.0;
+//        td = 0.02*tScale;
         
         detectionChar = 'y';
     }
@@ -152,9 +164,14 @@ void setup() {
     zeroForceGlobal = initializeFilter();
     myPID.zeroForce = zeroForceGlobal;
 
-    blinkN(5, 500);
-    //ble.println("in calibration");
-    calibration();
+    if (ID_NUM ==1 ) {
+
+      if (!(calibratepidON)) {
+        blinkN(5, 500);
+        //ble.println("in calibration");
+        calibration();
+      }
+    }
     //FIX: INSERT MIN MAX PRESSURE CALIBRATION
     blinkN(5, 500);
      //Serial.println(ble.isConnected());
@@ -300,7 +317,7 @@ int calibrationIncrementActuator(int counter) {
 
 //      if (serialON)  x = serialMinMaxCalibration();
 //      if (bleON)  x = bleMinMaxCalibration();
-   counter = counter + 5;
+   counter = counter + 10;
    if (counter > POSITION_MAX) counter = POSITION_MAX;
    if (counter < POSITION_MIN) counter = POSITION_MIN;
    dataString = "";
@@ -321,7 +338,7 @@ int calibrationDecrementActuator(int counter) {
 
 //      if (serialON)  x = serialMinMaxCalibration();
 //      if (bleON)  x = bleMinMaxCalibration();
-   counter = counter -5;
+   counter = counter -10;
    if (counter > POSITION_MAX) counter = POSITION_MAX;
    if (counter < POSITION_MIN) counter = POSITION_MIN;
    dataString = "";
@@ -516,7 +533,7 @@ short initializeFilter() {
       
       
       String dataString = ""; // writeout       //dataString += (String(filteredData)+ "," + String(filteredData1) + "," + String(filteredData2));
-      dataString += (String(data)+ "," + String(filteredData1));
+      dataString = (String(data)+ "," + String(filteredData1));
       if (calibratepidON) dataString = "0.0, 4.0";
       if (serialON) Serial.println(dataString);
       if (bleON) ble.println(dataString);

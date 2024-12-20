@@ -1,4 +1,4 @@
-import socket, sys, datetime, select
+import socket, sys, datetime, select, random
 
 # def sendMySetpoints():
 #     data = "x2"
@@ -10,23 +10,27 @@ import socket, sys, datetime, select
 #         w = w + 1
 #     return(s)
 
+keys = ['q1', 'q2']
 
+nUpCount = 0
+nDownCount = 0
+for k in keys:
+	for l in list(range(0,6)):
+		# skB.instructionsGUI(sc, tr)
+		# skB.prepareExperimentGUI(sc)
 
-s = socket.socket()       
-	 
-# Define the port on which you want to connect 
-port = 12344            
-IPAddr = '10.34.86.113'#stanford  #'10.36.81.32' #eduroam   # kuppa #'10.0.0.64'
-# connect to the server on local computer 
-s.connect((IPAddr, port)) 
-	 
-while(1):
+		rUp = random.randrange(0,2)
+		if (rUp):
+			nUpCount = nUpCount + 1
+		else:
+			nDownCount = nDownCount + 1
+	
+		if ((rUp == 1) and (nUpCount == 3)) :
+			rUp = 0
+		if ((rUp == 0) and (nDownCount == 3)):
+			rUp = 1
 
-# receive data from the server and decoding to get the string.
-	data = s.recv(1024).decode()
-	if (data):
-		print("Received:" + data)
-
+		print(rUp)
 
 # data = range(0,10)
 
