@@ -32,7 +32,7 @@
 #define BLUEFRUIT_HWSERIAL_NAME      Serial2
 #define BLUEFRUIT_UART_MODE_PIN        11    // Set to -1 if unused
 #define FORCE_MIN 0.0 
-#define FORCE_MAX 20.0//4095
+#define FORCE_MAX 24.0//4095
 
 typedef enum {
   POSITION_MIN = 0, 
@@ -68,7 +68,7 @@ MightyZap m_zap(&Serial5, mightyZapWen_OUT);
 int  user_position_MIN = POSITION_MIN;
 int  user_position_MAX = POSITION_MAX;
 float user_force_MIN = FORCE_MIN;
-float user_force_MAX = FORCE_MAX-3;
+float user_force_MAX = FORCE_MAX;
 int measuredPos;
 short zeroForceGlobal = 255;
 
@@ -109,12 +109,19 @@ char detectionChar = 'x';
 //  3, 6, 7, 8, 9
 //1.75, 12, 14
 // ACTUATOR 1
-double scaleF = 5; 
+double scaleF = 1; 
 double KpConst = 20*scaleF;//130.00;
-double KiConst = 32*scaleF;//0.031;
+double KiConst = 24*scaleF;//0.031;
 double KdConst = 12*scaleF;//50*scaleF;//30.0;
 double setPointTest = 0.0;
 double td = 0.02*tScale;
+
+//double scaleF = 1; 
+//double KpConst = 20*scaleF;//130.00;
+//double KiConst = 32*scaleF;//0.031;
+//double KdConst = 12*scaleF;//50*scaleF;//30.0;
+//double setPointTest = 0.0;
+//double td = 0.02*tScale;
 
 // PID
 // create struct of PID_sk type called myPID
@@ -135,22 +142,12 @@ struct PID_sk {
 void setup() {
     initializeSystem();
     if (ID_NUM ==2 ) {
-
-       scaleF = 7.5;
-       KpConst = 20*scaleF;//130.00;
-       KiConst = 32*scaleF;//0.031;
-       KdConst = 12*scaleF;//50*scaleF;//30.0;
-       setPointTest = 0.0;
-       td = 0.02*tScale;
-
-//          // ACTUATOR 2
-//        scaleF = 0.25;
-//        KpConst = 60*scaleF;//130.00;
-//        KiConst = 310*scaleF;//0.031;
-//        KdConst = 25;//50*scaleF;//30.0;
-//        setPointTest = 2.0;
-//        td = 0.02*tScale;
-        
+//       scaleF = 7.5;
+//       KpConst = 20*scaleF;//130.00;
+//       KiConst = 32*scaleF;//0.031;
+//       KdConst = 12*scaleF;//50*scaleF;//30.0;
+//       setPointTest = 0.0;
+//       td = 0.02*tScale;
         detectionChar = 'y';
     }
     if (serialON) Serial.println("Device initialized.");
@@ -166,7 +163,7 @@ void setup() {
 
     if (ID_NUM ==1 ) {
 
-      if (!(calibratepidON)) {
+      if (!calibratepidON) {
         blinkN(5, 500);
         //ble.println("in calibration");
         calibration();
@@ -179,7 +176,12 @@ void setup() {
 }
 
 void loop() {
+  //runtime();
+  testSetpointSequence();
+}
 
+
+void runtime() {
  unsigned long myTimeLoop = millis();
  short data = readDataFromSensor(I2C_ADDR); // 1) read input
  double filteredData1 = filterData(data, 1);
@@ -194,10 +196,11 @@ void loop() {
   
   // dataString += (String(myPID.setpoint) + "," + String(filteredData1)+ "," + String(myPID.setpoint - error));
   dataString = (String(myTimeLoop) + "," + String(myPID.setpoint) + "," + String(myPID.setpoint - error) + "," + String(filteredData1)+ "," + String(myPID.actuatorCommand) + "," + String(measuredPos));
+  //dataString = (String(data) + "," + String(filteredData1));
   if (calibratepidON) dataString =  (String(myPID.setpoint)+ "," + String(myPID.setpoint - error));
   if (serialON) Serial.println(dataString);
   if (bleON) ble.println(dataString);
-  //myPID.tLastWriteout = millis();
+  myPID.tLastWriteout = millis();
  }
 
  if (bleON) directActuatorControlForce();
@@ -206,12 +209,109 @@ void loop() {
  
 //if (T_CYCLE > 0) delay(T_CYCLE);  
 //  sweep(2000,ID_NUM-1);
- 
 }
-
 
 // -------------------- SUPPORT FUNCTIONS --------------------//
 
+
+void testSetpointSequence() {
+  float setpointArr[] = {1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0, 5.0, 0.0, 6.0, 0.0};
+  //float setpointArr[] = {1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0, 5.0, 0.0, 6.0, 0.0, 7.0, 0.0, 8.0, 0.0};
+  int arrLength = (sizeof(setpointArr) / sizeof(setpointArr[0]));
+  int i = 0; // setpointCounter
+  int td_Setpoint = 10000;
+  unsigned long t_lastSetpoint = millis();
+  
+ while (1) {
+  
+     unsigned long myTimeLoop = millis();
+     
+     short data = readDataFromSensor(I2C_ADDR); // 1) read input
+     double filteredData1 = filterData(data, 1);
+     double error = computeError(&myPID, filteredData1); // 3) compute error between input and setpoint 
+     
+     myPID.actuatorCommand = PIDcompute(&myPID, error);
+     m_zap.GoalPosition(ID_NUM, myPID.actuatorCommand);
+    
+     if ((myTimeLoop - myPID.tLastWriteout) > td_WriteOut) { // writeout data
+        String dataString = "";
+        //dataString += (String(myTimeLoop));
+        
+        // dataString += (String(myPID.setpoint) + "," + String(filteredData1)+ "," + String(myPID.setpoint - error));
+        dataString = (String(myTimeLoop) + "," + String(myPID.setpoint) + "," + String(myPID.setpoint - error) + "," + String(filteredData1)+ "," + String(myPID.actuatorCommand) + "," + String(measuredPos));
+        if (calibratepidON) dataString =  (String(myPID.setpoint)+ "," + String(myPID.setpoint - error));
+        if (serialON) Serial.println(dataString);
+        if (bleON) ble.println(dataString);
+        myPID.tLastWriteout = millis();
+     }
+
+     if ( ((myTimeLoop - t_lastSetpoint) > td_Setpoint) && (i < arrLength) ) {
+      changeSetpoint(&myPID, setpointArr[i]);
+      i = i + 1;
+      t_lastSetpoint = millis();
+     }
+
+     if (i >= arrLength) break;
+    
+//     if (bleON) directActuatorControlForce();
+//     if (serialON) serialActuatorControlForce();
+     measuredPos = m_zap.presentPosition(ID_NUM);
+    //if (T_CYCLE > 0) delay(T_CYCLE);  
+
+ }
+
+ if (serialON) Serial.println("Done!");
+ 
+}
+
+// change scale factor
+double changeScale(double s) {
+  double ls;
+  if (s < user_force_MIN) s = user_force_MIN;
+  if (s > user_force_MAX) s = user_force_MAX;
+
+  // change PID depending on s
+  if (s <= 1) ls = 11.0;
+  else if (s <= 2) ls = 9.0; // 7 , 1, 2, 3
+  else if (s <= 3) ls = 7.0; // 7 , 1, 2, 3
+  else if (s <= 4) ls = 6.0; // 5,  4, 5
+  else if (s <= 5) ls = 5.0; // 5,  4, 5
+  else if (s <= 6) ls = 4.0; // 5,  4, 5
+  else if (s <= 9) ls = 3.0;  //  3, 6, 7, 8, 9 
+  else ls = 1.75;// 1.75, 12, 14
+
+//
+//    if (s <= 1) ls = 11.0;
+//  else if (s <= 3) ls = 7.0; // 7 , 1, 2, 3
+//  else if (s <= 4) ls = 6.0; // 5,  4, 5
+//  else if (s <= 5) ls = 5.0; // 5,  4, 5
+//  else if (s <= 9) ls = 3.0;  //  3, 6, 7, 8, 9 
+//  else ls = 1.75;// 1.75, 12, 14
+
+  return ls;
+}
+
+// change scale factor
+double changeScaleV2(double s, int count) {
+  double ls;
+  if (s < user_force_MIN) s = user_force_MIN;
+  if (s > user_force_MAX) s = user_force_MAX;
+
+  // change PID depending on s
+  if (s <= 1) {
+    ls = 7.0;
+//    if (count == 0) ls = 7.0;
+//    else if (count == 1) ls = 8.0;
+//    else ls = 8.4;
+  }
+  else if (s <= 3) ls = 7.0; // 7 , 1, 2, 3
+  else if (s <= 4) ls = 6.0; // 5,  4, 5
+  else if (s <= 5) ls = 5.0; // 5,  4, 5
+  else if (s <= 9) ls = 3.0;  //  3, 6, 7, 8, 9 
+  else ls = 1.75;// 1.75, 12, 14
+
+  return ls;
+}
 
 // Calibration functions
 
@@ -447,7 +547,7 @@ void directActuatorControlForce() {
         if (serialON) Serial.println(setpoint);
         if (bleON) ble.print("NEW SETPOINT=");
         if (bleON) ble.println(setpoint);
-        blinkN(5, 200);
+        //blinkN(5, 200);
         changeSetpoint(&myPID, setpoint);
       }
       idx_BLERx = 0;
@@ -506,7 +606,7 @@ void serialActuatorControlForce() {
     } else {
       if (serialON) Serial.print("NEW SETPOINT=");
       if (serialON) Serial.println(setpoint);
-      blinkN(5, 200);
+      //blinkN(5, 200);
       changeSetpoint(&myPID, setpoint);
     } 
   }
@@ -548,9 +648,29 @@ short initializeFilter() {
 
 // initialze PID
 void initializePID(PID_sk* pid, double p, double i, double d, double s) {
-  (*pid).Kp = p;
-  (*pid).Ki = i;
-  (*pid).Kd = d;
+  double localScale;
+  double newP;
+  double newI;
+  double newD;
+
+  localScale = changeScale(s);
+//  
+//  if (s < user_force_MIN) s = user_force_MIN;
+//  if (s > user_force_MAX) s = user_force_MAX;
+//
+//  // change PID depending on s
+//  if (s <= 3) localScale = 7.0; // 7 , 1, 2, 3
+//  else if (s <= 5) localScale = 5.0; // 5,  4, 5
+//  else if (s <= 9) localScale = 3.0;  //  3, 6, 7, 8, 9 
+//  else localScale = 1.75;// 1.75, 12, 14
+
+  newP = p*localScale;//130.00;
+  newI = i*localScale;//0.031;
+  newD = d*localScale;//50*scaleF;//30.0;
+  
+  (*pid).Kp = newP;
+  (*pid).Ki = newI;
+  (*pid).Kd = newD;
   (*pid).setpoint = s;
   (*pid).pErr = 0.0;
   (*pid).Iterm = 0.0;
@@ -560,13 +680,62 @@ void initializePID(PID_sk* pid, double p, double i, double d, double s) {
   (*pid).tLastWriteout = millis();
 }
 
+
+// change setpoint
+void changeSetpointV2(PID_sk* pid, float s, int count) {
+  double localScale;
+  double newP;
+  double newI;
+  double newD;
+  
+//  if (s < user_force_MIN) s = user_force_MIN;
+//  if (s > user_force_MAX) s = user_force_MAX;
+//
+//  // change PID depending on s
+//  if (s <= 3) localScale = 7.0; // 7 , 1, 2, 3
+//  else if (s <= 5) localScale = 5.0; // 5,  4, 5
+//  else if (s <= 9) localScale = 3.0;  //  3, 6, 7, 8, 9 
+//  else localScale = 1.75;// 1.75, 12, 14
+
+  localScale = changeScaleV2(s, count);
+
+  newP = KpConst*localScale;//130.00; 
+  newI = KiConst*localScale;//0.031;
+  newD = KdConst*localScale;//50*scaleF;//30.0;
+
+  changePIDparam(&(*pid), newP, newI, newD);
+    
+  (*pid).setpoint = s;
+  //(*pid).Iterm = 0.0;
+  (*pid).pTime = millis();
+}
+
 // change setpoint
 void changeSetpoint(PID_sk* pid, float s) {
+  double localScale;
+  double newP;
+  double newI;
+  double newD;
+  
+//  if (s < user_force_MIN) s = user_force_MIN;
+//  if (s > user_force_MAX) s = user_force_MAX;
+//
+//  // change PID depending on s
+//  if (s <= 3) localScale = 7.0; // 7 , 1, 2, 3
+//  else if (s <= 5) localScale = 5.0; // 5,  4, 5
+//  else if (s <= 9) localScale = 3.0;  //  3, 6, 7, 8, 9 
+//  else localScale = 1.75;// 1.75, 12, 14
 
-  if (s < user_force_MIN) s = user_force_MIN;
-  if (s > user_force_MAX) s = user_force_MAX;
+  localScale = changeScale(s);
+
+  newP = KpConst*localScale;//130.00; 
+  newI = KiConst*localScale;//0.031;
+  newD = KdConst*localScale;//50*scaleF;//30.0;
+
+  changePIDparam(&(*pid), newP, newI, newD);
+    
   (*pid).setpoint = s;
-  (*pid).Iterm = 0.0;
+  //(*pid).Iterm = 0.0;
   (*pid).pTime = millis();
 }
 

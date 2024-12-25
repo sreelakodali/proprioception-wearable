@@ -69,43 +69,43 @@ PATH = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/JND_Study/bleData
 fileName = "processed_device1_subject 1_2024-12-18_22-36.csv"
 print("Newest data found: %s" % fileName)
 data = pd.read_csv(p + fileName, delimiter = "\n").astype(float)
-subjectAttempt = data['subject'].tolist()
+#subjectAttempt = data['subject'].tolist()
 #print(subjectAttempt)
 
-fileName = [f for f in os.listdir(p) if (f.startswith('targetAngles') and f.endswith('.csv'))]
-fileName = fileName[0]
-print("Newest data found: %s" % fileName)
-data1 = pd.read_csv(p + fileName, delimiter = "\n").astype(float)
-target = data1['target'].tolist()
-#print(target)
+# fileName = [f for f in os.listdir(p) if (f.startswith('targetAngles') and f.endswith('.csv'))]
+# fileName = fileName[0]
+# print("Newest data found: %s" % fileName)
+# data1 = pd.read_csv(p + fileName, delimiter = "\n").astype(float)
+# target = data1['target'].tolist()
+# #print(target)
 
-learning2 = list(range(0,20))
-learning3 = list(range(20,30))
-practice = list(range(30,70))
+# learning2 = list(range(0,20))
+# learning3 = list(range(20,30))
+# practice = list(range(30,70))
 
-## UPDATE THESE RANGES
-test_HnV = list(range(70,80)) # haptics, no visual
-test_HV = list(range(80,90))
-test_nHnV = list(range(90,100)) # no haptics, no visual
-test_nHV = list(range(100,110)) # no haptics, visual
-groups = [learning2, practice, test_HnV, test_HV, test_nHnV, test_nHV]
-txt = ['learning2= ', 'practice= ', 'Test, Yes Haptic No Visual= ', 'Test, Yes Haptic Yes Visual= ', 'Test, No Haptic No Visual= ', 'Test, No Haptic Yes Visual= ']
+# ## UPDATE THESE RANGES
+# test_HnV = list(range(70,80)) # haptics, no visual
+# test_HV = list(range(80,90))
+# test_nHnV = list(range(90,100)) # no haptics, no visual
+# test_nHV = list(range(100,110)) # no haptics, visual
+# groups = [learning2, practice, test_HnV, test_HV, test_nHnV, test_nHV]
+# txt = ['learning2= ', 'practice= ', 'Test, Yes Haptic No Visual= ', 'Test, Yes Haptic Yes Visual= ', 'Test, No Haptic No Visual= ', 'Test, No Haptic Yes Visual= ']
 
-print("---- MEAN ERROR -----")
+# print("---- MEAN ERROR -----")
 
-for i in range(0,len(groups)):
-	idx = groups[i]
-	error = [target[i] - subjectAttempt[i] for i in idx]
-	#print(error)
-	avgError = sum(error) / len(error)
-	# errorABS = [abs(target[i] - subjectAttempt[i]) for i in idx]
-	# avgErrorABS = sum(errorABS) / len(errorABS)
-	print(txt[i]+str(avgError))
+# for i in range(0,len(groups)):
+# 	idx = groups[i]
+# 	error = [target[i] - subjectAttempt[i] for i in idx]
+# 	#print(error)
+# 	avgError = sum(error) / len(error)
+# 	# errorABS = [abs(target[i] - subjectAttempt[i]) for i in idx]
+# 	# avgErrorABS = sum(errorABS) / len(errorABS)
+# 	print(txt[i]+str(avgError))
 
-print("---- MEAN ERROR (ABSOLUTE VALUE) -----")
-for i in range(0,len(groups)):
-	idx = groups[i]
-	errorABS = [abs(target[i] - subjectAttempt[i]) for i in idx]
-	avgErrorABS = sum(errorABS) / len(errorABS)
-	print(txt[i]+str(avgErrorABS))
+# print("---- MEAN ERROR (ABSOLUTE VALUE) -----")
+# for i in range(0,len(groups)):
+# 	idx = groups[i]
+# 	errorABS = [abs(target[i] - subjectAttempt[i]) for i in idx]
+# 	avgErrorABS = sum(errorABS) / len(errorABS)
+# 	print(txt[i]+str(avgErrorABS))
 

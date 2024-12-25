@@ -70,10 +70,11 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 	nWrong = 0
 	nRight = 0
 
+	trialCount = 0
+
 	staircaseFileName = skB.initializeTrialFiles(p, fileName, key)
 
 	# we are assuming nUp, nDown: 2:1
-
 	testArr = [] # [0.0] * 50
 	Ldb = 4 #db
 	if (not (increasing)):
@@ -295,6 +296,12 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 		
 		# updated termination conditions
 		if (trialCount > 15):
+
+			# Condition #1: less than 2dB
+			# the range of the most recent 10 values
+			#if (abs(statistics.mean(testArr[-10:]) - reference) <  10**(0.1)):
+			if ( (max(testArr[-10]) - min(testArr[-10])) <  10**(0.1)):
+				keepGoing = False
 			#npTestArr = np.array(testArr[-10:])
 
 			# precomputation for condition #2
@@ -304,11 +311,7 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 				if (j==equalityCheckVal):
 					nEqualityCheck = nEqualityCheck + 1
 
-			# Condition #1: less than 2dB
-			# the range of the most recent 10 values
-			#if (abs(statistics.mean(testArr[-10:]) - reference) <  10**(0.1)):
-			if ( (max(testArr[-10]) - min(testArr[-10])) <  10**(0.1)):
-				keepGoing = False
+			
 
 			# Condition #2: if the last 10 values are the exact same
 			elif (nEqualityCheck == 10):
