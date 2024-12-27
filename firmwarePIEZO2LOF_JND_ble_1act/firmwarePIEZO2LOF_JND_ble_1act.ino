@@ -25,6 +25,7 @@
 
 # define N_ACT 1
 #define ID_NUM 1
+#define FC 10 // 10 Hz
 
 // BLE UART 
 #define BUFSIZE                        128   // Size of the read buffer for incoming data
@@ -70,6 +71,7 @@ int  user_position_MAX = POSITION_MAX;
 float user_force_MIN = FORCE_MIN;
 float user_force_MAX = FORCE_MAX;
 int measuredPos;
+double iirFilterData = 0.0;
 short zeroForceGlobal = 255;
 
 // skFilter
@@ -141,15 +143,7 @@ struct PID_sk {
 
 void setup() {
     initializeSystem();
-    if (ID_NUM ==2 ) {
-//       scaleF = 7.5;
-//       KpConst = 20*scaleF;//130.00;
-//       KiConst = 32*scaleF;//0.031;
-//       KdConst = 12*scaleF;//50*scaleF;//30.0;
-//       setPointTest = 0.0;
-//       td = 0.02*tScale;
-        detectionChar = 'y';
-    }
+    if (ID_NUM ==2 ) detectionChar = 'y';
     if (serialON) Serial.println("Device initialized.");
 //    if (bleON) ble.println("Device initialized.");
     blinkN(5, 500);
@@ -158,7 +152,7 @@ void setup() {
     initializePID(&myPID, KpConst, KiConst, KdConst, setPointTest);
     
     // CALIBRATION
-    zeroForceGlobal = initializeFilter();
+    zeroForceGlobal = initializeFilter(1);
     myPID.zeroForce = zeroForceGlobal;
 
     if (ID_NUM ==1 ) {
@@ -176,9 +170,13 @@ void setup() {
 }
 
 void loop() {
-  runtime();
+  //runtime();
   //testSetpointSequence();
+  sweep(2000,ID_NUM-1);
 }
+
+// -------------------- SUPPORT FUNCTIONS --------------------//
+
 
 
 void runtime() {
@@ -193,6 +191,8 @@ void runtime() {
  
  short data = readDataFromSensor(I2C_ADDR); // 1) read input
  double filteredData1 = filterData(data, 1);
+ iirFilterData = iirFilterSK(data, yesPrint);
+ 
  double error = computeError(&myPID, filteredData1); // 3) compute error between input and setpoint 
  
  myPID.actuatorCommand = PIDcompute(&myPID, error);
@@ -200,9 +200,9 @@ void runtime() {
 
  if (yesPrint) { // writeout data
   String dataString = "";
-  // dataString = (String(myPID.setpoint) + "," + String(filteredData1)+ "," + String(myPID.setpoint - error));
+  //// dataString = (String(myPID.setpoint) + "," + String(filteredData1)+ "," + String(myPID.setpoint - error));
   dataString = (String(myTimeLoop) + "," + String(myPID.setpoint) + "," + String(myPID.setpoint - error) + "," + String(filteredData1)+ "," + String(myPID.actuatorCommand) + "," + String(measuredPos));
-  //dataString = (String(data) + "," + String(filteredData1));
+  //dataString = (String(data) + "," + String(filteredData1)+ "," + String(iirFilterData));
   if (calibratepidON) dataString =  (String(myPID.setpoint)+ "," + String(myPID.setpoint - error));
   if (serialON) Serial.println(dataString);
   if (bleON) ble.println(dataString);
@@ -217,8 +217,19 @@ void runtime() {
  if (!yesPrint) delay(T_CYCLE);  
 }
 
-// -------------------- SUPPORT FUNCTIONS --------------------//
+double iirFilterSK(short data, bool printYes) {
+  double cutoff_freq_rad = FC * 2 * M_PI;
+  double tau = 1/cutoff_freq_rad;
+  double delta_T;
+  
+  if (!printYes) delta_T = 0.0128; 
+  else delta_T = 0.029;// 29385, 12811
+  
+  double alpha = 1-exp(-delta_T/tau);
 
+  double newFilterData = alpha*data + (1-alpha)*iirFilterData;
+  return newFilterData;
+}
 
 void testSetpointSequence() {
   float setpointArr[] = {1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0, 5.0, 0.0, 6.0, 0.0};
@@ -231,6 +242,12 @@ void testSetpointSequence() {
  while (1) {
   
      unsigned long myTimeLoop = millis();
+     bool yesPrint = false;
+
+      if ((myTimeLoop - myPID.tLastWriteout) > td_WriteOut) { // writeout data
+         measuredPos = m_zap.presentPosition(ID_NUM);
+         yesPrint = true;
+      }
      
      short data = readDataFromSensor(I2C_ADDR); // 1) read input
      double filteredData1 = filterData(data, 1);
@@ -239,7 +256,7 @@ void testSetpointSequence() {
      myPID.actuatorCommand = PIDcompute(&myPID, error);
      m_zap.GoalPosition(ID_NUM, myPID.actuatorCommand);
     
-     if ((myTimeLoop - myPID.tLastWriteout) > td_WriteOut) { // writeout data
+     if (yesPrint) { // writeout data
         String dataString = "";
         //dataString += (String(myTimeLoop));
         
@@ -259,10 +276,7 @@ void testSetpointSequence() {
 
      if (i >= arrLength) break;
     
-//     if (bleON) directActuatorControlForce();
-//     if (serialON) serialActuatorControlForce();
-     measuredPos = m_zap.presentPosition(ID_NUM);
-    //if (T_CYCLE > 0) delay(T_CYCLE);  
+     if (!yesPrint) delay(T_CYCLE);   
 
  }
 
@@ -284,7 +298,7 @@ double changeScale(double s) {
   else if (s <= 5) ls = 5.0; // 5,  4, 5
   else if (s <= 6) ls = 4.0; // 5,  4, 5
   else if (s <= 9) ls = 3.0;  //  3, 6, 7, 8, 9 
-  else ls = 1.75;// 1.75, 12, 14
+  else ls = 1.75;// 1.7s5, 12, 14
 
 //
 //    if (s <= 1) ls = 11.0;
@@ -621,8 +635,9 @@ void serialActuatorControlForce() {
 
 // PID FUNCTIONS
 
-short initializeFilter() {
+short initializeFilter(int filterType) {
     double filteredData1;
+
      // give the filters some time to begin
   unsigned long setupTime = millis();
   //tLastWriteout = millis();
@@ -630,26 +645,30 @@ short initializeFilter() {
 
   writeActuator(ID_NUM-1, POSITION_MIN);
   while ( (myTimeSetup - setupTime) < t_setup) {
-
+    
+    short data = readDataFromSensor(I2C_ADDR);
+    filteredData1 = filterData(data, 1);
+    if (filterType) iirFilterData = iirFilterSK(data, 0);
+   
     // every td_WriteOut seconds, read, filter and writeout data
     if ((myTimeSetup - myPID.tLastWriteout) > td_WriteOut)  {
-      
-      short data = readDataFromSensor(I2C_ADDR);
-      filteredData1 = filterData(data, 1);
-      
-      
-      String dataString = ""; // writeout       //dataString += (String(filteredData)+ "," + String(filteredData1) + "," + String(filteredData2));
-      dataString = (String(data)+ "," + String(filteredData1));
+           
+      // writeout       //dataString += (String(filteredData)+ "," + String(filteredData1) + "," + String(filteredData2));
+      String dataString;
+      if (!filterType) dataString = (String(data)+ "," + String(filteredData1));
+      else dataString = (String(data) + "," + String(filteredData1)+ "," + String(iirFilterData));
+
       if (calibratepidON) dataString = "0.0, 4.0";
       if (serialON) Serial.println(dataString);
       if (bleON) ble.println(dataString);
-      
       myPID.tLastWriteout = millis();
     }
     myTimeSetup = millis();
+    if (T_CYCLE > 0) delay(T_CYCLE);
   }
 
-  return filteredData1;
+  if (!filterType) return filteredData1;
+  else return iirFilterData;
 }
 
 // initialze PID
@@ -866,7 +885,6 @@ int sweep(int t_d, int idx) {
     unsigned long startTimeWriteOut = millis();
     unsigned long myTime = millis();
     String dataString;
-    //int td_filterInitialization = 25000;
     int td_WriteOut = 150;
     int i;
     
@@ -874,41 +892,46 @@ int sweep(int t_d, int idx) {
 
     while(1) {
 
-      
       myTime = millis();
+      bool yesPrint = false;
 
-      // update counter for new position commands for sweep
-      if (int(myTime - startTimeCmd) > t_d) {
-        counter = counter + inc;
-        //bound the command
-        if(counter > user_position_MAX) counter = user_position_MAX;
-        else if(counter < user_position_MIN) counter = user_position_MIN;
-        //Serial.println(counter);
-        writeActuator(idx, counter);
-        startTimeCmd = millis();
-      }
-
-      // update counter for writing out and reading data
       if (int(myTime - startTimeWriteOut) > td_WriteOut) {
-        data = readDataFromSensor(I2C_ADDRArr[idx]);
-        //filteredData = filter50.reading(data);
-        xData[0] = data;
-        skFilter2(xData, &test, yData, &test);
-        short filteredData1 = yData[0];
         position_Measured = readFeedback(idx); // this adds 152 ms
         if (position_Measured > maxValue) maxValue = position_Measured;
-        dataString += (String(myTime) + "," + String(counter) + "," + String(position_Measured) + "," + data + "," + filteredData1);
+        yesPrint = true;
+      }
+
+      data = readDataFromSensor(I2C_ADDRArr[idx]);
+      double filteredData1 = filterData(data, 1);
+      iirFilterData = iirFilterSK(data, yesPrint);
+
+      // update counter for writing out and reading data
+      if (yesPrint) {
+        dataString = (String(myTime) + "," + String(counter) + "," + String(position_Measured) + "," + String(data) + "," + String(filteredData1) + "," + String(iirFilterData));
+        //dataString = (String(data) + "," + String(filteredData1)+ "," + String(iirFilterData));
         if (serialON) Serial.println(dataString);
         if (bleON) ble.println(dataString);
         startTimeWriteOut = millis();
         dataString = "";
       }
 
+      // update counter for new position commands for sweep
+      if (int(myTime - startTimeCmd) > t_d) {
+        counter = counter + inc;
+        if(counter > user_position_MAX) counter = user_position_MAX; // bound the command
+        else if(counter < user_position_MIN) counter = user_position_MIN;
+        writeActuator(idx, counter);
+        startTimeCmd = millis();
+      }
+
+
       if (counter >= user_position_MAX) {
         inc = -1 * inc;
         retracting = true;
       }
       else if (counter <= (user_position_MIN) && retracting) break;
+
+      if (!yesPrint) delay(T_CYCLE);
     }
     return maxValue;    
 }
