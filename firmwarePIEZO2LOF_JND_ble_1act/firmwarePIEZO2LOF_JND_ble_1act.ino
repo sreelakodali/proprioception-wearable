@@ -53,13 +53,13 @@ int  buttonCount = 0; // button count. global!
 const bool bleON = false;
 const bool serialON = true;
 
-const bool calibratepidON = true;
+const bool calibratepidON = false;
 const  byte I2C_ADDR = 0x04;
 const  byte I2C_ADDRArr[4] = {0x04, 0x08, 0x0A, 0x0C};
 const bool actuatorType = 1; // NEW. 0 = actuonix and 1 = MightyZap. CHANGE THIS for new actuator!
 const int mightyZapWen_OUT = 12; // write enable output signal for buffer
 const int t_setup = 15000; // set up time for filter values to stabilize
-const int T_CYCLE = 15*tScale; // minimum delay to ensure not sampling at too high a rate for sensors
+const int T_CYCLE = 10; // minimum delay to ensure not sampling at too high a rate for sensors
 const int td_WriteOut = 100; // write out rate
 
 
@@ -163,11 +163,11 @@ void setup() {
 
     if (ID_NUM ==1 ) {
 
-      if (!calibratepidON) {
-        blinkN(5, 500);
-        //ble.println("in calibration");
-        calibration();
-      }
+//      if (!calibratepidON) {
+//        blinkN(5, 500);
+//        //ble.println("in calibration");
+//        calibration();
+//      }
     }
     //FIX: INSERT MIN MAX PRESSURE CALIBRATION
     blinkN(5, 500);
@@ -176,13 +176,21 @@ void setup() {
 }
 
 void loop() {
-  //runtime();
-  testSetpointSequence();
+  runtime();
+  //testSetpointSequence();
 }
 
 
 void runtime() {
  unsigned long myTimeLoop = millis();
+ //Serial.println(micros());
+ bool yesPrint = false;
+
+  if ((myTimeLoop - myPID.tLastWriteout) > td_WriteOut) { // writeout data
+     measuredPos = m_zap.presentPosition(ID_NUM);
+     yesPrint = true;
+  }
+ 
  short data = readDataFromSensor(I2C_ADDR); // 1) read input
  double filteredData1 = filterData(data, 1);
  double error = computeError(&myPID, filteredData1); // 3) compute error between input and setpoint 
@@ -190,25 +198,23 @@ void runtime() {
  myPID.actuatorCommand = PIDcompute(&myPID, error);
  m_zap.GoalPosition(ID_NUM, myPID.actuatorCommand);
 
- if ((myTimeLoop - myPID.tLastWriteout) > td_WriteOut) { // writeout data
+ if (yesPrint) { // writeout data
   String dataString = "";
-  //dataString += (String(myTimeLoop));
-  
-  // dataString += (String(myPID.setpoint) + "," + String(filteredData1)+ "," + String(myPID.setpoint - error));
+  // dataString = (String(myPID.setpoint) + "," + String(filteredData1)+ "," + String(myPID.setpoint - error));
   dataString = (String(myTimeLoop) + "," + String(myPID.setpoint) + "," + String(myPID.setpoint - error) + "," + String(filteredData1)+ "," + String(myPID.actuatorCommand) + "," + String(measuredPos));
   //dataString = (String(data) + "," + String(filteredData1));
   if (calibratepidON) dataString =  (String(myPID.setpoint)+ "," + String(myPID.setpoint - error));
   if (serialON) Serial.println(dataString);
   if (bleON) ble.println(dataString);
   myPID.tLastWriteout = millis();
+  //yesPrint = false;
  }
 
  if (bleON) directActuatorControlForce();
  if (serialON) serialActuatorControlForce();
- measuredPos = m_zap.presentPosition(ID_NUM);
- 
-//if (T_CYCLE > 0) delay(T_CYCLE);  
-//  sweep(2000,ID_NUM-1);
+ //measuredPos = m_zap.presentPosition(ID_NUM);
+
+ if (!yesPrint) delay(T_CYCLE);  
 }
 
 // -------------------- SUPPORT FUNCTIONS --------------------//
