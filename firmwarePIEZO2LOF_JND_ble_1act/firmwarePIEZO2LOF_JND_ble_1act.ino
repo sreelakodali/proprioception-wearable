@@ -16,6 +16,12 @@
 #include "skFilter2.h"
 #include "skFilter2_terminate.h"
 
+#include "skFilter_fs32_fpass04.h"
+#include "skFilter_fs32_fpass04_terminate.h"
+
+#include <movingAvg.h>
+#include <RunningMedian.h>
+
 //#include <Arduino.h>
 //#include "Adafruit_BLE.h"
 //#include "Adafruit_BluefruitLE_UART.h"
@@ -25,7 +31,7 @@
 
 # define N_ACT 1
 #define ID_NUM 1
-#define FC 10 // 10 Hz
+#define FC 0.5 // 10 Hz
 
 // BLE UART 
 #define BUFSIZE                        128   // Size of the read buffer for incoming data
@@ -58,6 +64,7 @@ const bool calibratepidON = false;
 const  byte I2C_ADDR = 0x04;
 const  byte I2C_ADDRArr[4] = {0x04, 0x08, 0x0A, 0x0C};
 const bool actuatorType = 1; // NEW. 0 = actuonix and 1 = MightyZap. CHANGE THIS for new actuator!
+
 const int mightyZapWen_OUT = 12; // write enable output signal for buffer
 const int t_setup = 15000; // set up time for filter values to stabilize
 const int T_CYCLE = 10; // minimum delay to ensure not sampling at too high a rate for sensors
@@ -71,13 +78,20 @@ int  user_position_MAX = POSITION_MAX;
 float user_force_MIN = FORCE_MIN;
 float user_force_MAX = FORCE_MAX;
 int measuredPos;
-double iirFilterData = 0.0;
 short zeroForceGlobal = 255;
 
 // skFilter
+const int filterTypeGlobal = 4; // 0 is newest, fs32 fc0.4. 1 is previous matlab. 2 is moving average, 3 is iir, 4 is median
 int test = 1;
-short xData[1] = {0};
-float yData[1] = {0};
+short xData[1] = {0}; // skFilter2
+float yData[1] = {0}; // skFilter2
+
+short xData2[1] = {0}; // skFilterFs32
+float yData2[1] = {0}; // skFilterFs32
+const int windowSize = 50;
+movingAvg avgFilter(windowSize);
+RunningMedian medFilter = RunningMedian(windowSize);
+double iirFilterData = 0.0;
 
 // I/O and additional peripherals
 const int  button_IN = 4;
@@ -118,6 +132,14 @@ double KdConst = 12*scaleF;//50*scaleF;//30.0;
 double setPointTest = 0.0;
 double td = 0.02*tScale;
 
+//// ACTUATOR 1
+//double scaleF = 1; 
+//double KpConst = 15*scaleF;//10
+//double KiConst = 15*scaleF;//8
+//double KdConst = 12*scaleF;//5
+//double setPointTest = 0.0;
+//double td = 0.02*tScale;
+
 //double scaleF = 1; 
 //double KpConst = 20*scaleF;//130.00;
 //double KiConst = 32*scaleF;//0.031;
@@ -152,7 +174,7 @@ void setup() {
     initializePID(&myPID, KpConst, KiConst, KdConst, setPointTest);
     
     // CALIBRATION
-    zeroForceGlobal = initializeFilter(1);
+    zeroForceGlobal = initializeFilter(filterTypeGlobal);
     myPID.zeroForce = zeroForceGlobal;
 
     if (ID_NUM ==1 ) {
@@ -163,42 +185,63 @@ void setup() {
 //        calibration();
 //      }
     }
-    //FIX: INSERT MIN MAX PRESSURE CALIBRATION
-    blinkN(5, 500);
-     //Serial.println(ble.isConnected());
 
+    blinkN(5, 500);
 }
 
 void loop() {
+  //readForce();
   //runtime();
   //testSetpointSequence();
-  sweep(2000,ID_NUM-1);
+  sweep(5000,ID_NUM-1);
 }
 
 // -------------------- SUPPORT FUNCTIONS --------------------//
 
+String readForce() {
+  double forceDataArr[filterTypeGlobal + 1];
+  unsigned long myTimeLoop = millis();
+  short data = readDataFromSensor(I2C_ADDR); // 1) read input
 
+  for (int i=0; i < (filterTypeGlobal + 1); i++) {
+    forceDataArr[i] = filterData(data, i) + 5*(i+1);
+  }
+//  double filteredData1 = filterData(data, filterTypeGlobal);
+//  iirFilterData = iirFilterSK(data, 1);
+  //String dataString = (String(myTimeLoop) + "," + String(data) + "," + String(filteredData1)+ "," + String(iirFilterData));
+
+  String dataString = (String(data)+ "," + String(forceDataArr[0]));
+  for (int i = 1; i < (filterTypeGlobal + 1); i++) {
+        dataString += ("," + String(forceDataArr[i]));
+  }
+  
+//  if (serialON) Serial.println(dataString);
+//  if (bleON) ble.println(dataString);
+//  delay(28);
+  return dataString;
+}
 
 void runtime() {
- unsigned long myTimeLoop = millis();
  //Serial.println(micros());
- bool yesPrint = false;
+// bool yesPrint = false;
 
-  if ((myTimeLoop - myPID.tLastWriteout) > td_WriteOut) { // writeout data
-     measuredPos = m_zap.presentPosition(ID_NUM);
-     yesPrint = true;
-  }
- 
+//  if ((myTimeLoop - myPID.tLastWriteout) > td_WriteOut) { // writeout data
+//     measuredPos = m_zap.presentPosition(ID_NUM);
+//     yesPrint = true;
+//  }
+
+ measuredPos = m_zap.presentPosition(ID_NUM);
+ unsigned long myTimeLoop = millis();
  short data = readDataFromSensor(I2C_ADDR); // 1) read input
- double filteredData1 = filterData(data, 1);
- iirFilterData = iirFilterSK(data, yesPrint);
+ double filteredData1 = filterData(data, filterTypeGlobal);
+ //iirFilterData = iirFilterSK(data, yesPrint);
  
  double error = computeError(&myPID, filteredData1); // 3) compute error between input and setpoint 
  
  myPID.actuatorCommand = PIDcompute(&myPID, error);
  m_zap.GoalPosition(ID_NUM, myPID.actuatorCommand);
 
- if (yesPrint) { // writeout data
+ //if (yesPrint) { // writeout data
   String dataString = "";
   //// dataString = (String(myPID.setpoint) + "," + String(filteredData1)+ "," + String(myPID.setpoint - error));
   dataString = (String(myTimeLoop) + "," + String(myPID.setpoint) + "," + String(myPID.setpoint - error) + "," + String(filteredData1)+ "," + String(myPID.actuatorCommand) + "," + String(measuredPos));
@@ -206,15 +249,15 @@ void runtime() {
   if (calibratepidON) dataString =  (String(myPID.setpoint)+ "," + String(myPID.setpoint - error));
   if (serialON) Serial.println(dataString);
   if (bleON) ble.println(dataString);
-  myPID.tLastWriteout = millis();
+ // myPID.tLastWriteout = millis();
   //yesPrint = false;
- }
+ //}
 
  if (bleON) directActuatorControlForce();
  if (serialON) serialActuatorControlForce();
  //measuredPos = m_zap.presentPosition(ID_NUM);
 
- if (!yesPrint) delay(T_CYCLE);  
+ //if (!yesPrint) delay(T_CYCLE);  
 }
 
 double iirFilterSK(short data, bool printYes) {
@@ -241,22 +284,23 @@ void testSetpointSequence() {
   
  while (1) {
   
-     unsigned long myTimeLoop = millis();
-     bool yesPrint = false;
 
-      if ((myTimeLoop - myPID.tLastWriteout) > td_WriteOut) { // writeout data
-         measuredPos = m_zap.presentPosition(ID_NUM);
-         yesPrint = true;
-      }
+//     bool yesPrint = false;
+    measuredPos = m_zap.presentPosition(ID_NUM);
+    unsigned long myTimeLoop = millis();
+//      if ((myTimeLoop - myPID.tLastWriteout) > td_WriteOut) { // writeout data
+//         measuredPos = m_zap.presentPosition(ID_NUM);
+//         yesPrint = true;
+//      }
      
      short data = readDataFromSensor(I2C_ADDR); // 1) read input
-     double filteredData1 = filterData(data, 1);
+     double filteredData1 = filterData(data, filterTypeGlobal);
      double error = computeError(&myPID, filteredData1); // 3) compute error between input and setpoint 
      
      myPID.actuatorCommand = PIDcompute(&myPID, error);
      m_zap.GoalPosition(ID_NUM, myPID.actuatorCommand);
     
-     if (yesPrint) { // writeout data
+    // if (yesPrint) { // writeout data
         String dataString = "";
         //dataString += (String(myTimeLoop));
         
@@ -266,7 +310,7 @@ void testSetpointSequence() {
         if (serialON) Serial.println(dataString);
         if (bleON) ble.println(dataString);
         myPID.tLastWriteout = millis();
-     }
+   //  }
 
      if ( ((myTimeLoop - t_lastSetpoint) > td_Setpoint) && (i < arrLength) ) {
       changeSetpoint(&myPID, setpointArr[i]);
@@ -276,7 +320,7 @@ void testSetpointSequence() {
 
      if (i >= arrLength) break;
     
-     if (!yesPrint) delay(T_CYCLE);   
+    // if (!yesPrint) delay(T_CYCLE);   
 
  }
 
@@ -636,7 +680,7 @@ void serialActuatorControlForce() {
 // PID FUNCTIONS
 
 short initializeFilter(int filterType) {
-    double filteredData1;
+    double filteredDataArr[filterType+1];
 
      // give the filters some time to begin
   unsigned long setupTime = millis();
@@ -644,31 +688,41 @@ short initializeFilter(int filterType) {
   unsigned long myTimeSetup = millis();
 
   writeActuator(ID_NUM-1, POSITION_MIN);
+  if (filterType >= 2) avgFilter.begin();
+  
   while ( (myTimeSetup - setupTime) < t_setup) {
     
     short data = readDataFromSensor(I2C_ADDR);
-    filteredData1 = filterData(data, 1);
-    if (filterType) iirFilterData = iirFilterSK(data, 0);
-   
+
+    for (int i = 0; i < (filterType+1); i++) {
+      filteredDataArr[i] = filterData(data, i);
+    }
+//    filteredData1 = filterData(data, filterTypeGlobal);
+//    if (filterType == 1) iirFilterData = iirFilterSK(data, 1);
+//    else if (filterType == 2) avgFilteredData = double(avgFilter.reading(d));
+    
     // every td_WriteOut seconds, read, filter and writeout data
     if ((myTimeSetup - myPID.tLastWriteout) > td_WriteOut)  {
            
       // writeout       //dataString += (String(filteredData)+ "," + String(filteredData1) + "," + String(filteredData2));
-      String dataString;
-      if (!filterType) dataString = (String(data)+ "," + String(filteredData1));
-      else dataString = (String(data) + "," + String(filteredData1)+ "," + String(iirFilterData));
+      String dataString = (String(data)+ "," + String(filteredDataArr[0]));
+      for (int i = 1; i < (filterType + 1); i++) {
+        dataString += ("," + String(filteredDataArr[i]));
+      }
+//      if (filterType == 0) dataString = (String(data)+ "," + String(filteredData1));
+//      else if (filterType == 1) dataString = (String(data) + "," + String(filteredData1)+ "," + String(iirFilterData));
 
       if (calibratepidON) dataString = "0.0, 4.0";
       if (serialON) Serial.println(dataString);
       if (bleON) ble.println(dataString);
       myPID.tLastWriteout = millis();
     }
+    delay(28);
     myTimeSetup = millis();
-    if (T_CYCLE > 0) delay(T_CYCLE);
+    //if (T_CYCLE > 0) delay(T_CYCLE);
   }
 
-  if (!filterType) return filteredData1;
-  else return iirFilterData;
+  return filteredDataArr[filterType];
 }
 
 // initialze PID
@@ -807,18 +861,36 @@ int PIDcompute(PID_sk* pid, double err) {
   return out;
 }
 
-double filterData(short d, bool filterType) {
+double filterData(short d, int filterType) {
   double fd;
-  
-  if (!(filterType)) {
-    fd = 0.0;
-    //fd = double(filter50.reading(d));   // 2) filter input
-  }
-  else {
+
+  // filterType 0 matlab fs32, fpass0.4 Hz
+  if (filterType == 0) {
+    xData2[0] = d;
+    skFilter_fs32_fpass04(xData2, &test, yData2, &test);
+   fd = yData2[0];
+
+  // filterType 1, previous matlab 1
+  } else if (filterType == 1) {
     xData[0] = d;
     skFilter2(xData, &test, yData, &test);
    fd = yData[0];
+
+   // filterType 2, moving average
+  } else if (filterType == 2) {
+    fd = double(avgFilter.reading(d));   // 2) filter input
+
+    // filterType 3, iir Filter
+  } else if (filterType == 3) {
+    iirFilterData = iirFilterSK(d, 1);
+    fd = iirFilterData;
+    
+    // filterType 4, median filter
+  } else if (filterType == 4) { 
+    medFilter.add(d);
+    fd = medFilter.getMedian();
   }
+  
   return fd;
 }
 
@@ -877,43 +949,49 @@ int sweep(int t_d, int idx) {
     short data;
     bool retracting = false;
     int position_Measured = 0;
-    int counter = user_position_MIN-1;
-    int inc = 10;
+    int counter = user_position_MIN;
+    int inc = 30;
     int maxValue = 0;
     //bool localWriteOut;
     unsigned long startTimeCmd;
-    unsigned long startTimeWriteOut = millis();
+    //unsigned long startTimeWriteOut = millis();
     unsigned long myTime = millis();
     String dataString;
-    int td_WriteOut = 150;
+    //int td_WriteOut = 150;
     int i;
     
     startTimeCmd = millis();
 
     while(1) {
 
-      myTime = millis();
-      bool yesPrint = false;
+      
+      //bool yesPrint = false;
+       position_Measured = readFeedback(idx);
+       myTime = millis();
+       if (position_Measured > maxValue) maxValue = position_Measured;
+       
+//      if (int(myTime - startTimeWriteOut) > td_WriteOut) {
+//        position_Measured = readFeedback(idx); // this adds 152 ms
+//        if (position_Measured > maxValue) maxValue = position_Measured;
+//        yesPrint = true;
+//      }
 
-      if (int(myTime - startTimeWriteOut) > td_WriteOut) {
-        position_Measured = readFeedback(idx); // this adds 152 ms
-        if (position_Measured > maxValue) maxValue = position_Measured;
-        yesPrint = true;
-      }
+      //data = readDataFromSensor(I2C_ADDRArr[idx]);
 
-      data = readDataFromSensor(I2C_ADDRArr[idx]);
-      double filteredData1 = filterData(data, 1);
-      iirFilterData = iirFilterSK(data, yesPrint);
+      String allForceData = readForce();
+      //double filteredData1 = filterData(data, filterTypeGlobal);
+      //iirFilterData = iirFilterSK(data, yesPrint);
 
       // update counter for writing out and reading data
-      if (yesPrint) {
-        dataString = (String(myTime) + "," + String(counter) + "," + String(position_Measured) + "," + String(data) + "," + String(filteredData1) + "," + String(iirFilterData));
+     // if (yesPrint) {
+        dataString = (String(myTime) + "," + String(counter) + "," + String(position_Measured) + "," + allForceData);
+        //dataString = (String(myTime) + "," + String(counter) + "," + String(position_Measured) + "," + String(data) + "," + String(filteredData1));
         //dataString = (String(data) + "," + String(filteredData1)+ "," + String(iirFilterData));
         if (serialON) Serial.println(dataString);
         if (bleON) ble.println(dataString);
-        startTimeWriteOut = millis();
+        //startTimeWriteOut = millis();
         dataString = "";
-      }
+    //  }
 
       // update counter for new position commands for sweep
       if (int(myTime - startTimeCmd) > t_d) {
@@ -931,7 +1009,7 @@ int sweep(int t_d, int idx) {
       }
       else if (counter <= (user_position_MIN) && retracting) break;
 
-      if (!yesPrint) delay(T_CYCLE);
+      //if (!yesPrint) delay(T_CYCLE);
     }
     return maxValue;    
 }
@@ -1082,9 +1160,10 @@ void initializeMightyZap(){
     
 }
 bool initializeSerial() {
-     if (serialON) Serial.begin(4608000);  
-    Serial.flush();
-     if (serialON) while (!Serial);
+     //m_zap.GoalPosition(ID_NUM, POSITION_MIN);
+     if (serialON) Serial.begin(4608000);
+     if (serialON) while (!Serial)
+     Serial.flush();
     return (true); 
 }
 

@@ -13,4 +13,4 @@ force = data(:,4);
 
 
 
-filteredHd2 = int16(skFilter3(int16(force)));
+filteredHd2 = int16(skFilter_fs32_fpass04(int16(force)));
