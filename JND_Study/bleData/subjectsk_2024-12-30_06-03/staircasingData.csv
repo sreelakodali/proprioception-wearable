@@ -1,0 +1,14 @@
+LOAD ASR VALUES
+Min1 0.0
+Max1 10.0
+Min2 0.0
+Max2 10.0
+Min3 0.0
+Max3 10.0
+avgMin 0.0
+avgMax 10.0
+q1 2.5
+q2 5.0
+q3 7.5
+--- ORDERING PAIRS TASK ----
+STIMULI PAIR: MIN, MINApplying pair: 0.0, 0.0

@@ -36,6 +36,7 @@ CALIBRATION_TEXT1 = ["Calibration", "Please indicate your minimum detection and"
 CALIBRATION_TEXT3 = ["Calibration: Begin", "1. Apply pressure with >", "2. When you first feel contact, click =.",  "3. Continue to press > to apply more pressure.", "4. Use > and < keys to hone into your", "maximum comfortable pressure.", "5. Click = when you've reached your maximum", "comfortable pressure.", "6. Click 8 to retract the device.", "", "We'll repeat this process 3x. After 3x, please", "click the red key to move onto the next task."]
 
 DEVICE2_TEXT = ["Turn Device 2 On",  "Please click the red key to proceed."]
+PAIRS_3 = ["Experiment 2: Ordering Pairs", ""]
 
 addr_Adafruit1 = "026B8104-5A8F-E8AF-518E-B778DB1C9CE2"
 addr_Adafruit2 = "380FFB6A-AB04-7634-8A6C-C8E255F7A26C"
@@ -96,10 +97,12 @@ async def waitGUI(sc):
 	skG.initializeWindow(sc,EXPERIMENT_TEXT_2)
 	await waitSK(20)
 
-async def orderingPairs(avgMin, avgMax, q2, wait):
+async def orderingPairs(c, avgMin, avgMax, q2, wait):
 	
 	value1 = 0.0
 	value2 = 0.0
+
+	c.send( ( "--- ORDERING PAIRS TASK ----\n").encode())
 
 	while (True):
 				
@@ -110,111 +113,130 @@ async def orderingPairs(avgMin, avgMax, q2, wait):
 			value1 = avgMin
 			value2 = avgMin
 
+			c.send(("STIMULI PAIR: MIN, MIN\n").encode())
+			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
 			await skB.sendSetpoint(value1, client1, rx_char1, 1) 	
 			await skB.sendSetpoint(value2, client2, rx_char2, 2) 	
 			await skB.waitSK(wait) 	# hold the poke	
 
 			await skB.sendSetpoint(0.0, client1, rx_char1, 1)
 			await skB.sendSetpoint(0.0, client2, rx_char2, 2)
-			await skB.waitSK(wait/2) 	# hold the poke
+			await skB.waitSK(wait) 	# hold the poke
 
 		elif k == '8': # 01
 			value1 = avgMin
 			value2 = q2
 
+			c.send(("STIMULI PAIR: MIN, MID\n").encode())
+			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
 			await skB.sendSetpoint(value1, client1, rx_char1, 1) 	
 			await skB.sendSetpoint(value2, client2, rx_char2, 2) 	
 			await skB.waitSK(wait) 	# hold the poke	
 
 			await skB.sendSetpoint(0.0, client1, rx_char1, 1)
 			await skB.sendSetpoint(0.0, client2, rx_char2, 2)
-			await skB.waitSK(wait/2) 	# hold the poke
+			await skB.waitSK(wait) 	# hold the poke
 
 		elif k == '9': # 02
 			value1 = avgMin
 			value2 = avgMax
 
+			c.send(("STIMULI PAIR: MIN, MAX\n").encode())
+			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
 			await skB.sendSetpoint(value1, client1, rx_char1, 1) 	
 			await skB.sendSetpoint(value2, client2, rx_char2, 2) 	
 			await skB.waitSK(wait) 	# hold the poke	
 
 			await skB.sendSetpoint(0.0, client1, rx_char1, 1)
 			await skB.sendSetpoint(0.0, client2, rx_char2, 2)
-			await skB.waitSK(wait/2) 	# hold the poke
+			await skB.waitSK(wait) 	# hold the poke
 
 		elif k == '4': # 10
 			value1 = q2
 			value2 = avgMin
 
+			c.send(("STIMULI PAIR: MID, MIN\n").encode())
+			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
 			await skB.sendSetpoint(value1, client1, rx_char1, 1) 	
 			await skB.sendSetpoint(value2, client2, rx_char2, 2) 	
 			await skB.waitSK(wait) 	# hold the poke	
 
 			await skB.sendSetpoint(0.0, client1, rx_char1, 1)
 			await skB.sendSetpoint(0.0, client2, rx_char2, 2)
-			await skB.waitSK(wait/2) 	# hold the poke
+			await skB.waitSK(wait) 	# hold the poke
 
 		elif k == '5': # reduce actuator position
 			value1 = q2
 			value2 = q2
 
+			c.send(("STIMULI PAIR: MID, MID\n").encode())
+			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
 			await skB.sendSetpoint(value1, client1, rx_char1, 1) 	
 			await skB.sendSetpoint(value2, client2, rx_char2, 2) 	
 			await skB.waitSK(wait) 	# hold the poke	
 
 			await skB.sendSetpoint(0.0, client1, rx_char1, 1)
 			await skB.sendSetpoint(0.0, client2, rx_char2, 2)
-			await skB.waitSK(wait/2) 	# hold the poke
+			await skB.waitSK(wait) 	# hold the poke
 
 		elif k == '6': # reset 
 			value1 = q2
 			value2 = avgMax
 
+			c.send(("STIMULI PAIR: MID, MAX\n").encode())
+			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
 			await skB.sendSetpoint(value1, client1, rx_char1, 1) 	
 			await skB.sendSetpoint(value2, client2, rx_char2, 2) 	
 			await skB.waitSK(wait) 	# hold the poke	
 
 			await skB.sendSetpoint(0.0, client1, rx_char1, 1)
 			await skB.sendSetpoint(0.0, client2, rx_char2, 2)
-			await skB.waitSK(wait/2) 	# hold the poke		
+			await skB.waitSK(wait) 	# hold the poke		
 
 		elif k == '1': # indicate limit
 			value1 = avgMax
 			value2 = avgMin
 
+			c.send(("STIMULI PAIR: MAX, MIN\n").encode())
+			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
 			await skB.sendSetpoint(value1, client1, rx_char1, 1) 	
 			await skB.sendSetpoint(value2, client2, rx_char2, 2) 	
 			await skB.waitSK(wait) 	# hold the poke	
 
 			await skB.sendSetpoint(0.0, client1, rx_char1, 1)
 			await skB.sendSetpoint(0.0, client2, rx_char2, 2)
-			await skB.waitSK(wait/2) 	# hold the poke
+			await skB.waitSK(wait) 	# hold the poke
 
 		elif k == '2': # reduce actuator position
 			value1 = avgMax
 			value2 = q2
 
+			c.send(("STIMULI PAIR: MAX, MID\n").encode())
+			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
 			await skB.sendSetpoint(value1, client1, rx_char1, 1) 	
 			await skB.sendSetpoint(value2, client2, rx_char2, 2) 	
 			await skB.waitSK(wait) 	# hold the poke	
 
 			await skB.sendSetpoint(0.0, client1, rx_char1, 1)
 			await skB.sendSetpoint(0.0, client2, rx_char2, 2)
-			await skB.waitSK(wait/2) 	# hold the poke
+			await skB.waitSK(wait) 	# hold the poke
 
 		elif k == '3': # indicate limit
 			value1 = avgMax
 			value2 = avgMax
 
+			c.send(("STIMULI PAIR: MAX, MAX\n").encode())
+			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
 			await skB.sendSetpoint(value1, client1, rx_char1, 1) 	
 			await skB.sendSetpoint(value2, client2, rx_char2, 2) 	
 			await skB.waitSK(wait) 	# hold the poke	
 
 			await skB.sendSetpoint(0.0, client1, rx_char1, 1)
 			await skB.sendSetpoint(0.0, client2, rx_char2, 2)
-			await skB.waitSK(wait/2) 	# hold the poke
+			await skB.waitSK(wait) 	# hold the poke
 
-
+		elif k == 'down':
+			break
 		await asyncio.sleep(0.1)
 
 	
@@ -302,20 +324,33 @@ def createDataFiles(p, name, idx_Act):
 				k.write(str(i) + ",")
 			#k.write(columnNames)
 
-	return (f, h)
+	f.close()
+	h.close()
+	newFileName1 = p + 'raw_device' + str(idx_Act) + '_' + name + '.csv'
+	newFileName2 = p + 'processed_device' + str(idx_Act) + '_' + name + '.csv'
+	return (newFileName1, newFileName2)
 
 def writeOutDataBLE(i, raw, processed, trialCount, verbose):
 	
 	# if it has the word SETPOINT, write it 
 	s = i.split(",")
 	if "SETPOINT" in i:
-		raw.write(i+ "\n")
+		rFile = open(raw, 'a', encoding='UTF8', newline='')
+		rFile.write(i+ "\n")
+		rFile.close()
 		#writer.write(i+ "\n")
-	elif (len(s) >= 2):
-		raw.write(i+"," + str(trialCount) + "\n")
-		processed.write(i+"," + str(trialCount) + "\n")
-	else:
-		raw.write(i+"," + str(trialCount) + "\n")
+	elif (len(s)):
+		rFile = open(raw, 'a', encoding='UTF8', newline='')
+		pFile = open(processed, 'a', encoding='UTF8', newline='')
+		
+		rFile.write(i+"," + str(trialCount) + "\n")
+		pFile.write(i+"," + str(trialCount) + "\n")
+		
+		rFile.close()
+		pFile.close()
+	
+	# else:
+	# 	raw.write(i+"," + str(trialCount) + "\n")
 	
 	# if (len(i) == len(dataFunc)): 
 	# 	# raw = [j.rstrip() for j in i]
