@@ -12,9 +12,11 @@ import socket, sys, datetime, select, random
 
 keys = ['q1', 'q2']
 
-nUpCount = 0
-nDownCount = 0
+
 for k in keys:
+	print(k)
+	nUpCount = 0
+	nDownCount = 0
 	for l in list(range(0,6)):
 		# skB.instructionsGUI(sc, tr)
 		# skB.prepareExperimentGUI(sc)
@@ -25,13 +27,16 @@ for k in keys:
 		else:
 			nDownCount = nDownCount + 1
 	
-		if ((rUp == 1) and (nUpCount == 3)) :
+		if ((rUp == 1) and (nUpCount > 3)) :
 			rUp = 0
-		if ((rUp == 0) and (nDownCount == 3)):
+			nDownCount = nDownCount + 1
+		if ((rUp == 0) and (nDownCount > 3)):
 			rUp = 1
+			nUpCount = nUpCount + 1
 
 		print(rUp)
-
+	print("nUpCount = " + str(nUpCount))
+	print("nDownCount = " + str(nDownCount))
 # data = range(0,10)
 
 # for i in data:

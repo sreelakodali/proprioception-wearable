@@ -32,9 +32,21 @@ EXPERIMENT_TEXT_4 = ["", "Please click the red key to start."]
 CALIBRATION_TEXT1 = ["Calibration", "Please indicate your minimum detection and", "maximum comfortable pressures. Controls are:", "", "8 retracts the", "device fully", "", "> and < increase", "decrease", "pressure", "", "Please use = to indicate when you feel a min/max", "pressure. Click the red key for more details."]
 
 #CALIBRATION_TEXT2 = ["Calibration: Procedure", "Press > to extend the device into your arm and", "apply pressure. When you first feel contact, click =.", "", "Then continue to press > to apply increasing", "pressure. When you've reached your maximum", "comfortable pressure, click =. You may use >", "and < keys to increase/decrease pressure and", "hone into your maximum comfortable pressure.", "Then click 8 to retract the device. We'll repeat this", "process 3x. When done, click the red key."]
+# First First we'll find your minimum detection threshold and then your maximum comfortable threshold
+# 1. Apply pressure with >
+# 2. When you first feel contact, click '=' key twice.
+# 3. Then click 8 to retract the device.
+# 4. Repeat steps 1-3 two  more times.
+#Start with the device fully retracted
+# 1. Apply pressure with >
+# 4. Use > and < keys to hone into your", "maximum comfortable pressure.", 
+#"5. Click '=' twice when you've reached your maximum", "comfortable pressure."
+#6. Click 8 to retract the device."
+# repeat steps 5-8
+#CALIBRATION_TEXT3 = ["Calibration: Begin", "1. Apply pressure with >", "2. When you first feel contact, click =.",  "3. Continue to press > to apply more pressure.", "4. Use > and < keys to hone into your", "maximum comfortable pressure.", "5. Click = when you've reached your maximum", "comfortable pressure.", "6. Click 8 to retract the device.", "", "We'll repeat this process 3x. After 3x, please", "click the red key to move onto the next task."]
 
-CALIBRATION_TEXT3 = ["Calibration: Begin", "1. Apply pressure with >", "2. When you first feel contact, click =.",  "3. Continue to press > to apply more pressure.", "4. Use > and < keys to hone into your", "maximum comfortable pressure.", "5. Click = when you've reached your maximum", "comfortable pressure.", "6. Click 8 to retract the device.", "", "We'll repeat this process 3x. After 3x, please", "click the red key to move onto the next task."]
-
+#CALIBRATION_TEXT3 = ["Calibration: Begin", "Minimum Detection", "1. Apply pressure with >", "2. When you first feel contact, click = twice.", "3. Click 8 to retract the device.",  "3. Repeat steps 1-3 two more times.", "", "Maximum Comfortable Pressure", "4. Apply pressure with >. Use > and < keys", "to hone into your maximum comfortable pressure.", "5. Click = twice when you've reached your maximum", "comfortable pressure.", "6. Click 8 to retract the device.", "7. Repeat steps 4-6 two more times."]
+CALIBRATION_TEXT3 = ["Calibration: Begin", "1. For minimum, apply pressure with >", "2. When you first feel contact, click = twice.", "3. Click 8 to retract the device.",  "4. Repeat steps 1-3 two more times.", "", "5. For max, apply pressure with >. Use > and <", "to hone into your maximum comfortable pressure.", "6. Click = twice when you've reached your", "maximum comfortable pressure.", "7. Click 8 to retract the device.", "8. Repeat steps 5-7 two more times.", "Once done, click the red key to move on."]
 DEVICE2_TEXT = ["Turn Device 2 On",  "Please click the red key to proceed."]
 PAIRS_3 = ["Experiment 2: Ordering Pairs", ""]
 

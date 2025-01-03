@@ -52,13 +52,13 @@ typedef enum { NONE, LOADMINMAX, MAX_PRESSURE, FILTER
 } CALIBRATION_OPTIONS;
 
 // System wide variables
-double tScale = 3.34;
+
 int  buttonCount = 0; // button count. global!
 //float  user_flex_MIN;
 //float  user_flex_MAX;
 //  IntervalTimerEx ForceSampleSerialWriteTimer;
-const bool bleON = false;
-const bool serialON = true;
+const bool bleON = true;
+const bool serialON = false;
 
 const bool calibratepidON = false;
 const  byte I2C_ADDR = 0x04;
@@ -81,7 +81,7 @@ int measuredPos;
 short zeroForceGlobal = 255;
 
 // skFilter
-const int filterTypeGlobal = 4; // 0 is newest, fs32 fc0.4. 1 is previous matlab. 2 is moving average, 3 is iir, 4 is median
+const int filterTypeGlobal = 2; // 0 is newest, fs32 fc0.4. 1 is previous matlab. 2 is moving average, 3 is iir, 4 is median
 int test = 1;
 short xData[1] = {0}; // skFilter2
 float yData[1] = {0}; // skFilter2
@@ -110,6 +110,16 @@ char* strBuf = "";
 char detectionChar = 'x';
 
 // PID
+//ORIGINAL PARAMETERS
+//// ACTUATOR 1
+//double scaleF = 1; 
+//double KpConst = 20*scaleF;//130.00;
+//double KiConst = 24*scaleF;//0.031;
+//double KdConst = 12*scaleF;//50*scaleF;//30.0;
+//double setPointTest = 0.0;
+//double td = 0.02*tScale;
+//double tScale = 3.34;
+
 
 //// ACTUATOR 2
 //double scaleF = 0.25;
@@ -126,11 +136,13 @@ char detectionChar = 'x';
 //1.75, 12, 14
 // ACTUATOR 1
 double scaleF = 1; 
-double KpConst = 20*scaleF;//130.00;
-double KiConst = 24*scaleF;//0.031;
-double KdConst = 12*scaleF;//50*scaleF;//30.0;
+double KpConst = 13.25*scaleF;//130.00;
+double KiConst = 37*scaleF;//0.031;
+double KdConst = 0*scaleF;//50*scaleF;//30.0;
 double setPointTest = 0.0;
-double td = 0.02*tScale;
+double td = 0.029;
+
+
 
 //// ACTUATOR 1
 //double scaleF = 1; 
@@ -179,11 +191,11 @@ void setup() {
 
     if (ID_NUM ==1 ) {
 
-//      if (!calibratepidON) {
-//        blinkN(5, 500);
-//        //ble.println("in calibration");
-//        calibration();
-//      }
+      if (!calibratepidON) {
+        blinkN(5, 500);
+        //ble.println("in calibration");
+        calibration();
+      }
     }
 
     blinkN(5, 500);
@@ -191,9 +203,9 @@ void setup() {
 
 void loop() {
   //readForce();
-  //runtime();
+  runtime();
   //testSetpointSequence();
-  sweep(5000,ID_NUM-1);
+  //sweep(5000,ID_NUM-1);
 }
 
 // -------------------- SUPPORT FUNCTIONS --------------------//
@@ -275,11 +287,12 @@ double iirFilterSK(short data, bool printYes) {
 }
 
 void testSetpointSequence() {
-  float setpointArr[] = {1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0, 5.0, 0.0, 6.0, 0.0};
+  float setpointArr[] = {1.0, 0.0, 3.0, 0.0, 6.0, 0.0, 10.0, 0.0, 15.0, 0.0, 21.0, 0.0};//14.0, 0.0, 16.0, 0.0, 18.0, 0.0, 20.0, 0.0
+  //float setpointArr[] = {1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0, 5.0, 0.0, 6.0, 0.0, 8.0, 0.0, 10.0, 0.0, 12.0, 0.0};//14.0, 0.0, 16.0, 0.0, 18.0, 0.0, 20.0, 0.0
   //float setpointArr[] = {1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0, 5.0, 0.0, 6.0, 0.0, 7.0, 0.0, 8.0, 0.0};
   int arrLength = (sizeof(setpointArr) / sizeof(setpointArr[0]));
   int i = 0; // setpointCounter
-  int td_Setpoint = 10000;
+  int td_Setpoint = 8000;
   unsigned long t_lastSetpoint = millis();
   
  while (1) {
@@ -336,12 +349,17 @@ double changeScale(double s) {
 
   // change PID depending on s
   if (s <= 1) ls = 11.0;
-  else if (s <= 2) ls = 9.0; // 7 , 1, 2, 3
-  else if (s <= 3) ls = 7.0; // 7 , 1, 2, 3
-  else if (s <= 4) ls = 6.0; // 5,  4, 5
-  else if (s <= 5) ls = 5.0; // 5,  4, 5
-  else if (s <= 6) ls = 4.0; // 5,  4, 5
-  else if (s <= 9) ls = 3.0;  //  3, 6, 7, 8, 9 
+  else if (s <= 2) ls = 8.0; // 7 , 1, 2, 3
+  else if (s <= 3) ls = 6.2; // 7 , 1, 2, 3
+  else if (s <= 4) ls = 5.5; // 5,  4, 5
+  else if (s <= 5) ls = 4.5; // 5,  4, 5
+  else if (s <= 6) ls = 4.2; // 5,  4, 5
+  else if (s <= 9) ls = 3.7;  //  3, 6, 7, 8, 9 
+  else if (s <= 10) ls = 3.5;  //  3, 6, 7, 8, 9 
+  else if (s <= 12) ls = 3.0;  //  3, 6, 7, 8, 9 
+  else if (s <= 15) ls = 2.7;
+  else if (s <= 18) ls = 2.25;
+  else if (s <= 21) ls = 2.2;
   else ls = 1.75;// 1.7s5, 12, 14
 
 //
@@ -371,7 +389,7 @@ double changeScaleV2(double s, int count) {
   else if (s <= 3) ls = 7.0; // 7 , 1, 2, 3
   else if (s <= 4) ls = 6.0; // 5,  4, 5
   else if (s <= 5) ls = 5.0; // 5,  4, 5
-  else if (s <= 9) ls = 3.0;  //  3, 6, 7, 8, 9 
+  else if (s <= 12) ls = 3.0;  //  3, 6, 7, 8, 9 
   else ls = 1.75;// 1.75, 12, 14
 
   return ls;

@@ -647,30 +647,36 @@ async def main():
 			keys = list(quartiles.keys())
 			random.shuffle(keys)
 
-			nUpCount = 0
-			nDownCount = 0
 
-			if (N_ACTUATORS == 2):
-				skB.device2GUI(sc)
-				device2 = await BleakScanner.find_device_by_address(skB.addr_Adafruit2)
-				if (device2 is None):
-					print("could not find device with address {}".format(skB.addr_Adafruit2))
-				else:
-					print(device2)
-					async with BleakClient(device2.address) as client2:
-						await client2.start_notify(skB.UART_TX_CHAR_UUID, handle_rx2)
-						nus2 = client2.services.get_service(skB.UART_SERVICE_UUID)
-						rx_char2 = nus2.get_characteristic(skB.UART_RX_CHAR_UUID)
 
-						# Calibration Filter: wait for filter to stabilize
-						await skB.waitGUI(sc)
-						#directionIncreasing = True
+			
+			skB.device2GUI(sc)
+			device2 = await BleakScanner.find_device_by_address(skB.addr_Adafruit2)
+			if (device2 is None):
+				print("could not find device with address {}".format(skB.addr_Adafruit2))
+			else:
+				print(device2)
+				async with BleakClient(device2.address) as client2:
+					await client2.start_notify(skB.UART_TX_CHAR_UUID, handle_rx2)
+					nus2 = client2.services.get_service(skB.UART_SERVICE_UUID)
+					rx_char2 = nus2.get_characteristic(skB.UART_RX_CHAR_UUID)
 
-						# skB.instructionsGUI(sc, tr) # GUI for instructions
-						# skB.prepareExperimentGUI(sc) # proceed with JND gui
-						# await staircaseNewBLE(c, N_ACTUATORS, directionIncreasing, avgMin, avgMax, 'q2', q2, waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+					# Calibration Filter: wait for filter to stabilize
+					await skB.waitGUI(sc)
+					#directionIncreasing = True
 
+					# skB.instructionsGUI(sc, tr) # GUI for instructions
+					# skB.prepareExperimentGUI(sc) # proceed with JND gui
+					# await staircaseNewBLE(c, N_ACTUATORS, directionIncreasing, avgMin, avgMax, 'q2', q2, waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+
+					actuatorOrder = [1,2]
+					random.shuffle(actuatorOrder)
+
+					for n in actuatorOrder:
 						for k in keys:
+							nUpCount = 0
+							nDownCount = 0
+
 							for l in list(range(0,6)):
 								skB.instructionsGUI(sc, tr)
 								skB.prepareExperimentGUI(sc)
@@ -681,17 +687,19 @@ async def main():
 								else:
 									nDownCount = nDownCount + 1
 
-								if ((rUp == 1) and (nUpCount == 3)) :
+								if ((rUp == 1) and (nUpCount > 3)) :
 									rUp = 0
-								elif ((rUp == 0) and (nDownCount == 3)):
+									nDownCount = nDownCount + 1
+								elif ((rUp == 0) and (nDownCount > 3)):
 									rUp = 1
+									nUpCount = nUpCount + 1
 								#print ("this is staircase" + str(k))
-								await staircaseNewBLE(c, N_ACTUATORS, directionIncreasing, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+								await staircaseNewBLE(c, n, directionIncreasing, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 
-						skB.prepareExperimentGUI(sc)
-						await orderingPairs(c, avgMin, avgMax, q2, waitTime, client1, rx_char1, client2, rx_char2)
+					skB.prepareExperimentGUI(sc)
+					await orderingPairs(c, avgMin, avgMax, q2, waitTime, client1, rx_char1, client2, rx_char2)
 
-			else:
+			# else:
 
 				# for k in keys:
 				# 	for l in list(range(0,6)):
@@ -712,12 +720,12 @@ async def main():
 				# 		#print ("this is staircase" + str(k))
 				# 		await staircaseNewBLE(c, N_ACTUATORS, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 
-				skB.prepareExperimentGUI(sc)
-				await orderingPairs(c, avgMin, avgMax, q2, waitTime, client1, rx_char1, client2, rx_char2)
-				# skB.instructionsGUI(sc, tr) # GUI for instructions
-				# skB.prepareExperimentGUI(sc) # proceed with JND gui
-				# directionIncreasing = True
-				# await staircaseNewBLE(c, N_ACTUATORS, directionIncreasing, avgMin, avgMax, 'q2', q2, waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+				# skB.prepareExperimentGUI(sc)
+				# await orderingPairs(c, avgMin, avgMax, q2, waitTime, client1, rx_char1, client2, rx_char2)
+				# # skB.instructionsGUI(sc, tr) # GUI for instructions
+				# # skB.prepareExperimentGUI(sc) # proceed with JND gui
+				# # directionIncreasing = True
+				# # await staircaseNewBLE(c, N_ACTUATORS, directionIncreasing, avgMin, avgMax, 'q2', q2, waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 			
 			# skB.closeFiles([f, h])
 			# if (N_ACTUATORS == 2):
