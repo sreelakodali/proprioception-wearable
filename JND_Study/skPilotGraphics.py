@@ -112,7 +112,7 @@ def initializePilot(sc):
 	penup()
 
 def initializeWindow(sc, arr):
-	erase2(sc,'white')
+	erase2(sc,'white') # reset()#
 	hideturtle()
 	color(COLOR, COLOR)
 	pensize(PEN_SIZE)
@@ -157,6 +157,22 @@ def initializeWindow_MultiColor(sc, arr, c):
 			write(arr[i], move=False, font=("Arial",32, "normal"))
 
 	color(COLOR, COLOR)
+	penup()
+
+def writeOnWindow(sc, arr):
+	#erase2(sc,'white') # reset()#
+	hideturtle()
+	color(COLOR, COLOR)
+	pensize(PEN_SIZE)
+	penup()
+
+	for i in range(len(arr)):
+		if i == 0:
+			goto(-350,300)
+			write(arr[i], move=False, font=("Arial",48, "normal"))
+		else:
+			goto(-350,230-(i-1)*50)
+			write(arr[i], move=False, font=("Arial",32, "normal"))
 	penup()
 
 def erase2(screen, c):

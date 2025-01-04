@@ -4,8 +4,8 @@
 import serial, datetime, csv, sys, getopt, os, shutil, turtle
 import random, time, keyboard, asyncio, socket, re, statistics
 import numpy as np
-from collections import deque
 #from scipy import signal
+from collections import deque
 from bleak import BleakScanner, BleakClient
 from itertools import count, takewhile
 from typing import Iterator
@@ -25,20 +25,20 @@ trialCount = 0 # counter
 # ------- CONSTANTS, DIRECTORY, & setting up files
 PATH = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/JND_Study/bleData/' # change this to your path!
 
-print("Welcome to the study! Please enter subject number:")
-nSubject = input()
-nSubject = "subject" + nSubject + "_"
-fileName = str(datetime.datetime.now())[0:16] # default name is date and time
-fileName = ((fileName.replace('/', '_')).replace(' ', '_')).replace(':','-')
-fileName = nSubject + fileName
-p = PATH +fileName+'/'
-if not (os.path.exists(p)):
-    os.makedirs(p)
-    print("New directory created: %s" % fileName)
+# print("Welcome to the study! Please enter subject number:")
+# nSubject = input()
+# nSubject = "subject" + nSubject + "_"
+# fileName = str(datetime.datetime.now())[0:16] # default name is date and time
+# fileName = ((fileName.replace('/', '_')).replace(' ', '_')).replace(':','-')
+# fileName = nSubject + fileName
+# p = PATH +fileName+'/'
+# if not (os.path.exists(p)):
+#     os.makedirs(p)
+#     print("New directory created: %s" % fileName)
 
-f, h = skB.createDataFiles(p, fileName, 1)
-if (N_ACTUATORS == 2):
-	g, m = skB.createDataFiles(p, fileName, 2)
+# f, h = skB.createDataFiles(p, fileName, 1)
+# if (N_ACTUATORS == 2):
+# 	g, m = skB.createDataFiles(p, fileName, 2)
 
 # ------- BLE values
 databuf = ""
@@ -341,7 +341,22 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 
 	c.send(("DONE\n").encode())
 
-async def orderingPairs(c, avgMin, avgMax, q2, wait, c1, rx1, c2, rx2):
+async def orderingPairsSendStimuli(sc, c,k, v1, v2, c1, rx1, c2, rx2, wait):
+	skB.orderedPairsGUI(sc)
+	c.send(("Applying pair: " + str(v1) + ", " + str(v2) + "\n" ).encode())
+	txt = "Stimulus " + str(k) + " in progress"
+	skG.writeText(sc, -350, 230, txt, skG.COLOR)
+	await skB.sendSetpoint(v1, c1, rx1, 1) 	
+	await skB.sendSetpoint(v2, c2, rx2, 2) 	
+	await skB.waitSK(wait) 	# hold the poke	
+
+	await skB.sendSetpoint(0.0, c1, rx1, 1)
+	await skB.sendSetpoint(0.0, c2, rx2, 2)
+	await skB.waitSK(wait/2) 	# hold the poke
+	skG.writeText(sc, -350, 180, "Stimulus done.", skG.COLOR)
+	c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
+
+async def orderingPairs(sc, c, avgMin, avgMax, q2, wait, c1, rx1, c2, rx2):
 	
 	value1 = 0.0
 	value2 = 0.0
@@ -356,132 +371,57 @@ async def orderingPairs(c, avgMin, avgMax, q2, wait, c1, rx1, c2, rx2):
 			#await client1.write_gatt_char(rx_char1, ("c\n").encode(encoding="ascii"), response=False)
 			value1 = avgMin
 			value2 = avgMin
-
 			c.send(("STIMULI PAIR: MIN, MIN\n").encode())
-			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
-			await skB.sendSetpoint(value1, c1, rx1, 1) 	
-			#await skB.sendSetpoint(value2, c2, rx2, 2) 	
-			await skB.waitSK(wait) 	# hold the poke	
-
-			await skB.sendSetpoint(0.0, c1, rx1, 1)
-			#await skB.sendSetpoint(0.0, c2, rx2, 2)
-			await skB.waitSK(wait/4) 	# hold the poke
-			c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
+			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
 		elif k == '8': # 01
 			value1 = avgMin
 			value2 = q2
-
 			c.send(("STIMULI PAIR: MIN, MID\n").encode())
-			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
-			await skB.sendSetpoint(value1, c1, rx1, 1) 	
-			#await skB.sendSetpoint(value2, c2, rx2, 2) 	
-			await skB.waitSK(wait) 	# hold the poke	
-
-			await skB.sendSetpoint(0.0, c1, rx1, 1)
-			#await skB.sendSetpoint(0.0, c2, rx2, 2)
-			await skB.waitSK(wait/4) 	# hold the poke
-			c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
+			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
 		elif k == '9': # 02
 			value1 = avgMin
 			value2 = avgMax
-
 			c.send(("STIMULI PAIR: MIN, MAX\n").encode())
-			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
-			await skB.sendSetpoint(value1, c1, rx1, 1) 	
-			#await skB.sendSetpoint(value2, c2, rx2, 2) 	
-			await skB.waitSK(wait) 	# hold the poke	
-
-			await skB.sendSetpoint(0.0, c1, rx1, 1)
-			#await skB.sendSetpoint(0.0, c2, rx2, 2)
-			await skB.waitSK(wait/4) 	# hold the poke
-			c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
+			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
 		elif k == '4': # 10
 			value1 = q2
 			value2 = avgMin
-
 			c.send(("STIMULI PAIR: MID, MIN\n").encode())
-			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
-			await skB.sendSetpoint(value1, c1, rx1, 1) 	
-			#await skB.sendSetpoint(value2, c2, rx2, 2) 	
-			await skB.waitSK(wait) 	# hold the poke	
+			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-			await skB.sendSetpoint(0.0, c1, rx1, 1)
-			#await skB.sendSetpoint(0.0, c2, rx2, 2)
-			await skB.waitSK(wait/4) 	# hold the poke
-			c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
 		elif k == '5': # reduce actuator position
 			value1 = q2
 			value2 = q2
-
 			c.send(("STIMULI PAIR: MID, MID\n").encode())
-			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
-			await skB.sendSetpoint(value1, c1, rx1, 1) 	
-			#await skB.sendSetpoint(value2, c2, rx2, 2) 	
-			await skB.waitSK(wait) 	# hold the poke	
+			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-			await skB.sendSetpoint(0.0, c1, rx1, 1)
-			#await skB.sendSetpoint(0.0, c2, rx2, 2)
-			await skB.waitSK(wait/4) 	# hold the poke
-			c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
 		elif k == '6': # reset 
 			value1 = q2
 			value2 = avgMax
-
 			c.send(("STIMULI PAIR: MID, MAX\n").encode())
-			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
-			await skB.sendSetpoint(value1, c1, rx1, 1) 	
-			#await skB.sendSetpoint(value2, c2, rx2, 2) 	
-			await skB.waitSK(wait) 	# hold the poke	
+			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-			await skB.sendSetpoint(0.0, c1, rx1, 1)
-			#await skB.sendSetpoint(0.0, c2, rx2, 2)
-			await skB.waitSK(wait/4) 	# hold the poke
-			c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
 		elif k == '1': # indicate limit
 			value1 = avgMax
 			value2 = avgMin
-
 			c.send(("STIMULI PAIR: MAX, MIN\n").encode())
-			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
-			await skB.sendSetpoint(value1, c1, rx1, 1) 	
-			#await skB.sendSetpoint(value2, c2, rx2, 2) 	
-			await skB.waitSK(wait) 	# hold the poke	
+			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-			await skB.sendSetpoint(0.0, c1, rx1, 1)
-			#await skB.sendSetpoint(0.0, c2, rx2, 2)
-			await skB.waitSK(wait/4) 	# hold the poke
-			c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
 		elif k == '2': # reduce actuator position
 			value1 = avgMax
 			value2 = q2
-
 			c.send(("STIMULI PAIR: MAX, MID\n").encode())
-			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
-			await skB.sendSetpoint(value1, c1, rx1, 1) 	
-			#await skB.sendSetpoint(value2, c2, rx2, 2) 	
-			await skB.waitSK(wait) 	# hold the poke	
+			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-			await skB.sendSetpoint(0.0, c1, rx1, 1)
-			#await skB.sendSetpoint(0.0, c2, rx2, 2)
-			await skB.waitSK(wait/4) 	# hold the poke
-			c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
 		elif k == '3': # indicate limit
 			value1 = avgMax
 			value2 = avgMax
-
 			c.send(("STIMULI PAIR: MAX, MAX\n").encode())
-			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
-			await skB.sendSetpoint(value1, c1, rx1, 1) 	
-			#await skB.sendSetpoint(value2, c2, rx2, 2) 	
-			await skB.waitSK(wait) 	# hold the poke	
+			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-			await skB.sendSetpoint(0.0, c1, rx1, 1)
-			#await skB.sendSetpoint(0.0, c2, rx2, 2)
-			await skB.waitSK(wait/4) 	# hold the poke
-			c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
 		elif k == 'down':
 			break
 		await asyncio.sleep(0.1)
@@ -583,37 +523,38 @@ def handle_rx2(_: BleakGATTCharacteristic, data: bytearray):
 
 
 async def main():
-
-	# write the staircase data via socket
-	s = socket.socket()
-	port = 12346
-	s.bind(('', port))
-	s.listen(2)
-	print("Waiting to connect to client to print JND data...")
-	c, addr = s.accept()
+	global sc
+	# # write the staircase data via socket
+	# s = socket.socket()
+	# port = 12346
+	# s.bind(('', port))
+	# s.listen(2)
+	# print("Waiting to connect to client to print JND data...")
+	# c, addr = s.accept()
 
 	tr = skB.initializeGUI(sc) # initialize GUI
-	device1 = await BleakScanner.find_device_by_address(skB.addr_Adafruit1) 	# look for BLE devices 
-	if ( (device1 is None) ) :
-	    print("could not find device with address {}".format(skB.addr_Adafruit1))
+	# device1 = await BleakScanner.find_device_by_address(skB.addr_Adafruit1) 	# look for BLE devices 
+	# if ( (device1 is None) ) :
+	#     print("could not find device with address {}".format(skB.addr_Adafruit1))
 	
-	else:
-		print(device1)
-		async with BleakClient(device1.address) as client1:
-			await client1.start_notify(skB.UART_TX_CHAR_UUID, handle_rx1)
-			nus1 = client1.services.get_service(skB.UART_SERVICE_UUID)
-			rx_char1 = nus1.get_characteristic(skB.UART_RX_CHAR_UUID)
+	if (1):
+	# else:
+	# 	print(device1)
+	# 	async with BleakClient(device1.address) as client1:
+	# 		await client1.start_notify(skB.UART_TX_CHAR_UUID, handle_rx1)
+	# 		nus1 = client1.services.get_service(skB.UART_SERVICE_UUID)
+	# 		rx_char1 = nus1.get_characteristic(skB.UART_RX_CHAR_UUID)
 
-			global client2
-			global rx_char2
+	# 		global client2
+	# 		global rx_char2
 
-			client2 = 0
-			rx_char2 = 0
+	# 		client2 = 0
+	# 		rx_char2 = 0
 
-			print("Connected!")
+	# 		print("Connected!")
 			global calibrate
 			# Calibration Filter: wait for filter to stabilize
-			await skB.waitGUI(sc)
+			#await skB.waitGUI(sc)
 
 			# calibration min max force
 			skB.calibrationMinMaxGUI(sc, tr)
@@ -623,32 +564,35 @@ async def main():
 				
 				k = keyboard.read_key()
 
-				if k == 'page up': # increase actuator position
-					await client1.write_gatt_char(rx_char1, ("c\n").encode(encoding="ascii"), response=False)
+				# if k == 'page up': # increase actuator position
+				# 	await client1.write_gatt_char(rx_char1, ("c\n").encode(encoding="ascii"), response=False)
 
-				elif k == 'right': # indicate limit
-					await client1.write_gatt_char(rx_char1, ("z\n").encode(encoding="ascii"), response=False)
+				# elif k == 'right': # indicate limit
+				# 	await client1.write_gatt_char(rx_char1, ("z\n").encode(encoding="ascii"), response=False)
 
-				elif k == 'page down': # reduce actuator position
-					await client1.write_gatt_char(rx_char1, ("w\n").encode(encoding="ascii"), response=False)
+				# elif k == 'page down': # reduce actuator position
+				# 	await client1.write_gatt_char(rx_char1, ("w\n").encode(encoding="ascii"), response=False)
 
-				elif k == 'up': # reset 
-					await client1.write_gatt_char(rx_char1, ("v\n").encode(encoding="ascii"), response=False)		
+				# elif k == 'up': # reset 
+				# 	await client1.write_gatt_char(rx_char1, ("v\n").encode(encoding="ascii"), response=False)		
 
-				elif k == 'down': # complete
-
+				if k == 'down': # complete
+					#await client1.write_gatt_char(rx_char1, ("d\n").encode(encoding="ascii"), response=False)		
+					#calibrate = False
 					if (calibrate == 1):
 						calibrate = calibrate + 1
 						skG.initializeCalibrationWindow(sc, skB.CALIBRATION_TEXT4)
 					else:
-						await client1.write_gatt_char(rx_char1, ("d\n").encode(encoding="ascii"), response=False)		
+						#await client1.write_gatt_char(rx_char1, ("d\n").encode(encoding="ascii"), response=False)		
 						calibrate = 0
 
 				await asyncio.sleep(0.1)
 
-			await skB.waitSK(3)
+			#await skB.waitSK(3)
 
-			avgMin, avgMax, q1, q2, q3 = skB.loadASRValues(c);
+			#avgMin, avgMax, q1, q2, q3 = skB.loadASRValues(c);
+			q1=1
+			q2=6
 			quartiles = {"q1": q1, "q2": q2}
 			keys = list(quartiles.keys())
 			random.shuffle(keys)
@@ -657,76 +601,48 @@ async def main():
 
 			
 			skB.device2GUI(sc)
-			device2 = await BleakScanner.find_device_by_address(skB.addr_Adafruit2)
-			if (device2 is None):
-				print("could not find device with address {}".format(skB.addr_Adafruit2))
-			else:
-				print(device2)
-				async with BleakClient(device2.address) as client2:
-					await client2.start_notify(skB.UART_TX_CHAR_UUID, handle_rx2)
-					nus2 = client2.services.get_service(skB.UART_SERVICE_UUID)
-					rx_char2 = nus2.get_characteristic(skB.UART_RX_CHAR_UUID)
+			if (1):
+			# device2 = await BleakScanner.find_device_by_address(skB.addr_Adafruit2)
+			# if (device2 is None):
+			# 	print("could not find device with address {}".format(skB.addr_Adafruit2))
+			# else:
+			# 	print(device2)
+			# 	async with BleakClient(device2.address) as client2:
+			# 		await client2.start_notify(skB.UART_TX_CHAR_UUID, handle_rx2)
+			# 		nus2 = client2.services.get_service(skB.UART_SERVICE_UUID)
+			# 		rx_char2 = nus2.get_characteristic(skB.UART_RX_CHAR_UUID)
 
 					# Calibration Filter: wait for filter to stabilize
-					await skB.waitGUI(sc)
+					#await skB.waitGUI(sc)
 					#directionIncreasing = True
-
-					# skB.instructionsGUI(sc, tr) # GUI for instructions
-					# skB.prepareExperimentGUI(sc) # proceed with JND gui
-					# await staircaseNewBLE(c, N_ACTUATORS, directionIncreasing, avgMin, avgMax, 'q2', q2, waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 
 					actuatorOrder = [1,2]
 					random.shuffle(actuatorOrder)
 
+					nParts = 0
 					for n in actuatorOrder:
+						#nParts = nParts + 1
 						for k in keys:
+							nParts = nParts + 1
 							rUpStack = deque()
 							rUpArr = [0, 0, 0, 1, 1, 1]
 							random.shuffle(rUpArr)
 							for r in rUpArr:
 								rUpStack.append(r)
 
-							for l in list(range(0,6)):
-								skB.instructionsGUI(sc, tr)
-								skB.prepareExperimentGUI(sc)
+							for l in list(range(0,len(rUpArr))):
+								# skB.instructionsGUI2(sc, tr, (nParts-1)*len(rUpArr) + l) 
+								# skB.prepareExperimentGUI(sc, l)
 								rUp = rUpStack.pop()
 								#print ("this is staircase" + str(k))
-								await staircaseNewBLE(c, n, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+								print("actuator#= {}, increasing= {}, quartile={}, trial#={}".format(n, rUp, k, l))
+								#await skB.waitSK(3)
+								#await staircaseNewBLE(c, n, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 
-					skB.prepareExperimentGUI(sc)
-					await orderingPairs(c, avgMin, avgMax, q2, waitTime, client1, rx_char1, client2, rx_char2)
-
-			# else:
-
-				# for k in keys:
-				# 	for l in list(range(0,6)):
-				# 		skB.instructionsGUI(sc, tr)
-				# 		skB.prepareExperimentGUI(sc)
-
-				# 		rUp = random.randrange(0,2)
-				# 		if (rUp):
-				# 			nUpCount = nUpCount + 1
-				# 		else:
-				# 			nDownCount = nDownCount + 1
-
-				# 		if ((rUp == 1) and (nUpCount == 3)) :
-				# 			rUp = 0
-				# 		elif ((rUp == 0) and (nDownCount == 3)):
-				# 			rUp = 1
-
-				# 		#print ("this is staircase" + str(k))
-				# 		await staircaseNewBLE(c, N_ACTUATORS, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
-
-				# skB.prepareExperimentGUI(sc)
-				# await orderingPairs(c, avgMin, avgMax, q2, waitTime, client1, rx_char1, client2, rx_char2)
-				# # skB.instructionsGUI(sc, tr) # GUI for instructions
-				# # skB.prepareExperimentGUI(sc) # proceed with JND gui
-				# # directionIncreasing = True
-				# # await staircaseNewBLE(c, N_ACTUATORS, directionIncreasing, avgMin, avgMax, 'q2', q2, waitTime, 0.0, client1, rx_char1, client2, rx_char2)
-			
-			# skB.closeFiles([f, h])
-			# if (N_ACTUATORS == 2):
-			# 	skB.closeFiles([g, m])
+					skB.orderedPairsInstructionsGUI(sc, tr)
+					skB.orderedPairsGUI(sc)
+					await skB.waitSK(3)
+					#await orderingPairs(sc, c, avgMin, avgMax, q2, waitTime, client1, rx_char1, client2, rx_char2)
 
 asyncio.run(main())
 

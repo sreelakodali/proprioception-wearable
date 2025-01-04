@@ -23,13 +23,14 @@ dataFunc = {'time':sk.millisToSeconds, 'setpoint':sk.doNothing,'set-err':sk.doNo
 
 SYSTEM_MIN_RESOLUTION = 0.098
 EXPERIMENT_TEXT_0 = ["Welcome!", "Let's begin the experiment", "", "", "", "", "", "", "", "", "", "", "Please click the red key to continue."]
-EXPERIMENT_TEXT_1 = ["Experiment", "Task: Identify whether Stimulus A feels more,", "intense, the same, or less intense than Stimulus B.", "", "",  "", "", "", "", "", "Use >, =, and < keys to indicate your answer,", "and then click the red key to go to the next trial.", "Please click the red key to proceed."]
+EXPERIMENT_TEXT_1 = ["Experiment", "Task: Identify whether Stimulus A feels more", "intense, the same, or less intense than Stimulus B.", "", "",  "", "", "", "", "", "Use >, =, and < keys to indicate your answer,", "and then click the red key to go to the next trial.", "Please click the red key to proceed."]
+EXPERIMENT_TEXT_5 = ["Task: Identify whether Stimulus A feels more", "intense, the same, or less intense than Stimulus B.", "", "",  "", "", "", "", "", "Use >, =, and < keys to indicate your answer,", "and then click the red key to go to the next trial.", "Please click the red key to proceed."]
 EXPERIMENT_TEXT = [EXPERIMENT_TEXT_0, EXPERIMENT_TEXT_1]
 EXPERIMENT_TEXT_3 = ["JND Study", ""]
 EXPERIMENT_TEXT_2 = ["Initializing", "Please wait 20 seconds until we begin"]
 EXPERIMENT_TEXT_4 = ["", "Please click the red key to start."]
 #CALIBRATION_TEXT1 = ["Calibration", "Please indicate your minimum detection and", "maximum comfortable pressures. Controls are:", "", "", "", "", "", "", "", "> and < extend and retract the device", "8 retracts the device all the way and please use", "= to indicate when you feel a min/max pressure.", "Click the red key for more details."]
-CALIBRATION_TEXT1 = ["Calibration", "Please indicate your minimum detection and", "maximum comfortable pressures. Controls are:", "", "8 retracts the", "device fully", "", "> and < increase", "decrease", "pressure", "", "Please use = to indicate when you feel a min/max", "pressure. Click the red key for more details."]
+CALIBRATION_TEXT1 = ["Calibration: Keypad Controls", "Please indicate your minimum detection and", "maximum comfortable pressures. Controls are:", "", "8 retracts the", "device fully", "", "> and < increase", "decrease", "pressure", "", "Please use = to indicate when you feel a min/max", "pressure. Click the red key for more details."]
 
 #CALIBRATION_TEXT2 = ["Calibration: Procedure", "Press > to extend the device into your arm and", "apply pressure. When you first feel contact, click =.", "", "Then continue to press > to apply increasing", "pressure. When you've reached your maximum", "comfortable pressure, click =. You may use >", "and < keys to increase/decrease pressure and", "hone into your maximum comfortable pressure.", "Then click 8 to retract the device. We'll repeat this", "process 3x. When done, click the red key."]
 # First First we'll find your minimum detection threshold and then your maximum comfortable threshold
@@ -46,10 +47,31 @@ CALIBRATION_TEXT1 = ["Calibration", "Please indicate your minimum detection and"
 #CALIBRATION_TEXT3 = ["Calibration: Begin", "1. Apply pressure with >", "2. When you first feel contact, click =.",  "3. Continue to press > to apply more pressure.", "4. Use > and < keys to hone into your", "maximum comfortable pressure.", "5. Click = when you've reached your maximum", "comfortable pressure.", "6. Click 8 to retract the device.", "", "We'll repeat this process 3x. After 3x, please", "click the red key to move onto the next task."]
 
 #CALIBRATION_TEXT3 = ["Calibration: Begin", "Minimum Detection", "1. Apply pressure with >", "2. When you first feel contact, click = twice.", "3. Click 8 to retract the device.",  "3. Repeat steps 1-3 two more times.", "", "Maximum Comfortable Pressure", "4. Apply pressure with >. Use > and < keys", "to hone into your maximum comfortable pressure.", "5. Click = twice when you've reached your maximum", "comfortable pressure.", "6. Click 8 to retract the device.", "7. Repeat steps 4-6 two more times."]
-CALIBRATION_TEXT3 = ["Calibration: Begin", "1. For minimum, apply pressure with >", "2. When you first feel contact, click = twice.", "3. Click 8 to retract the device.",  "4. Repeat steps 1-3 two more times.", "", "5. For max, apply pressure with >. Use > and <", "to hone into your maximum comfortable pressure.", "6. Click = twice when you've reached your", "maximum comfortable pressure.", "7. Click 8 to retract the device.", "8. Repeat steps 5-7 two more times.", "Once done, click the red key to move on."]
-DEVICE2_TEXT = ["Turn Device 2 On",  "Please click the red key to proceed."]
-PAIRS_3 = ["Experiment 2: Ordering Pairs", ""]
+#CALIBRATION_TEXT3 = ["Calibration: Begin", "1. For minimum, apply pressure with >", "2. When you first feel contact, click = and then 8.", "3. Click 8 to retract the device.",  "4. Repeat steps 1-3 two more times.", "", "5. For max, apply pressure with >. Use > and <", "to hone into your maximum comfortable pressure.", "6. Click = twice when you've reached your", "maximum comfortable pressure.", "7. Click 8 to retract the device.", "8. Repeat steps 5-7 two more times.", "Once done, click the red key to move on."]
+CALIBRATION_TEXT3 = ["Calibration: Minimum", "1. Apply pressure with >", "2. When you first feel contact, click =.", "3. Click 8 to retract the device.",  "4. Repeat steps 1-3 two more times.", "", "", "", "", "", "", "Once done, click the red key to move on."]
+CALIBRATION_TEXT4 = ["Calibration: Maximum", "1. Apply pressure with >. Use > and <", "to hone into your maximum comfortable pressure.", "2. Click = when you've reached your maximum",  "comfortable pressure.", "3. Click 8 to retract the device.", "4. Repeat steps 1-3 two more times.", "", "", "", "", "Once done, click the red key to move on."]
 
+DEVICE2_TEXT = ["Turn Device 2 On",  "Please click the red key to proceed."]
+PAIRS_TEXT = ["Experiment: Ordering Pairs", "There are 9 pressure stimuli, numbered 1-9. Your", "task is to order the stimuli in order of increasing", "intensity - from least to most intense.", "",  "", "", "",  "", "", "", "", "Please click the red key for more details."]
+PAIRS_TEXT2 = ["Experiment: Ordering Pairs", "There are 9 pressure stimuli, numbered 1-9. Your", "task is to order the stimuli in order of increasing", "intensity - from least to most intense. Please", "use the keypad to select and feel the stimuli.",  "", "", "",  "", "", "", "", "Please click the red key to begin."]
+PAIRS_TEXT3 = ["Experiment: Ordering Pairs"]
+
+# In this final task, there are 9 pressure stimuli each assigned a number 1-9
+# For each stimulus, none, one, or both devices may apply pressure to your arm.
+# Your task is to order the stimuli in order of increasing intensity - from least intense to most intense.
+# Please use the keypad to select and feel the stimuli; you may go at your pace and feel the stimuli
+# however many times you need to and in whichever order you want.
+#
+# To feel each stimulus, please click one of the number keys 1-9 to receive its corresponding stimulus
+# (Example: Please click key 3 to feel stimulus #3.)
+
+
+
+
+ 
+
+
+# 
 addr_Adafruit1 = "026B8104-5A8F-E8AF-518E-B778DB1C9CE2"
 addr_Adafruit2 = "380FFB6A-AB04-7634-8A6C-C8E255F7A26C"
 UART_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e"
@@ -92,9 +114,43 @@ def instructionsGUI(sc, tr):
 	#turtle.penup()
 	keyboard.wait('down')
 
+def instructionsGUI2(sc, tr, i):
+	arr = ["Experiment: Part " + str(i) + " of 24"]
+	turtle.reset()
+	tr.shape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/keypadJND.gif')
+	skG.writeOnWindow(sc,arr+EXPERIMENT_TEXT_5)#arr+EXPERIMENT_TEXT_5
+	turtle.update()
+	keyboard.wait('down')
+
 def device2GUI(sc):
 	skG.initializeWindow(sc,DEVICE2_TEXT)
 	keyboard.wait('down')
+
+def orderedPairsInstructionsGUI(sc, tr):
+	turtle.reset()
+	#skG.initializeWindow(sc,PAIRS_TEXT)
+	sc.addshape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/pairsV3.gif')
+	tr.penup()
+	tr.goto(0,-100)
+	tr.shape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/pairsV3.gif')
+	skG.writeOnWindow(sc, PAIRS_TEXT)
+	turtle.update()
+	keyboard.wait('down')
+
+	turtle.reset()
+	sc.addshape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/pairsAndKeypad.gif')
+	tr.penup()
+	tr.goto(0,-100)
+	tr.shape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/pairsAndKeypad.gif')
+	skG.writeOnWindow(sc, PAIRS_TEXT2)
+	turtle.update()
+	keyboard.wait('down')
+	# turtle.reset()
+	# turtle.update()
+
+def orderedPairsGUI(sc):
+	#turtle.reset()
+	skG.initializeWindow(sc,PAIRS_TEXT3)
 
 def calibrationMinMaxGUI(sc, tr):
 	skG.initializeWindow(sc,CALIBRATION_TEXT1) # EXPERIMENT_TEXT_0
@@ -303,10 +359,10 @@ def loadASRValues(c):
 
 	return [avgMin, avgMax, q1, q2, q3]
 
-def prepareExperimentGUI(sc):
+def prepareExperimentGUI(sc, value):
 	skG.initializeWindow(sc,EXPERIMENT_TEXT_3)
 	#skG.initializeTrialLabel(sc, n)
-	skG.updateTrialLabel(sc, 0)
+	skG.updateTrialLabel(sc, value)
 	skG.delay(sc, t)
 
 def closeFiles(arr):
