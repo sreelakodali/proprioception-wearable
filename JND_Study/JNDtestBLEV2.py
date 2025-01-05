@@ -19,7 +19,7 @@ import skCalibrationFunctions as skC
 import skBLESupport_JND as skB
 
 # ------------
-N_ACTUATORS = 1
+N_ACTUATORS = 2
 trialCount = 0 # counter
 
 # ------- CONSTANTS, DIRECTORY, & setting up files
@@ -37,8 +37,8 @@ if not (os.path.exists(p)):
     print("New directory created: %s" % fileName)
 
 f, h = skB.createDataFiles(p, fileName, 1)
-if (N_ACTUATORS == 2):
-	g, m = skB.createDataFiles(p, fileName, 2)
+#if (N_ACTUATORS == 2):
+g, m = skB.createDataFiles(p, fileName, 2)
 
 # ------- BLE values
 databuf = ""
@@ -116,12 +116,12 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 		skG.writeText(sc, -350, 230, "Stimulus A in progress", skG.COLOR)
 
 		await skB.sendSetpoint(packetA, client1, rx_char1, 1) 	
-		if (N_ACTUATORS == 2):
+		if (nAct == 2):
 			await skB.sendSetpoint(packetA, client2, rx_char2, 2) 	
 		await skB.waitSK(wait) 	# hold the poke	
 
 		await skB.sendSetpoint(retract, client1, rx_char1, 1)
-		if (N_ACTUATORS == 2):
+		if (nAct == 2):
 			await skB.sendSetpoint(retract, client2, rx_char2, 2)
 		await skB.waitSK(wait) 	# hold the poke
 
@@ -130,12 +130,12 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 		skG.writeText(sc, -350, 180, "Stimulus B in progress", skG.COLOR)
 
 		await skB.sendSetpoint(packetB, client1, rx_char1, 1) 	
-		if (N_ACTUATORS == 2):
+		if (nAct == 2):
 			await skB.sendSetpoint(packetB, client2, rx_char2, 2) 	
 		await skB.waitSK(wait) 	# hold the poke	
 
 		await skB.sendSetpoint(retract, client1, rx_char1, 1)
-		if (N_ACTUATORS == 2):
+		if (nAct == 2):
 			await skB.sendSetpoint(retract, client2, rx_char2, 2)
 		await skB.waitSK(wait) 	# hold the poke	
 
@@ -341,7 +341,22 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 
 	c.send(("DONE\n").encode())
 
-async def orderingPairs(c, avgMin, avgMax, q2, wait, c1, rx1, c2, rx2):
+async def orderingPairsSendStimuli(sc, c,k, v1, v2, c1, rx1, c2, rx2, wait):
+	skB.orderedPairsGUI(sc)
+	c.send(("Applying pair: " + str(v1) + ", " + str(v2) + "\n" ).encode())
+	txt = "Stimulus " + str(k) + " in progress"
+	skG.writeText(sc, -350, 230, txt, skG.COLOR)
+	await skB.sendSetpoint(v1, c1, rx1, 1) 	
+	await skB.sendSetpoint(v2, c2, rx2, 2) 	
+	await skB.waitSK(wait) 	# hold the poke	
+
+	await skB.sendSetpoint(0.0, c1, rx1, 1)
+	await skB.sendSetpoint(0.0, c2, rx2, 2)
+	await skB.waitSK(wait/2) 	# hold the poke
+	skG.writeText(sc, -350, 180, "Stimulus done.", skG.COLOR)
+	c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
+
+async def orderingPairs(sc, c, avgMin, avgMax, q2, wait, c1, rx1, c2, rx2):
 	
 	value1 = 0.0
 	value2 = 0.0
@@ -356,132 +371,57 @@ async def orderingPairs(c, avgMin, avgMax, q2, wait, c1, rx1, c2, rx2):
 			#await client1.write_gatt_char(rx_char1, ("c\n").encode(encoding="ascii"), response=False)
 			value1 = avgMin
 			value2 = avgMin
-
 			c.send(("STIMULI PAIR: MIN, MIN\n").encode())
-			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
-			await skB.sendSetpoint(value1, c1, rx1, 1) 	
-			#await skB.sendSetpoint(value2, c2, rx2, 2) 	
-			await skB.waitSK(wait) 	# hold the poke	
-
-			await skB.sendSetpoint(0.0, c1, rx1, 1)
-			#await skB.sendSetpoint(0.0, c2, rx2, 2)
-			await skB.waitSK(wait/4) 	# hold the poke
-			c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
+			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
 		elif k == '8': # 01
 			value1 = avgMin
 			value2 = q2
-
 			c.send(("STIMULI PAIR: MIN, MID\n").encode())
-			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
-			await skB.sendSetpoint(value1, c1, rx1, 1) 	
-			#await skB.sendSetpoint(value2, c2, rx2, 2) 	
-			await skB.waitSK(wait) 	# hold the poke	
-
-			await skB.sendSetpoint(0.0, c1, rx1, 1)
-			#await skB.sendSetpoint(0.0, c2, rx2, 2)
-			await skB.waitSK(wait/4) 	# hold the poke
-			c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
+			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
 		elif k == '9': # 02
 			value1 = avgMin
 			value2 = avgMax
-
 			c.send(("STIMULI PAIR: MIN, MAX\n").encode())
-			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
-			await skB.sendSetpoint(value1, c1, rx1, 1) 	
-			#await skB.sendSetpoint(value2, c2, rx2, 2) 	
-			await skB.waitSK(wait) 	# hold the poke	
-
-			await skB.sendSetpoint(0.0, c1, rx1, 1)
-			#await skB.sendSetpoint(0.0, c2, rx2, 2)
-			await skB.waitSK(wait/4) 	# hold the poke
-			c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
+			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
 		elif k == '4': # 10
 			value1 = q2
 			value2 = avgMin
-
 			c.send(("STIMULI PAIR: MID, MIN\n").encode())
-			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
-			await skB.sendSetpoint(value1, c1, rx1, 1) 	
-			#await skB.sendSetpoint(value2, c2, rx2, 2) 	
-			await skB.waitSK(wait) 	# hold the poke	
+			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-			await skB.sendSetpoint(0.0, c1, rx1, 1)
-			#await skB.sendSetpoint(0.0, c2, rx2, 2)
-			await skB.waitSK(wait/4) 	# hold the poke
-			c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
 		elif k == '5': # reduce actuator position
 			value1 = q2
 			value2 = q2
-
 			c.send(("STIMULI PAIR: MID, MID\n").encode())
-			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
-			await skB.sendSetpoint(value1, c1, rx1, 1) 	
-			#await skB.sendSetpoint(value2, c2, rx2, 2) 	
-			await skB.waitSK(wait) 	# hold the poke	
+			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-			await skB.sendSetpoint(0.0, c1, rx1, 1)
-			#await skB.sendSetpoint(0.0, c2, rx2, 2)
-			await skB.waitSK(wait/4) 	# hold the poke
-			c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
 		elif k == '6': # reset 
 			value1 = q2
 			value2 = avgMax
-
 			c.send(("STIMULI PAIR: MID, MAX\n").encode())
-			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
-			await skB.sendSetpoint(value1, c1, rx1, 1) 	
-			#await skB.sendSetpoint(value2, c2, rx2, 2) 	
-			await skB.waitSK(wait) 	# hold the poke	
+			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-			await skB.sendSetpoint(0.0, c1, rx1, 1)
-			#await skB.sendSetpoint(0.0, c2, rx2, 2)
-			await skB.waitSK(wait/4) 	# hold the poke
-			c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
 		elif k == '1': # indicate limit
 			value1 = avgMax
 			value2 = avgMin
-
 			c.send(("STIMULI PAIR: MAX, MIN\n").encode())
-			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
-			await skB.sendSetpoint(value1, c1, rx1, 1) 	
-			#await skB.sendSetpoint(value2, c2, rx2, 2) 	
-			await skB.waitSK(wait) 	# hold the poke	
+			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-			await skB.sendSetpoint(0.0, c1, rx1, 1)
-			#await skB.sendSetpoint(0.0, c2, rx2, 2)
-			await skB.waitSK(wait/4) 	# hold the poke
-			c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
 		elif k == '2': # reduce actuator position
 			value1 = avgMax
 			value2 = q2
-
 			c.send(("STIMULI PAIR: MAX, MID\n").encode())
-			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
-			await skB.sendSetpoint(value1, c1, rx1, 1) 	
-			#await skB.sendSetpoint(value2, c2, rx2, 2) 	
-			await skB.waitSK(wait) 	# hold the poke	
+			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-			await skB.sendSetpoint(0.0, c1, rx1, 1)
-			#await skB.sendSetpoint(0.0, c2, rx2, 2)
-			await skB.waitSK(wait/4) 	# hold the poke
-			c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
 		elif k == '3': # indicate limit
 			value1 = avgMax
 			value2 = avgMax
-
 			c.send(("STIMULI PAIR: MAX, MAX\n").encode())
-			c.send(("Applying pair: " + str(value1) + ", " + str(value2) + "\n" ).encode())
-			await skB.sendSetpoint(value1, c1, rx1, 1) 	
-			#await skB.sendSetpoint(value2, c2, rx2, 2) 	
-			await skB.waitSK(wait) 	# hold the poke	
+			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-			await skB.sendSetpoint(0.0, c1, rx1, 1)
-			#await skB.sendSetpoint(0.0, c2, rx2, 2)
-			await skB.waitSK(wait/4) 	# hold the poke
-			c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
 		elif k == 'down':
 			break
 		await asyncio.sleep(0.1)
@@ -612,8 +552,7 @@ async def main():
 
 			print("Connected!")
 			global calibrate
-			# Calibration Filter: wait for filter to stabilize
-			await skB.waitGUI(sc)
+			await skB.waitGUI(sc) 	# Calibration Filter: wait for filter to stabilize
 
 			# calibration min max force
 			skB.calibrationMinMaxGUI(sc, tr)
@@ -652,9 +591,6 @@ async def main():
 			quartiles = {"q1": q1, "q2": q2}
 			keys = list(quartiles.keys())
 			random.shuffle(keys)
-
-
-
 			
 			skB.device2GUI(sc)
 			device2 = await BleakScanner.find_device_by_address(skB.addr_Adafruit2)
@@ -667,66 +603,32 @@ async def main():
 					nus2 = client2.services.get_service(skB.UART_SERVICE_UUID)
 					rx_char2 = nus2.get_characteristic(skB.UART_RX_CHAR_UUID)
 
-					# Calibration Filter: wait for filter to stabilize
-					await skB.waitGUI(sc)
-					#directionIncreasing = True
-
-					# skB.instructionsGUI(sc, tr) # GUI for instructions
-					# skB.prepareExperimentGUI(sc) # proceed with JND gui
-					# await staircaseNewBLE(c, N_ACTUATORS, directionIncreasing, avgMin, avgMax, 'q2', q2, waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+					await skB.waitGUI(sc) # Calibration Filter: wait for filter to stabilize
 
 					actuatorOrder = [1,2]
 					random.shuffle(actuatorOrder)
 
+					nParts = 0
 					for n in actuatorOrder:
 						for k in keys:
+							nParts = nParts + 1
 							rUpStack = deque()
 							rUpArr = [0, 0, 0, 1, 1, 1]
 							random.shuffle(rUpArr)
 							for r in rUpArr:
 								rUpStack.append(r)
 
-							for l in list(range(0,6)):
-								skB.instructionsGUI(sc, tr)
-								skB.prepareExperimentGUI(sc)
+							for l in list(range(0,len(rUpArr))):
+								skB.instructionsGUI2(sc, tr, (nParts-1)*len(rUpArr) + l)
+								skB.prepareExperimentGUI(sc, l)
 								rUp = rUpStack.pop()
 								#print ("this is staircase" + str(k))
+								#print("actuator#= {}, increasing= {}, quartile={}, trial#={}".format(n, rUp, k, l))
 								await staircaseNewBLE(c, n, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 
-					skB.prepareExperimentGUI(sc)
-					await orderingPairs(c, avgMin, avgMax, q2, waitTime, client1, rx_char1, client2, rx_char2)
-
-			# else:
-
-				# for k in keys:
-				# 	for l in list(range(0,6)):
-				# 		skB.instructionsGUI(sc, tr)
-				# 		skB.prepareExperimentGUI(sc)
-
-				# 		rUp = random.randrange(0,2)
-				# 		if (rUp):
-				# 			nUpCount = nUpCount + 1
-				# 		else:
-				# 			nDownCount = nDownCount + 1
-
-				# 		if ((rUp == 1) and (nUpCount == 3)) :
-				# 			rUp = 0
-				# 		elif ((rUp == 0) and (nDownCount == 3)):
-				# 			rUp = 1
-
-				# 		#print ("this is staircase" + str(k))
-				# 		await staircaseNewBLE(c, N_ACTUATORS, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
-
-				# skB.prepareExperimentGUI(sc)
-				# await orderingPairs(c, avgMin, avgMax, q2, waitTime, client1, rx_char1, client2, rx_char2)
-				# # skB.instructionsGUI(sc, tr) # GUI for instructions
-				# # skB.prepareExperimentGUI(sc) # proceed with JND gui
-				# # directionIncreasing = True
-				# # await staircaseNewBLE(c, N_ACTUATORS, directionIncreasing, avgMin, avgMax, 'q2', q2, waitTime, 0.0, client1, rx_char1, client2, rx_char2)
-			
-			# skB.closeFiles([f, h])
-			# if (N_ACTUATORS == 2):
-			# 	skB.closeFiles([g, m])
+					skB.orderedPairsInstructionsGUI(sc, tr)
+					skB.orderedPairsGUI(sc)
+					await orderingPairs(sc, c, avgMin, avgMax, q2, waitTime, client1, rx_char1, client2, rx_char2)
 
 asyncio.run(main())
 

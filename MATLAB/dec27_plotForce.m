@@ -1,38 +1,59 @@
-close all;
+%close all;
 
 %file = '2024-12-27_05-32'; 
 %file = '2024-12-27_07-25';
 %file = '2024-12-28_03-41';
 % file = '2024-12-29_01-10';
-file = '2024-12-29_03-30';
-
-
+%file = '2024-12-29_03-30';
+%file = '2025-01-04_21-32';
+%file = '2025-01-05_00-13';
+%file = '2025-01-05_00-18';
+%file = '2025-01-05_00-58';
+file = '2025-01-05_01-21';
 path = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/JND_Study/bleData/';
 data = readmatrix(strcat(path,file, '/raw_', file,'.csv'),'NumHeaderLines',0);
 
+fileArr = ["2024-12-29_03-30", "2025-01-04_21-32", "2025-01-05_00-13", "2025-01-05_00-58", "2025-01-05_01-21", "2025-01-05_02-10", "2025-01-05_02-17", "2025-01-05_02-27", "2025-01-05_02-32", "2025-01-05_02-44"];
 %
+
+for j = 1:size(fileArr,2)
+    f = fileArr(j);
+    d = readmatrix(strcat(path,f, '/raw_', f,'.csv'),'NumHeaderLines',0);
+    t = d(:,1)/1000;
+    s = d(:,2);
+    fo = d(:,3);
+    c = d(:,5);
+
+    figure;
+    set(gcf,'color','white');
+    gca(gcf);
+    plot(t, s); hold on;
+    plot(t,fo); hold on;
+    title(f);
+
+end
 time = data(:,1)/1000;
 setpoints = data(:,2);
 filteredForce = data(:,3);
 
-filteredForce(filteredForce<0.65)=0;
+%filteredForce(filteredForce<0.65)=0;
 rawFilteredForce = data(:,4);
 commandActuatorPos = data(:,5);
 measuredActuatorPos = data(:,6);
 
-plotData3 = [setpoints, filteredForce];
-figure;
-set(gcf,'color','white');
-ax = gca(gcf);
-
-for i = 1:size(plotData3,2)
-    plot(time, plotData3(:,i)); hold on;
-end
-title("Force vs Time for Different Force Setpoints");
-xlabel('Time (s)')
-ylabel('Force (N)')
-ax.FontSize = 15;
-ylim([0,25]);
+% plotData3 = [setpoints, filteredForce];
+% figure;
+% set(gcf,'color','white');
+% ax = gca(gcf);
+% 
+% for i = 1:size(plotData3,2)
+%     plot(time, plotData3(:,i)); hold on;
+% end
+% title("Force vs Time for Different Force Setpoints");
+% xlabel('Time (s)')
+% ylabel('Force (N)')
+% ax.FontSize = 15;
+% ylim([0,25]);
 
 % yyaxis right
 % ylabel("Actuator Position (mm)")

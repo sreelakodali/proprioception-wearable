@@ -39,7 +39,7 @@
 #define BLUEFRUIT_HWSERIAL_NAME      Serial2
 #define BLUEFRUIT_UART_MODE_PIN        11    // Set to -1 if unused
 #define FORCE_MIN 0.0 
-#define FORCE_MAX 24.0//4095
+#define FORCE_MAX 30.0//4095
 
 typedef enum {
   POSITION_MIN = 0, 
@@ -57,8 +57,8 @@ int  buttonCount = 0; // button count. global!
 //float  user_flex_MIN;
 //float  user_flex_MAX;
 //  IntervalTimerEx ForceSampleSerialWriteTimer;
-const bool bleON = true;
-const bool serialON = false;
+const bool bleON = false;
+const bool serialON = true;
 
 const bool calibratepidON = false;
 const  byte I2C_ADDR = 0x04;
@@ -66,7 +66,7 @@ const  byte I2C_ADDRArr[4] = {0x04, 0x08, 0x0A, 0x0C};
 const bool actuatorType = 1; // NEW. 0 = actuonix and 1 = MightyZap. CHANGE THIS for new actuator!
 
 const int mightyZapWen_OUT = 12; // write enable output signal for buffer
-const int t_setup = 15000; // set up time for filter values to stabilize
+const int t_setup = 5000; // set up time for filter values to stabilize
 const int T_CYCLE = 10; // minimum delay to ensure not sampling at too high a rate for sensors
 const int td_WriteOut = 100; // write out rate
 
@@ -79,6 +79,10 @@ float user_force_MIN = FORCE_MIN;
 float user_force_MAX = FORCE_MAX;
 int measuredPos;
 short zeroForceGlobal = 255;
+
+// drift management
+float currentSetpointGlobal = 0.0;
+float previousSetpointGlobal = 0.0;
 
 // skFilter
 const int filterTypeGlobal = 2; // 0 is newest, fs32 fc0.4. 1 is previous matlab. 2 is moving average, 3 is iir, 4 is median
@@ -130,15 +134,24 @@ char detectionChar = 'x';
 //double setPointTest = 2.0;
 //double td = 0.02*tScale;
 
-// 7 , 1, 2, 3
-// 5,  4, 5
-//  3, 6, 7, 8, 9
-//1.75, 12, 14
+// 1-4-25 8:38pm
+//// ACTUATOR 1
+//double scaleF = 1; 
+//double KpConst = 13.25*scaleF;//130.00;
+//double KiConst = 37*scaleF;//0.031;
+//double KdConst = 0*scaleF;//50*scaleF;//30.0;
+//double setPointTest = 0.0;
+//double td = 0.029;
+
+//
+//double KpConst = 12.75*scaleF;//130.00;
+//double KiConst = 36*scaleF;//0.031;
+
 // ACTUATOR 1
 double scaleF = 1; 
-double KpConst = 13.25*scaleF;//130.00;
-double KiConst = 37*scaleF;//0.031;
-double KdConst = 0*scaleF;//50*scaleF;//30.0;
+double KpConst = 11.0*scaleF;//11.5;
+double KiConst = 36*scaleF;//0.031;
+double KdConst = 1.05*scaleF;//50*scaleF;//30.0;
 double setPointTest = 0.0;
 double td = 0.029;
 
@@ -189,26 +202,36 @@ void setup() {
     zeroForceGlobal = initializeFilter(filterTypeGlobal);
     myPID.zeroForce = zeroForceGlobal;
 
-    if (ID_NUM ==1 ) {
-
-      if (!calibratepidON) {
-        blinkN(5, 500);
-        //ble.println("in calibration");
-        calibration();
-      }
-    }
+//    if (ID_NUM ==1 ) {
+//
+//      if (!calibratepidON) {
+//        blinkN(5, 500);
+//        //ble.println("in calibration");
+//        calibration();
+//      }
+//    }
 
     blinkN(5, 500);
 }
 
 void loop() {
   //readForce();
-  runtime();
-  //testSetpointSequence();
+  //runtime();
+  testSetpointSequence(8000);
   //sweep(5000,ID_NUM-1);
 }
 
 // -------------------- SUPPORT FUNCTIONS --------------------//
+
+// whenever the device is asked to go to setpoint = 0.0
+// instead of going to force-controlled 0.0
+// device should go to position_min which is physically zero
+// force is measured 
+// for the next non-zero setpoint, the most recent raw short zero force value
+//// is noted and zeroForceGlobal is updated to that
+//short driftReset() {
+//  
+//}
 
 String readForce() {
   double forceDataArr[filterTypeGlobal + 1];
@@ -286,13 +309,13 @@ double iirFilterSK(short data, bool printYes) {
   return newFilterData;
 }
 
-void testSetpointSequence() {
+void testSetpointSequence(int td) {
   float setpointArr[] = {1.0, 0.0, 3.0, 0.0, 6.0, 0.0, 10.0, 0.0, 15.0, 0.0, 21.0, 0.0};//14.0, 0.0, 16.0, 0.0, 18.0, 0.0, 20.0, 0.0
   //float setpointArr[] = {1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0, 5.0, 0.0, 6.0, 0.0, 8.0, 0.0, 10.0, 0.0, 12.0, 0.0};//14.0, 0.0, 16.0, 0.0, 18.0, 0.0, 20.0, 0.0
   //float setpointArr[] = {1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0, 5.0, 0.0, 6.0, 0.0, 7.0, 0.0, 8.0, 0.0};
   int arrLength = (sizeof(setpointArr) / sizeof(setpointArr[0]));
   int i = 0; // setpointCounter
-  int td_Setpoint = 8000;
+  int td_Setpoint = td;
   unsigned long t_lastSetpoint = millis();
   
  while (1) {
@@ -348,18 +371,18 @@ double changeScale(double s) {
   if (s > user_force_MAX) s = user_force_MAX;
 
   // change PID depending on s
-  if (s <= 1) ls = 11.0;
+  if (s <= 1) ls = 10.5;
   else if (s <= 2) ls = 8.0; // 7 , 1, 2, 3
-  else if (s <= 3) ls = 6.2; // 7 , 1, 2, 3
+  else if (s <= 3) ls = 6.4; // 7 , 1, 2, 3
   else if (s <= 4) ls = 5.5; // 5,  4, 5
   else if (s <= 5) ls = 4.5; // 5,  4, 5
-  else if (s <= 6) ls = 4.2; // 5,  4, 5
-  else if (s <= 9) ls = 3.7;  //  3, 6, 7, 8, 9 
-  else if (s <= 10) ls = 3.5;  //  3, 6, 7, 8, 9 
+  else if (s <= 6) ls = 3.4; // 5,  4, 5
+  else if (s <= 9) ls = 3.0;  //  3, 6, 7, 8, 9 
+  else if (s <= 10) ls = 2.08;  //  3, 6, 7, 8, 9 
   else if (s <= 12) ls = 3.0;  //  3, 6, 7, 8, 9 
-  else if (s <= 15) ls = 2.7;
+  else if (s <= 15) ls = 1.8;
   else if (s <= 18) ls = 2.25;
-  else if (s <= 21) ls = 2.2;
+  else if (s <= 21) ls = 1.4;
   else ls = 1.75;// 1.7s5, 12, 14
 
 //
@@ -822,15 +845,19 @@ void changeSetpoint(PID_sk* pid, float s) {
 //  else if (s <= 5) localScale = 5.0; // 5,  4, 5
 //  else if (s <= 9) localScale = 3.0;  //  3, 6, 7, 8, 9 
 //  else localScale = 1.75;// 1.75, 12, 14
-
+   previousSetpointGlobal = currentSetpointGlobal;
+   currentSetpointGlobal = s;
+   
   localScale = changeScale(s);
 
   newP = KpConst*localScale;//130.00; 
   newI = KiConst*localScale;//0.031;
-  newD = KdConst*localScale;//50*scaleF;//30.0;
+  if (s<=3) newD = 0.8*localScale;
+  else newD = KdConst*localScale;//50*scaleF;//30.0;
 
   changePIDparam(&(*pid), newP, newI, newD);
-    
+
+  
   (*pid).setpoint = s;
   //(*pid).Iterm = 0.0;
   (*pid).pTime = millis();

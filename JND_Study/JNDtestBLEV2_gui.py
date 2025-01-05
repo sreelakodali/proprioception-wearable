@@ -611,17 +611,14 @@ async def main():
 			# 		await client2.start_notify(skB.UART_TX_CHAR_UUID, handle_rx2)
 			# 		nus2 = client2.services.get_service(skB.UART_SERVICE_UUID)
 			# 		rx_char2 = nus2.get_characteristic(skB.UART_RX_CHAR_UUID)
-
-					# Calibration Filter: wait for filter to stabilize
-					#await skB.waitGUI(sc)
-					#directionIncreasing = True
+			
+					#await skB.waitGUI(sc) 	# Calibration Filter: wait for filter to stabilize
 
 					actuatorOrder = [1,2]
 					random.shuffle(actuatorOrder)
 
 					nParts = 0
 					for n in actuatorOrder:
-						#nParts = nParts + 1
 						for k in keys:
 							nParts = nParts + 1
 							rUpStack = deque()
@@ -636,12 +633,10 @@ async def main():
 								rUp = rUpStack.pop()
 								#print ("this is staircase" + str(k))
 								print("actuator#= {}, increasing= {}, quartile={}, trial#={}".format(n, rUp, k, l))
-								#await skB.waitSK(3)
 								#await staircaseNewBLE(c, n, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 
 					skB.orderedPairsInstructionsGUI(sc, tr)
 					skB.orderedPairsGUI(sc)
-					await skB.waitSK(3)
 					#await orderingPairs(sc, c, avgMin, avgMax, q2, waitTime, client1, rx_char1, client2, rx_char2)
 
 asyncio.run(main())

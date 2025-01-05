@@ -12,7 +12,7 @@ from scipy import signal
 PATH = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/JND_Study/bleData/' # change this to your path!
 PORT_NAME = "/dev/cu.usbmodem161767201"#"/dev/cu.usbmodem131752901" # change this to Arduino/teeny's port
 BAUD_RATE = 4608000
-RUNTIME_LENGTH = 130#570 # secon4ds
+RUNTIME_LENGTH = 115#570 # secon4ds
 
 
 #DIRECTORY
