@@ -364,6 +364,18 @@ void testSetpointSequence(int td) {
  
 }
 
+
+double changeScalePolyFit (double s) {
+  double ls;
+  if (s < user_force_MIN) s = user_force_MIN;
+  if (s > user_force_MAX) s = user_force_MAX;
+
+  ls = 13.30 - 3.14* pow(s,1) + 0.329* pow(s,2) - 0.0153*pow(s,3) + 0.0002599*pow(s,4);
+
+  if (ls < 1.4) ls = 1.4;
+  return ls;
+}
+
 // change scale factor
 double changeScale(double s) {
   double ls;
@@ -848,7 +860,7 @@ void changeSetpoint(PID_sk* pid, float s) {
    previousSetpointGlobal = currentSetpointGlobal;
    currentSetpointGlobal = s;
    
-  localScale = changeScale(s);
+  localScale = changeScalePolyFit(s);//changeScale(s);
 
   newP = KpConst*localScale;//130.00; 
   newI = KiConst*localScale;//0.031;
