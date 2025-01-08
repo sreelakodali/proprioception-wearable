@@ -27,7 +27,7 @@ EXPERIMENT_TEXT_1 = ["Experiment", "Task: Identify whether Stimulus A feels more
 EXPERIMENT_TEXT_5 = ["Task: Identify whether Stimulus A feels more", "intense, the same, or less intense than Stimulus B.", "", "",  "", "", "", "", "", "Use >, =, and < keys to indicate your answer,", "and then click the red key to go to the next trial.", "Please click the red key to proceed."]
 EXPERIMENT_TEXT = [EXPERIMENT_TEXT_0, EXPERIMENT_TEXT_1]
 EXPERIMENT_TEXT_3 = ["JND Study", ""]
-EXPERIMENT_TEXT_2 = ["Initializing", "Please wait 20 seconds until we begin"]
+EXPERIMENT_TEXT_2 = ["Initializing", "Please wait 5 seconds until we begin"]
 EXPERIMENT_TEXT_4 = ["", "Please click the red key to start."]
 #CALIBRATION_TEXT1 = ["Calibration", "Please indicate your minimum detection and", "maximum comfortable pressures. Controls are:", "", "", "", "", "", "", "", "> and < extend and retract the device", "8 retracts the device all the way and please use", "= to indicate when you feel a min/max pressure.", "Click the red key for more details."]
 CALIBRATION_TEXT1 = ["Calibration: Keypad Controls", "Please indicate your minimum detection and", "maximum comfortable pressures. Controls are:", "", "8 retracts the", "device fully", "", "> and < increase", "decrease", "pressure", "", "Please use = to indicate when you feel a min/max", "pressure. Click the red key for more details."]
@@ -163,7 +163,7 @@ def calibrationMinMaxGUI(sc, tr):
 
 async def waitGUI(sc):
 	skG.initializeWindow(sc,EXPERIMENT_TEXT_2)
-	await waitSK(20)
+	await waitSK(5)
 
 async def orderingPairs(c, avgMin, avgMax, q2, wait):
 	

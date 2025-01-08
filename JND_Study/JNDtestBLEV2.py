@@ -45,12 +45,42 @@ databuf = ""
 databuf2 = ""
 linebuf = ""
 
+# ----- Global Force Values, for holding... let's see
+force1Global = 0.0
+force2Global = 0.0
+tStim = 8.0
+
 # ------- Display & GUI variables
 t = 1
 sc = turtle.Screen()
 calibrate = 1
-waitTime = 8 # seconds
+waitTime = 10 # seconds
 retractPos = 0.0
+
+async def waitSK_setpointTimer(td, s, c):
+	global force1Global
+	global tStim
+	w = 0
+	endTime = datetime.datetime.now() + datetime.timedelta(seconds=td)
+	while (datetime.datetime.now() < endTime):
+
+		# reached setpoint. note the time
+		if (abs(force1Global - s) >= 0.1):
+			reached = datetime.datetime.now()
+			c.send(("REACHED FORCE " + s + "\n").encode())
+		await asyncio.sleep(0.01)
+		w = w + 1
+
+	stimTime = (datetime.datetime.now() - reached).total_seconds()
+	c.send(("Stim time = " + stimTime + "s \n").encode())
+	# tStimDelta = datetime.datetime(seconds=tStim)
+	# extraTime = datetime.datetime.now()
+	# while ( (datetime.datetime.now() - reached ) < tStim):
+	# 	await asyncio.sleep(0.01)
+	# 	w = w + 1
+
+	# totalExtraTime = (datetime.datetime.now() - extraTime).total_seconds()
+	# c.send(("Waited an extra " + totalExtraTime + "\n").encode())
 
 
 # provide staircasing parameters: going up or down (bounds); reference, nUP, nDown, retract, wait, c, clients and rxchars
@@ -118,12 +148,13 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 		await skB.sendSetpoint(packetA, client1, rx_char1, 1) 	
 		if (nAct == 2):
 			await skB.sendSetpoint(packetA, client2, rx_char2, 2) 	
-		await skB.waitSK(wait) 	# hold the poke	
+		#await skB.waitSK(wait) 	# hold the poke	
+		waitSK_setpointTimer(wait, packetA, c)
 
 		await skB.sendSetpoint(retract, client1, rx_char1, 1)
 		if (nAct == 2):
 			await skB.sendSetpoint(retract, client2, rx_char2, 2)
-		await skB.waitSK(wait) 	# hold the poke
+		await skB.waitSK(wait/2) 	# hold the poke
 
 		# send stimuli B
 		c.send(("Receiving Stimulus B: " + str(packetB) + "\n").encode())
@@ -132,12 +163,13 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 		await skB.sendSetpoint(packetB, client1, rx_char1, 1) 	
 		if (nAct == 2):
 			await skB.sendSetpoint(packetB, client2, rx_char2, 2) 	
-		await skB.waitSK(wait) 	# hold the poke	
+		#await skB.waitSK(wait) 	# hold the poke	
+		waitSK_setpointTimer(wait, packetB, c)
 
 		await skB.sendSetpoint(retract, client1, rx_char1, 1)
 		if (nAct == 2):
 			await skB.sendSetpoint(retract, client2, rx_char2, 2)
-		await skB.waitSK(wait) 	# hold the poke	
+		await skB.waitSK(wait/2) 	# hold the poke	
 
 		# find the real answer
 		# 1 means A > B, 2 means A == B, 3 means A < B
@@ -451,6 +483,7 @@ def handle_rx1(_: BleakGATTCharacteristic, data: bytearray):
     global linebuf
     global calibrate
     global trialCount
+    global force1Global
 
     strData = data.decode("ascii")
     #commaCount = strData.count(',')
@@ -479,6 +512,8 @@ def handle_rx1(_: BleakGATTCharacteristic, data: bytearray):
 	        	linebuf += ("1,"+databuf+strData[:-2])
 
 	        outputStr = databuf+strData[:-2]
+	        arr = outputStr.split(",")
+	        force1Global = arr[2]
 	        skB.writeOutDataBLE(outputStr, f, h, trialCount, 0)
 	        databuf = ""
 
@@ -490,6 +525,7 @@ def handle_rx2(_: BleakGATTCharacteristic, data: bytearray):
     global g, m
     global linebuf
     global trialCount
+    global force2Global
 
     strData = data.decode("ascii")
     #commaCount = strData.count(',')
@@ -514,6 +550,8 @@ def handle_rx2(_: BleakGATTCharacteristic, data: bytearray):
 	        linebuf = ""
 
 	        outputStr = databuf2+strData[:-2]
+	        arr = outputStr.split(",")
+	        force2Global = arr[2]
 	        skB.writeOutDataBLE(outputStr, g, m, trialCount, 0)
 	        databuf2 = ""
 
@@ -608,23 +646,23 @@ async def main():
 					actuatorOrder = [1,2]
 					random.shuffle(actuatorOrder)
 
-					nParts = 0
-					for n in actuatorOrder:
-						for k in keys:
-							nParts = nParts + 1
-							rUpStack = deque()
-							rUpArr = [0, 0, 0, 1, 1, 1]
-							random.shuffle(rUpArr)
-							for r in rUpArr:
-								rUpStack.append(r)
+					# nParts = 0
+					# for n in actuatorOrder:
+					# 	for k in keys:
+					# 		nParts = nParts + 1
+					# 		rUpStack = deque()
+					# 		rUpArr = [0, 0, 0, 1, 1, 1]
+					# 		random.shuffle(rUpArr)
+					# 		for r in rUpArr:
+					# 			rUpStack.append(r)
 
-							for l in list(range(0,len(rUpArr))):
-								skB.instructionsGUI2(sc, tr, (nParts-1)*len(rUpArr) + l)
-								skB.prepareExperimentGUI(sc, l)
-								rUp = rUpStack.pop()
-								#print ("this is staircase" + str(k))
-								#print("actuator#= {}, increasing= {}, quartile={}, trial#={}".format(n, rUp, k, l))
-								await staircaseNewBLE(c, n, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+					# 		for l in list(range(0,len(rUpArr))):
+					# 			skB.instructionsGUI2(sc, tr, (nParts-1)*len(rUpArr) + l)
+					# 			skB.prepareExperimentGUI(sc, l)
+					# 			rUp = rUpStack.pop()
+					# 			#print ("this is staircase" + str(k))
+					# 			#print("actuator#= {}, increasing= {}, quartile={}, trial#={}".format(n, rUp, k, l))
+					# 			await staircaseNewBLE(c, n, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 
 					skB.orderedPairsInstructionsGUI(sc, tr)
 					skB.orderedPairsGUI(sc)
