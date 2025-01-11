@@ -23,7 +23,7 @@
 //#include "IntervalTimerEx.h"
 
 # define N_ACT 1
-#define ID_NUM 1
+#define ID_NUM 2
 #define FC 0.5 // 10 Hz
 
 // BLE UART 
@@ -36,7 +36,7 @@
 
 typedef enum {
   POSITION_MIN = 0, 
-  POSITION_MAX = 4000//4095
+  POSITION_MAX = 4095//4095
 } ACTUATOR_LIMITS;
 
 
@@ -50,7 +50,7 @@ int  buttonCount = 0; // button count. global!
 //float  user_flex_MIN;
 //float  user_flex_MAX;
 //  IntervalTimerEx ForceSampleSerialWriteTimer;
-const bool bleON = false;
+const bool bleON = true;
 const bool serialON = !(bleON);
 
 const bool calibratepidON = false;
@@ -144,14 +144,14 @@ void setup() {
     zeroForceGlobal = initializeFilter(filterTypeGlobal);
     myPID.zeroForce = zeroForceGlobal;
 
-//    if (ID_NUM ==1 ) {
-//
-//      if (!calibratepidON) {
-//        blinkN(5, 500);
-//        //ble.println("in calibration");
-//        calibration();
-//      }
-//    }
+    if (ID_NUM ==1 ) {
+
+      if (!calibratepidON) {
+        blinkN(5, 500);
+        //ble.println("in calibration");
+        calibration();
+      }
+    }
 
     blinkN(5, 500);
 }
@@ -285,10 +285,10 @@ double changeScalePolyFit (double s) {
   double ls;
   if (s < user_force_MIN) s = user_force_MIN;
   if (s > user_force_MAX) s = user_force_MAX;
-  ls = 13.30 - 3.12* pow(s,1) + 0.321* pow(s,2) - 0.0145*pow(s,3) + 0.000239*pow(s,4);
-
+  ls = 13.1 - 2.99* pow(s,1) + 0.354* pow(s,2) - 0.0188*pow(s,3) + 0.000355*pow(s,4);
+  //ls = 13.30 - 3.12* pow(s,1) + 0.321* pow(s,2) - 0.0145*pow(s,3) + 0.000239*pow(s,4);
   //ls = 13.30 - 3.14* pow(s,1) + 0.329* pow(s,2) - 0.0153*pow(s,3) + 0.0002599*pow(s,4);
-  if (ls < 1.4) ls = 1.4;
+  if (ls < 1.9) ls = 1.9;
   return ls;
 }
 
@@ -301,16 +301,16 @@ double changeScale(double s) {
   // change PID depending on s
   if (s <= 1) ls = 10.5;
   else if (s <= 2) ls = 8.0; // 7 , 1, 2, 3
-  else if (s <= 3) ls = 6.4; // 7 , 1, 2, 3
+  else if (s <= 3) ls = 6.9; // 7 , 1, 2, 3
   else if (s <= 4) ls = 5.5; // 5,  4, 5
   else if (s <= 5) ls = 4.5; // 5,  4, 5
-  else if (s <= 6) ls = 3.4; // 5,  4, 5
+  else if (s <= 6) ls = 4.4; // 5,  4, 5
   else if (s <= 9) ls = 3.0;  //  3, 6, 7, 8, 9 
-  else if (s <= 10) ls = 2.3;//2.08;  //  3, 6, 7, 8, 9 
+  else if (s <= 10) ls = 3.5;//2.08;  //  3, 6, 7, 8, 9 
   else if (s <= 12) ls = 3.0;  //  3, 6, 7, 8, 9 
-  else if (s <= 15) ls = 1.8;//1.8;
+  else if (s <= 15) ls = 2.7;//1.8;
   else if (s <= 18) ls = 2.25;
-  else if (s <= 21) ls = 1.4;//1.4;
+  else if (s <= 21) ls = 1.9;//1.4;
   else ls = 1.75;// 1.7s5, 12, 14
 
 //
@@ -428,7 +428,7 @@ int calibrationIncrementActuator(int counter) {
 
 //      if (serialON)  x = serialMinMaxCalibration();
 //      if (bleON)  x = bleMinMaxCalibration();
-   counter = counter + 10;
+   counter = counter + 20;
    if (counter > POSITION_MAX) counter = POSITION_MAX;
    if (counter < POSITION_MIN) counter = POSITION_MIN;
    dataString = "";
@@ -449,7 +449,7 @@ int calibrationDecrementActuator(int counter) {
 
 //      if (serialON)  x = serialMinMaxCalibration();
 //      if (bleON)  x = bleMinMaxCalibration();
-   counter = counter -10;
+   counter = counter -20;
    if (counter > POSITION_MAX) counter = POSITION_MAX;
    if (counter < POSITION_MIN) counter = POSITION_MIN;
    dataString = "";
@@ -612,7 +612,7 @@ void serialActuatorControlForce(double filteredData) {
     float setpoint = Serial.parseFloat();
     Serial.read(); // for the carriage return
 
-    if (setpoint > 20) {
+    if (setpoint > 30) {
       serialChangeParams();
     } else {
       if (serialON) Serial.print("NEW SETPOINT=");
@@ -718,7 +718,7 @@ void changeSetpoint(PID_sk* pid, float s, double filteredData) {
     (*pid).zeroForce = zeroForceGlobal;
   }
    
-  localScale =0.93*  changeScalePolyFit(s);//changeScale(s); //
+  localScale = 1.04 * changeScalePolyFit(s);//changeScale(s); // 0.93* //
 
   newP = KpConst*localScale;//130.00; 
   newI = KiConst*localScale;//0.031;

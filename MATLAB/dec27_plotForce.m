@@ -9,10 +9,16 @@
 %file = '2025-01-05_00-13';
 %file = '2025-01-05_00-18';
 %file = '2025-01-05_00-58';
-file = '2025-01-05_02-44';
+%file = '2025-01-05_02-44';
 file = '2025-01-08_08-23';
+%file = '2025-01-08_19-00'
 path = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/JND_Study/bleData/';
 data = readmatrix(strcat(path,file, '/raw_', file,'.csv'),'NumHeaderLines',0);
+color2 = "#37BEB0";%staircase
+color3 = "#0C6170"; %JND
+
+% color3 = "#FB6090";%staircase
+% color2 = "#821D30"; %JND
 
 fileArr = ["2024-12-29_03-30", "2025-01-04_21-32", "2025-01-05_00-13", "2025-01-05_00-58", "2025-01-05_01-21", "2025-01-05_02-10", "2025-01-05_02-17", "2025-01-05_02-27", "2025-01-05_02-32", "2025-01-05_02-44", "2025-01-05_03-33", "2025-01-05_03-38"];
 %
@@ -46,26 +52,77 @@ commandActuatorPos = data(:,5);
 measuredActuatorPos = data(:,6);
 
 plotData3 = [setpoints, filteredForce];
-figure;
-set(gcf,'color','white');
-ax = gca(gcf);
+% figure;
+% set(gcf,'color','white');
+% ax = gca(gcf);
+% 
+% for i = 1:size(plotData3,2)
+%     plot(time, plotData3(:,i)); hold on;
+% end
+% title("Force vs Time for Different Force Setpoints");
+% xlabel('Time (s)')
+% ylabel('Force (N)')
+% ax.FontSize = 15;
+% ylim([0,25]);
+% 
+% % yyaxis right
+% % ylabel("Actuator Position (mm)")
+% % % ylim([0,10])
+% % plot(time, measuredActuatorPos * 27.0/4095); hold on;
+% 
+% leg = legend('Setpoint Command', 'Measured Force');
+% set(leg, 'edgeColor','w', 'Location','northeast');
 
-for i = 1:size(plotData3,2)
-    plot(time, plotData3(:,i)); hold on;
-end
-title("Force vs Time for Different Force Setpoints");
+
+timediffdataArr = ["2025-01-08_08-23", "2025-01-08_19-00"];
+
+data1 = readmatrix(strcat(path,timediffdataArr(1,1), '/raw_', timediffdataArr(1,1),'.csv'),'NumHeaderLines',0);
+data2 = readmatrix(strcat(path,timediffdataArr(1,2), '/raw_', timediffdataArr(1,2),'.csv'),'NumHeaderLines',0);
+
+time1 = data1(:,1)/1000;
+setpoints1 = data1(:,2);
+filteredForce1 = data1(:,3);
+
+time2 = data2(:,1)/1000;
+setpoints2 = data2(:,2);
+filteredForce2 = data2(:,3);
+
+lw = 2;
+figure;
+fig = gcf;
+set(gcf,'color','white')
+ax = gca(gcf);
+ax.FontSize = 15;
+
+s1 = subplot(2,1,1);
+
+% xlim([1,50])
+ plot(time1-28.5, setpoints1, 'LineWidth',lw, 'Color', color2); hold on;
+ plot(time1-28.5, filteredForce1, 'LineWidth',lw, 'Color', color3); hold on;
 xlabel('Time (s)')
 ylabel('Force (N)')
-ax.FontSize = 15;
-ylim([0,25]);
-
-% yyaxis right
-% ylabel("Actuator Position (mm)")
-% % ylim([0,10])
-% plot(time, measuredActuatorPos * 27.0/4095); hold on;
-
+ylim([0,24]);
+xlim([0,140]);
+s1.FontSize = 15;
 leg = legend('Setpoint Command', 'Measured Force');
-set(leg, 'edgeColor','w', 'Location','northeast');
+set(leg, 'edgeColor','w', 'Location','northwest');
+t1 = title("Fixed Time for Force Commands");
+%t1.FontWeight = 'normal';
+s2 = subplot(2,1,2);
+
+plot(time2-38, setpoints2, 'LineWidth',lw, 'Color', color2); hold on;
+ plot(time2-38, filteredForce2, 'LineWidth',lw, 'Color', color3); hold on;
+xlabel('Time (s)')
+ylabel('Force (N)')
+ylim([0,24]);
+xlim([0,140]);
+s2.FontSize = 15;
+% bigTitle= sgtitle("Force vs Time for Various Setpoints");
+% bigTitle.FontSize = 20;
+% bigTitle.FontWeight = 'bold';
+t2 = title("Fixed Time for Measured Force");
+%t2.FontWeight = 'normal';
+
 
 % % commandActuatorPos = data(:,2) * (27.0/4095);
 % % measuredActuatorPos =  data(:,3) * (27.0/4095);

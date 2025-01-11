@@ -60,27 +60,25 @@ retractPos = 0.0
 async def waitSK_setpointTimer(td, s, c):
 	global force1Global
 	global tStim
+	reachedBool = False
 	w = 0
 	endTime = datetime.datetime.now() + datetime.timedelta(seconds=td)
 	while (datetime.datetime.now() < endTime):
-
+		#print(force1Global)
 		# reached setpoint. note the time
-		if (abs(force1Global - s) >= 0.1):
+		if ( (abs(float(force1Global) - s) <= 0.13) and (reachedBool ==False) and s > 0):
 			reached = datetime.datetime.now()
-			c.send(("REACHED FORCE " + s + "\n").encode())
+			c.send(("REACHED FORCE " + str(s) + "\n").encode())
+			reachedBool = True
 		await asyncio.sleep(0.01)
 		w = w + 1
 
 	stimTime = (datetime.datetime.now() - reached).total_seconds()
-	c.send(("Stim time = " + stimTime + "s \n").encode())
-	# tStimDelta = datetime.datetime(seconds=tStim)
-	# extraTime = datetime.datetime.now()
-	# while ( (datetime.datetime.now() - reached ) < tStim):
-	# 	await asyncio.sleep(0.01)
-	# 	w = w + 1
-
-	# totalExtraTime = (datetime.datetime.now() - extraTime).total_seconds()
-	# c.send(("Waited an extra " + totalExtraTime + "\n").encode())
+	c.send(("Stim time = " + str(stimTime) + "s \n").encode())
+	while ( (stimTime < tStim) and (s > 0) and (reachedBool == True)):
+		await asyncio.sleep(0.01)
+		w = w + 1
+		stimTime = (datetime.datetime.now() - reached).total_seconds()
 
 
 # provide staircasing parameters: going up or down (bounds); reference, nUP, nDown, retract, wait, c, clients and rxchars
@@ -117,6 +115,9 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 		Xo = skB.generateInitialValue(increasing, avgMin, avgMax, reference)
 
 	Xo = round(Xo, 2)
+	
+	c.send((("ACTUATOR#= {}, STAIRCASE DIRECTION, UP= {}, QUARTILE={}\n").format(nAct, increasing, key)).encode())
+
 	c.send(("STAIRCASE " + key + "\n").encode())
 	c.send(("INITIAL VALUE= " + str(Xo) + "\n").encode())
 	c.send(("REFERENCE= " + str(reference) + "\n").encode())
@@ -149,12 +150,12 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 		if (nAct == 2):
 			await skB.sendSetpoint(packetA, client2, rx_char2, 2) 	
 		#await skB.waitSK(wait) 	# hold the poke	
-		waitSK_setpointTimer(wait, packetA, c)
+		await waitSK_setpointTimer(wait, packetA, c)
 
 		await skB.sendSetpoint(retract, client1, rx_char1, 1)
 		if (nAct == 2):
 			await skB.sendSetpoint(retract, client2, rx_char2, 2)
-		await skB.waitSK(wait/2) 	# hold the poke
+		await skB.waitSK(4) 	# hold the poke
 
 		# send stimuli B
 		c.send(("Receiving Stimulus B: " + str(packetB) + "\n").encode())
@@ -164,12 +165,12 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 		if (nAct == 2):
 			await skB.sendSetpoint(packetB, client2, rx_char2, 2) 	
 		#await skB.waitSK(wait) 	# hold the poke	
-		waitSK_setpointTimer(wait, packetB, c)
+		await waitSK_setpointTimer(wait, packetB, c)
 
 		await skB.sendSetpoint(retract, client1, rx_char1, 1)
 		if (nAct == 2):
 			await skB.sendSetpoint(retract, client2, rx_char2, 2)
-		await skB.waitSK(wait/2) 	# hold the poke	
+		await skB.waitSK(4) 	# hold the poke	
 
 		# find the real answer
 		# 1 means A > B, 2 means A == B, 3 means A < B
@@ -393,70 +394,74 @@ async def orderingPairs(sc, c, avgMin, avgMax, q2, wait, c1, rx1, c2, rx2):
 	value1 = 0.0
 	value2 = 0.0
 
-	c.send( ( "--- ORDERING PAIRS TASK ----\n").encode())
+	validKeys = ['7', '8', '9', '4', '5', '6', '1', '2', '3']
+	random.shuffle(validKeys)
 
-	while (True):
-				
+	c.send( ( "--- ORDERING PAIRS TASK ----\n").encode())
+	c.send((" KEYS ORDER: " + str(validKeys) + "\n").encode())
+	while (1):
+		
+		await asyncio.sleep(0.1)	
 		k = keyboard.read_key()
 
-		if k == '7': # 00
+		if k == validKeys[0]: # 00
 			#await client1.write_gatt_char(rx_char1, ("c\n").encode(encoding="ascii"), response=False)
 			value1 = avgMin
 			value2 = avgMin
 			c.send(("STIMULI PAIR: MIN, MIN\n").encode())
-			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
+			await orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-		elif k == '8': # 01
+		elif k == validKeys[1]: # 01
 			value1 = avgMin
 			value2 = q2
 			c.send(("STIMULI PAIR: MIN, MID\n").encode())
-			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
+			await orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-		elif k == '9': # 02
+		elif k == validKeys[2]: # 02
 			value1 = avgMin
 			value2 = avgMax
 			c.send(("STIMULI PAIR: MIN, MAX\n").encode())
-			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
+			await orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-		elif k == '4': # 10
+		elif k == validKeys[3]: # 10
 			value1 = q2
 			value2 = avgMin
 			c.send(("STIMULI PAIR: MID, MIN\n").encode())
-			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
+			await orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-		elif k == '5': # reduce actuator position
+		elif k == validKeys[4]: # reduce actuator position
 			value1 = q2
 			value2 = q2
 			c.send(("STIMULI PAIR: MID, MID\n").encode())
-			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
+			await orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-		elif k == '6': # reset 
+		elif k == validKeys[5]: # reset 
 			value1 = q2
 			value2 = avgMax
 			c.send(("STIMULI PAIR: MID, MAX\n").encode())
-			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
+			await orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-		elif k == '1': # indicate limit
+		elif k == validKeys[6]: # indicate limit
 			value1 = avgMax
 			value2 = avgMin
 			c.send(("STIMULI PAIR: MAX, MIN\n").encode())
-			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
+			await orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-		elif k == '2': # reduce actuator position
+		elif k == validKeys[7]: # reduce actuator position
 			value1 = avgMax
 			value2 = q2
 			c.send(("STIMULI PAIR: MAX, MID\n").encode())
-			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
+			await orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
-		elif k == '3': # indicate limit
+		elif k == validKeys[8]: # indicate limit
 			value1 = avgMax
 			value2 = avgMax
 			c.send(("STIMULI PAIR: MAX, MAX\n").encode())
-			orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
+			await orderingPairsSendStimuli(sc, c, k, value1, value2, c1, rx1, c2, rx2, wait)
 
 		elif k == 'down':
 			break
-		await asyncio.sleep(0.1)
+
 
 
 async def quickScan():
@@ -513,7 +518,8 @@ def handle_rx1(_: BleakGATTCharacteristic, data: bytearray):
 
 	        outputStr = databuf+strData[:-2]
 	        arr = outputStr.split(",")
-	        force1Global = arr[2]
+	        if (len(arr) >= 6):
+	        	force1Global = arr[2]
 	        skB.writeOutDataBLE(outputStr, f, h, trialCount, 0)
 	        databuf = ""
 
@@ -551,7 +557,8 @@ def handle_rx2(_: BleakGATTCharacteristic, data: bytearray):
 
 	        outputStr = databuf2+strData[:-2]
 	        arr = outputStr.split(",")
-	        force2Global = arr[2]
+	        if (len(arr) >= 6):
+	        	force2Global = arr[2]
 	        skB.writeOutDataBLE(outputStr, g, m, trialCount, 0)
 	        databuf2 = ""
 
@@ -661,6 +668,7 @@ async def main():
 					# 			skB.prepareExperimentGUI(sc, l)
 					# 			rUp = rUpStack.pop()
 					# 			#print ("this is staircase" + str(k))
+					# 			c.send(("TRIAL#" + str(l) + "\n").encode())
 					# 			#print("actuator#= {}, increasing= {}, quartile={}, trial#={}".format(n, rUp, k, l))
 					# 			await staircaseNewBLE(c, n, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 

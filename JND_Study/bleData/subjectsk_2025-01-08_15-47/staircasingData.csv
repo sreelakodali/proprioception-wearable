@@ -1,0 +1,22 @@
+LOAD ASR VALUES
+Min1 0.7
+Max1 17.0
+Min2 0.7
+Max2 17.0
+Min3 1.2
+Max3 15.0
+avgMin 0.87
+avgMax 16.33
+q1 4.73
+q2 8.6
+q3 12.46
+TRIAL#0
+ACTUATOR#= 1, STAIRCASE DIRECTION, UP= 0, QUARTILE=q1
+STAIRCASE q1
+INITIAL VALUE= 10.1
+REFERENCE= 4.73
+----- TRIAL #0 -----
+test: 10.1
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 4.73
