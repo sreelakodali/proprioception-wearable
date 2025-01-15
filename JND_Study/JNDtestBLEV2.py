@@ -48,7 +48,8 @@ linebuf = ""
 # ----- Global Force Values, for holding... let's see
 force1Global = 0.0
 force2Global = 0.0
-tStim = 8.0
+tStim = 5.0
+MIN_TRIALS = 12
 
 # ------- Display & GUI variables
 t = 1
@@ -57,29 +58,43 @@ calibrate = 1
 waitTime = 10 # seconds
 retractPos = 0.0
 
-async def waitSK_setpointTimer(td, s, c):
+async def waitSK_setpointTimer(td, s, c, n):
 	global force1Global
+	global force2Global
 	global tStim
 	reachedBool = False
 	w = 0
+
 	endTime = datetime.datetime.now() + datetime.timedelta(seconds=td)
 	while (datetime.datetime.now() < endTime):
 		#print(force1Global)
 		# reached setpoint. note the time
-		if ( (abs(float(force1Global) - s) <= 0.13) and (reachedBool ==False) and s > 0):
-			reached = datetime.datetime.now()
-			c.send(("REACHED FORCE " + str(s) + "\n").encode())
-			reachedBool = True
+
+		if (n == 1):
+			if ( (abs(float(force1Global) - s) <= 0.15) and (reachedBool ==False) and s > 0):
+				reached = datetime.datetime.now()
+				c.send(("REACHED FORCE " + str(s) + "\n").encode())
+				reachedBool = True
+				break
+		elif (n == 2):
+			if ( (abs(float(force2Global) - s) <= 0.15) and (reachedBool ==False) and s > 0):
+				reached = datetime.datetime.now()
+				c.send(("REACHED FORCE " + str(s) + "\n").encode())
+				reachedBool = True
+				break
+
 		await asyncio.sleep(0.01)
 		w = w + 1
 
+	if (reachedBool == False):
+		reached = datetime.datetime.now()
 	stimTime = (datetime.datetime.now() - reached).total_seconds()
 	c.send(("Stim time = " + str(stimTime) + "s \n").encode())
-	while ( (stimTime < tStim) and (s > 0) and (reachedBool == True)):
+	while ( (stimTime < tStim) and (s > 0) and (reachedBool == True)): # 
 		await asyncio.sleep(0.01)
 		w = w + 1
 		stimTime = (datetime.datetime.now() - reached).total_seconds()
-
+	c.send(("Final Stim time = " + str(stimTime) + "s \n").encode())
 
 # provide staircasing parameters: going up or down (bounds); reference, nUP, nDown, retract, wait, c, clients and rxchars
 async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, wait, retract, client1, rx_char1, client2, rx_char2):
@@ -150,12 +165,12 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 		if (nAct == 2):
 			await skB.sendSetpoint(packetA, client2, rx_char2, 2) 	
 		#await skB.waitSK(wait) 	# hold the poke	
-		await waitSK_setpointTimer(wait, packetA, c)
+		await waitSK_setpointTimer(wait, packetA, c, 1) # device1
 
 		await skB.sendSetpoint(retract, client1, rx_char1, 1)
 		if (nAct == 2):
 			await skB.sendSetpoint(retract, client2, rx_char2, 2)
-		await skB.waitSK(4) 	# hold the poke
+		await skB.waitSK(2) 	# hold the poke
 
 		# send stimuli B
 		c.send(("Receiving Stimulus B: " + str(packetB) + "\n").encode())
@@ -165,12 +180,12 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 		if (nAct == 2):
 			await skB.sendSetpoint(packetB, client2, rx_char2, 2) 	
 		#await skB.waitSK(wait) 	# hold the poke	
-		await waitSK_setpointTimer(wait, packetB, c)
+		await waitSK_setpointTimer(wait, packetB, c, 1) #device 1
 
 		await skB.sendSetpoint(retract, client1, rx_char1, 1)
 		if (nAct == 2):
 			await skB.sendSetpoint(retract, client2, rx_char2, 2)
-		await skB.waitSK(4) 	# hold the poke	
+		await skB.waitSK(3) 	# hold the poke	
 
 		# find the real answer
 		# 1 means A > B, 2 means A == B, 3 means A < B
@@ -256,9 +271,9 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 
 				# if newTest == Test
 				attempts = 0
-				while ((newTest == test) and (attempts < 3)):
+				while ((newTest >= (test+0.3)) and (attempts < 1)):
 					attempts = attempts + 1
-					if (((trialCount - 2 - attempts) >=0) and (len(testArr) < (trialCount - 2 - attempts) ) ):
+					if (((trialCount - 2 - attempts) >=0) and (len(testArr) > (trialCount - 2 - attempts) ) ):
 						newTest = testArr[trialCount-2 - attempts]
 					else:
 						break
@@ -272,12 +287,12 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 				if (userAnswer == answerKey):
 					rightStreak = rightStreak + 1
 
-				if (rightStreak == 2):
+				if (1):#if (rightStreak == 2):
 					# change the stimulus pattern
 					newTest = test *  (2 - 10 ** (Ldb/20))
-					rightStreak = 0
-				else:
-					newTest = test
+					#rightStreak = 0
+				# else:
+				# 	newTest = test
 
 		#same as reference
 		elif (userAnswer == 2):
@@ -302,12 +317,12 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 				if (userAnswer == answerKey):
 					rightStreak = rightStreak + 1
 
-				if (rightStreak == 2):
+				if (1): #if (rightStreak == 2):
 					# change the stimulus pattern
 					newTest = test * 10 ** (Ldb/20)
-					rightStreak = 0
-				else:
-					newTest = test
+					#rightStreak = 0
+				# else:
+				# 	newTest = test
 			else:
 				reversals = reversals + 1 # reversals
 				rightStreak = 0
@@ -316,9 +331,9 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 
 				# if newTest == Test
 				attempts = 0
-				while ((newTest == test) and (attempts < 3)):
+				while ((newTest <= (test-0.3)) and (attempts < 1)):
 					attempts = attempts + 1
-					if (((trialCount - 2 - attempts) >=0) and (len(testArr) < (trialCount - 2 - attempts) ) ):
+					if (((trialCount - 2 - attempts) >=0) and (len(testArr) > (trialCount - 2 - attempts) ) ):
 						newTest = testArr[trialCount-2 - attempts]
 					else:
 						break
@@ -329,7 +344,7 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 				c.send(("reversals:" + str(reversals)+ "\n").encode())
 		
 		# updated termination conditions
-		if (trialCount > 15):
+		if (trialCount > MIN_TRIALS):
 
 			# precomputation for condition #2
 			equalityCheckVal = testArr[-10]
@@ -341,7 +356,7 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 			# Condition #1: less than 2dB
 			# the range of the most recent 10 values
 			#if (abs(statistics.mean(testArr[-10:]) - reference) <  10**(0.1)):
-			if ( (max(testArr[-10]) - min(testArr[-10])) <  10**(0.1)):
+			if ( (max(testArr[-10:]) - min(testArr[-10:])) <  10**(0.1)):
 				keepGoing = False
 			#npTestArr = np.array(testArr[-10:])
 
@@ -358,10 +373,10 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 			newTest = avgMin
 		testArr.append(newTest)
 
-		if (trialCount > 15):
+		if (trialCount > MIN_TRIALS):
 			npTestArr = np.array(testArr) 		# precomputation for condition #3
 			diffVal = np.diff(npTestArr)
-			diffVal[diffVal != 0]
+			diffVal = diffVal[diffVal != 0]
 			# Condition #3: if the increment is smaller than the resolution of the system
 			if (min(abs(diffVal)) < skB.SYSTEM_MIN_RESOLUTION):
 				keepGoing = False
@@ -380,12 +395,16 @@ async def orderingPairsSendStimuli(sc, c,k, v1, v2, c1, rx1, c2, rx2, wait):
 	txt = "Stimulus " + str(k) + " in progress"
 	skG.writeText(sc, -350, 230, txt, skG.COLOR)
 	await skB.sendSetpoint(v1, c1, rx1, 1) 	
-	await skB.sendSetpoint(v2, c2, rx2, 2) 	
-	await skB.waitSK(wait) 	# hold the poke	
+	await skB.sendSetpoint(v2, c2, rx2, 2)
+	if (v2 > v1):
+		await waitSK_setpointTimer(wait, v2, c, 2)
+	else:
+		await waitSK_setpointTimer(wait, v1, c, 1)
+	#await skB.waitSK(wait) 	# hold the poke	
 
 	await skB.sendSetpoint(0.0, c1, rx1, 1)
 	await skB.sendSetpoint(0.0, c2, rx2, 2)
-	await skB.waitSK(wait/2) 	# hold the poke
+	await skB.waitSK(2) 	# hold the poke
 	skG.writeText(sc, -350, 180, "Stimulus done.", skG.COLOR)
 	c.send(("STIMULUS PAIR APPLIED, DONE\n").encode())
 
@@ -653,24 +672,24 @@ async def main():
 					actuatorOrder = [1,2]
 					random.shuffle(actuatorOrder)
 
-					# nParts = 0
-					# for n in actuatorOrder:
-					# 	for k in keys:
-					# 		nParts = nParts + 1
-					# 		rUpStack = deque()
-					# 		rUpArr = [0, 0, 0, 1, 1, 1]
-					# 		random.shuffle(rUpArr)
-					# 		for r in rUpArr:
-					# 			rUpStack.append(r)
+					nParts = 0
+					for n in actuatorOrder:
+						for k in keys:
+							nParts = nParts + 1
+							rUpStack = deque()
+							rUpArr = [0, 0, 0, 1, 1, 1]
+							random.shuffle(rUpArr)
+							for r in rUpArr:
+								rUpStack.append(r)
 
-					# 		for l in list(range(0,len(rUpArr))):
-					# 			skB.instructionsGUI2(sc, tr, (nParts-1)*len(rUpArr) + l)
-					# 			skB.prepareExperimentGUI(sc, l)
-					# 			rUp = rUpStack.pop()
-					# 			#print ("this is staircase" + str(k))
-					# 			c.send(("TRIAL#" + str(l) + "\n").encode())
-					# 			#print("actuator#= {}, increasing= {}, quartile={}, trial#={}".format(n, rUp, k, l))
-					# 			await staircaseNewBLE(c, n, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+							for l in list(range(0,len(rUpArr))):
+								skB.instructionsGUI2(sc, tr, (nParts-1)*len(rUpArr) + l)
+								skB.prepareExperimentGUI(sc, l)
+								rUp = rUpStack.pop()
+								#print ("this is staircase" + str(k))
+								c.send(("TRIAL#" + str(l) + "\n").encode())
+								#print("actuator#= {}, increasing= {}, quartile={}, trial#={}".format(n, rUp, k, l))
+								await staircaseNewBLE(c, n, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 
 					skB.orderedPairsInstructionsGUI(sc, tr)
 					skB.orderedPairsGUI(sc)

@@ -1,0 +1,37 @@
+LOAD ASR VALUES
+Min1 0.38
+Max1 20.48
+Min2 0.79
+Max2 20.13
+Min3 0.26
+Max3 19.95
+avgMin 0.48
+avgMax 20.19
+q1 5.41
+q2 10.34
+q3 15.26
+TRIAL#0
+ACTUATOR#= 1, STAIRCASE DIRECTION, UP= 0, QUARTILE=q1
+STAIRCASE q1
+INITIAL VALUE= 10.51
+REFERENCE= 5.41
+----- TRIAL #0 -----
+test: 10.51
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 5.41
+Stim time = 1e-06s 
+Receiving Stimulus B: 10.51
+Stim time = 3e-06s 
+The real answer is: 3
+User answer is: 3
+User said TEST is greater than REFERENCE
+----- TRIAL #1 -----
+test: 10.51
+rightStreak: 1
+r: 1
+Receiving Stimulus A: 5.41
+Stim time = 2e-06s 
+Receiving Stimulus B: 10.51
+Stim time = 2e-06s 
+The real answer is: 3

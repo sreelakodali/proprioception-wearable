@@ -1,0 +1,230 @@
+LOAD ASR VALUES
+Min1 0.38
+Max1 20.48
+Min2 0.79
+Max2 20.13
+Min3 0.26
+Max3 19.95
+avgMin 0.48
+avgMax 20.19
+q1 5.41
+q2 10.34
+q3 15.26
+TRIAL#0
+ACTUATOR#= 1, STAIRCASE DIRECTION, UP= 0, QUARTILE=q1
+STAIRCASE q1
+INITIAL VALUE= 13.83
+REFERENCE= 5.41
+----- TRIAL #0 -----
+test: 13.83
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 13.83
+REACHED FORCE 13.83
+Stim time = 0.912327s 
+Receiving Stimulus B: 5.41
+REACHED FORCE 5.41
+Stim time = 3.831926s 
+The real answer is: 1
+User answer is: 1
+User said TEST is greater than REFERENCE
+----- TRIAL #1 -----
+test: 13.83
+rightStreak: 1
+r: 1
+Receiving Stimulus A: 5.41
+REACHED FORCE 5.41
+Stim time = 3.349049s 
+Receiving Stimulus B: 13.83
+REACHED FORCE 13.83
+Stim time = 5.038913s 
+The real answer is: 3
+User answer is: 3
+User said TEST is greater than REFERENCE
+----- TRIAL #2 -----
+test: 10.25
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 10.25
+REACHED FORCE 10.25
+Stim time = 5.445963s 
+Receiving Stimulus B: 5.41
+REACHED FORCE 5.41
+Stim time = 4.811754s 
+The real answer is: 1
+User answer is: 1
+User said TEST is greater than REFERENCE
+----- TRIAL #3 -----
+test: 10.25
+rightStreak: 1
+r: 0
+Receiving Stimulus A: 10.25
+REACHED FORCE 10.25
+Stim time = 2.09933s 
+Receiving Stimulus B: 5.41
+REACHED FORCE 5.41
+Stim time = 5.210451s 
+The real answer is: 1
+User answer is: 1
+User said TEST is greater than REFERENCE
+----- TRIAL #4 -----
+test: 7.6
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 5.41
+REACHED FORCE 5.41
+Stim time = 5.05108s 
+Receiving Stimulus B: 7.6
+REACHED FORCE 7.6
+Stim time = 5.189583s 
+The real answer is: 3
+User answer is: 3
+User said TEST is greater than REFERENCE
+----- TRIAL #5 -----
+test: 7.6
+rightStreak: 1
+r: 1
+Receiving Stimulus A: 5.41
+REACHED FORCE 5.41
+Stim time = 4.764578s 
+Receiving Stimulus B: 7.6
+REACHED FORCE 7.6
+Stim time = 3.430292s 
+The real answer is: 3
+User answer is: 3
+User said TEST is greater than REFERENCE
+----- TRIAL #6 -----
+test: 5.63
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 5.63
+REACHED FORCE 5.63
+Stim time = 4.845478s 
+Receiving Stimulus B: 5.41
+REACHED FORCE 5.41
+Stim time = 4.81751s 
+The real answer is: 1
+User answer is: 1
+User said TEST is greater than REFERENCE
+----- TRIAL #7 -----
+test: 5.63
+rightStreak: 1
+r: 0
+Receiving Stimulus A: 5.63
+REACHED FORCE 5.63
+Stim time = 3.735067s 
+Receiving Stimulus B: 5.41
+REACHED FORCE 5.41
+Stim time = 3.948981s 
+The real answer is: 1
+User answer is: 1
+User said TEST is greater than REFERENCE
+----- TRIAL #8 -----
+test: 4.17
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 4.17
+REACHED FORCE 4.17
+Stim time = 4.771031s 
+Receiving Stimulus B: 5.41
+REACHED FORCE 5.41
+Stim time = 2.018779s 
+The real answer is: 3
+User answer is: 3
+User said TEST is less than REFERENCE
+reversals:1
+----- TRIAL #9 -----
+test: 5.63
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 5.63
+REACHED FORCE 5.63
+Stim time = 5.026189s 
+Receiving Stimulus B: 5.41
+REACHED FORCE 5.41
+Stim time = 3.978529s 
+The real answer is: 1
+User answer is: 1
+User said TEST is greater than REFERENCE
+----- TRIAL #10 -----
+test: 5.63
+rightStreak: 1
+r: 1
+Receiving Stimulus A: 5.41
+REACHED FORCE 5.41
+Stim time = 5.137784s 
+Receiving Stimulus B: 5.63
+REACHED FORCE 5.63
+Stim time = 5.022555s 
+The real answer is: 3
+User answer is: 2
+User said TEST equals REFERENCE
+----- TRIAL #11 -----
+test: 4.94
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 5.41
+REACHED FORCE 5.41
+Stim time = 5.487355s 
+Receiving Stimulus B: 4.94
+REACHED FORCE 4.94
+Stim time = 3.273084s 
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+reversals:2
+----- TRIAL #12 -----
+test: 5.63
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 5.41
+REACHED FORCE 5.41
+Stim time = 4.064971s 
+Receiving Stimulus B: 5.63
+REACHED FORCE 5.63
+Stim time = 5.028645s 
+The real answer is: 3
+User answer is: 2
+User said TEST equals REFERENCE
+----- TRIAL #13 -----
+test: 4.65
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 4.65
+REACHED FORCE 4.65
+Stim time = 5.286132s 
+Receiving Stimulus B: 5.41
+REACHED FORCE 5.41
+Stim time = 3.991136s 
+The real answer is: 3
+User answer is: 3
+User said TEST is less than REFERENCE
+reversals:3
+----- TRIAL #14 -----
+test: 5.63
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 5.63
+REACHED FORCE 5.63
+Stim time = 3.998459s 
+Receiving Stimulus B: 5.41
+REACHED FORCE 5.41
+Stim time = 5.129091s 
+The real answer is: 1
+User answer is: 3
+User said TEST is less than REFERENCE
+reversals:4
+----- TRIAL #15 -----
+test: 4.65
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 4.65
+REACHED FORCE 4.65
+Stim time = 5.044433s 
+Receiving Stimulus B: 5.41
+REACHED FORCE 5.41
+Stim time = 5.58777s 
+The real answer is: 3
+User answer is: 3
+User said TEST is less than REFERENCE
+reversals:5

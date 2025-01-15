@@ -41,7 +41,7 @@ if response in ["yes", "y", "Y", "YES"]:
 			f.write(data)
 			if (data == "DONE\n"):
 				nDone = nDone + 1
-				if (nDone == 2):
+				if (nDone == 24):
 					break
 				#break
 		# print (s.recv(1024).decode())
