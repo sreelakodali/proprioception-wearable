@@ -115,7 +115,7 @@ def instructionsGUI(sc, tr):
 	keyboard.wait('down')
 
 def instructionsGUI2(sc, tr, i):
-	arr = ["Experiment: Part " + str(i) + " of 24"]
+	arr = ["Experiment: Part " + str(i) + " of 12"]
 	turtle.reset()
 	tr.shape('/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/GUIFigures/keypadJND.gif')
 	skG.writeOnWindow(sc,arr+EXPERIMENT_TEXT_5)#arr+EXPERIMENT_TEXT_5

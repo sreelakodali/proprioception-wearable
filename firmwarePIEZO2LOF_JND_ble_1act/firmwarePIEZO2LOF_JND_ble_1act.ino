@@ -158,8 +158,8 @@ void setup() {
 
 void loop() {
   //readForce();
-  //runtime();
-  testSetpointSequence(10000);
+  runtime();
+  //testSetpointSequence(10000);
   //sweep(5000,ID_NUM-1);
 }
 

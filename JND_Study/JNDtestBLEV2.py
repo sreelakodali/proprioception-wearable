@@ -48,7 +48,7 @@ linebuf = ""
 # ----- Global Force Values, for holding... let's see
 force1Global = 0.0
 force2Global = 0.0
-tStim = 5.0
+tStim = 4.0
 MIN_TRIALS = 12
 
 # ------- Display & GUI variables
@@ -170,7 +170,7 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 		await skB.sendSetpoint(retract, client1, rx_char1, 1)
 		if (nAct == 2):
 			await skB.sendSetpoint(retract, client2, rx_char2, 2)
-		await skB.waitSK(2) 	# hold the poke
+		await skB.waitSK(2) 	# retract
 
 		# send stimuli B
 		c.send(("Receiving Stimulus B: " + str(packetB) + "\n").encode())
@@ -185,7 +185,7 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 		await skB.sendSetpoint(retract, client1, rx_char1, 1)
 		if (nAct == 2):
 			await skB.sendSetpoint(retract, client2, rx_char2, 2)
-		await skB.waitSK(3) 	# hold the poke	
+		await skB.waitSK(2) 	# retract	
 
 		# find the real answer
 		# 1 means A > B, 2 means A == B, 3 means A < B
@@ -271,7 +271,7 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 
 				# if newTest == Test
 				attempts = 0
-				while ((newTest >= (test+0.3)) and (attempts < 1)):
+				while ((newTest >= (test+0.0)) and (attempts < 3)):
 					attempts = attempts + 1
 					if (((trialCount - 2 - attempts) >=0) and (len(testArr) > (trialCount - 2 - attempts) ) ):
 						newTest = testArr[trialCount-2 - attempts]
@@ -301,7 +301,19 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 			rightStreak = 0
 			# compute next step using previous test
 			if (increasing):
-				newTest = testArr[trialCount-2] * (10 **(Ldb/20))
+
+				## FIX!!!!!!
+				newTest = testArr[trialCount-2] # next value is the previous one
+
+				attempts = 0
+				while ((newTest >= (test+0.0)) and (attempts < 3) and (reversals > 0)):
+					attempts = attempts + 1
+					if (((trialCount - 2 - attempts) >=0) and (len(testArr) > (trialCount - 2 - attempts) ) ):
+						newTest = testArr[trialCount-2 - attempts]
+					else:
+						break
+
+				newTest = newTest * (10 **(Ldb/20))
 			else:
 				newTest = testArr[trialCount-2] * (2 - 10 ** (Ldb/20))
 
@@ -331,7 +343,7 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 
 				# if newTest == Test
 				attempts = 0
-				while ((newTest <= (test-0.3)) and (attempts < 1)):
+				while ((newTest <= (test-0.0)) and (attempts < 3)):
 					attempts = attempts + 1
 					if (((trialCount - 2 - attempts) >=0) and (len(testArr) > (trialCount - 2 - attempts) ) ):
 						newTest = testArr[trialCount-2 - attempts]
@@ -590,7 +602,7 @@ async def main():
 
 	# write the staircase data via socket
 	s = socket.socket()
-	port = 12346
+	port = 12345
 	s.bind(('', port))
 	s.listen(2)
 	print("Waiting to connect to client to print JND data...")
@@ -669,7 +681,7 @@ async def main():
 
 					await skB.waitGUI(sc) # Calibration Filter: wait for filter to stabilize
 
-					actuatorOrder = [1,2]
+					actuatorOrder = [1, 2]
 					random.shuffle(actuatorOrder)
 
 					nParts = 0
@@ -677,8 +689,9 @@ async def main():
 						for k in keys:
 							nParts = nParts + 1
 							rUpStack = deque()
-							rUpArr = [0, 0, 0, 1, 1, 1]
-							random.shuffle(rUpArr)
+							# rUpArr = [0, 0, 0, 1, 1, 1]
+							# random.shuffle(rUpArr)
+							rUpArr = [1, 1, 1]
 							for r in rUpArr:
 								rUpStack.append(r)
 

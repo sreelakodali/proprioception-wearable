@@ -26,8 +26,8 @@ if response in ["yes", "y", "Y", "YES"]:
 	s = socket.socket()         
 	
 	# Define the port on which you want to connect 
-	port = 12346
-	IPAddr = '10.0.0.64'# kuppa #'10.34.87.223' #'10.34.86.113' #stanford  #'10.36.81.32' #eduroam  '10.0.0.64'# kuppa ##  
+	port = 12345
+	IPAddr = '10.34.82.134'#'10.0.0.64'# kuppa #'10.34.87.223' #'10.34.86.113' #stanford  #'10.36.81.32' #eduroam  '10.0.0.64'# kuppa ##  
 	# connect to the server on local computer 
 	s.connect((IPAddr, port)) 
 	nDone = 0
