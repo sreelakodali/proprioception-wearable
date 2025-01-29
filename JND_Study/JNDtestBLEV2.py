@@ -97,7 +97,7 @@ async def waitSK_setpointTimer(td, s, c, n):
 	c.send(("Final Stim time = " + str(stimTime) + "s \n").encode())
 
 # provide staircasing parameters: going up or down (bounds); reference, nUP, nDown, retract, wait, c, clients and rxchars
-async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, wait, retract, client1, rx_char1, client2, rx_char2):
+async def staircaseNewBLE(l, c, nAct, increasing, avgMin, avgMax, key, reference, wait, retract, client1, rx_char1, client2, rx_char2):
 	#global writer
 	global trialCount
 	global fileName
@@ -114,9 +114,11 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 	nWrong = 0
 	nRight = 0
 
+	localDir = 1 # starts by increasing
+
 	trialCount = 0
 
-	staircaseFileName = skB.initializeTrialFiles(p, fileName, key)
+	staircaseFileName = skB.initializeTrialFiles(p, fileName, key, l)
 
 	# we are assuming nUp, nDown: 2:1
 	testArr = [] # [0.0] * 50
@@ -125,10 +127,12 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 		Ldb = 2
 	Xo = skB.generateInitialValue(increasing, avgMin, avgMax, reference)
 
-	# FIX since some people's force range won't allow for 3.0 difference
-	while (abs(Xo - reference) < (avgMax-avgMin)/6):
+	# while (abs(Xo - reference) < (avgMax-avgMin)/6):
+	# make sure that (10^(4/20) )^n doesn't equal the value
+	nIterations = np.log(reference/Xo) / np.log(10**(Ldb/20))
+	while ( (abs(Xo*(10**(Ldb/20))**(np.ceil(nIterations)) - reference) < 0.6) or (abs(Xo*(10**(Ldb/20))**(np.floor(nIterations)) - reference) < 0.6)):
 		Xo = skB.generateInitialValue(increasing, avgMin, avgMax, reference)
-
+		nIterations = np.log(reference/Xo) / np.log(10**(Ldb/20))
 	Xo = round(Xo, 2)
 	
 	c.send((("ACTUATOR#= {}, STAIRCASE DIRECTION, UP= {}, QUARTILE={}\n").format(nAct, increasing, key)).encode())
@@ -264,7 +268,6 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 			c.send(("User said TEST is greater than REFERENCE\n").encode())
 			
 			if (increasing):
-				reversals = reversals + 1 # reversals
 				rightStreak = 0
 				graphIcon = 3
 				newTest = testArr[trialCount-2] # next value is the previous one
@@ -278,10 +281,15 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 					else:
 						break
 
-				Ldb = Ldb / 2 # Ldb is reduced
-				# if (Ldb <= 0.5):
-				# 	Ldb = 0.5
-				c.send(("reversals:" + str(reversals)+ "\n").encode())
+				# if its a direction change, then reversal
+				if (localDir):
+					reversals = reversals + 1 # reversals
+					Ldb = Ldb / 2 # Ldb is reduced
+					# if (Ldb <= 0.5):
+					# 	Ldb = 0.5
+					c.send(("reversals:" + str(reversals)+ "\n").encode())
+				
+				localDir = 0
 			else:
 				graphIcon = 1
 				if (userAnswer == answerKey):
@@ -306,13 +314,13 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 				newTest = testArr[trialCount-2] # next value is the previous one
 
 				attempts = 0
-				while ((newTest >= (test+0.0)) and (attempts < 3) and (reversals > 0)):
+				while ((newTest > (test+0.0)) and (attempts < 3) and (reversals > 0)):
 					attempts = attempts + 1
 					if (((trialCount - 2 - attempts) >=0) and (len(testArr) > (trialCount - 2 - attempts) ) ):
 						newTest = testArr[trialCount-2 - attempts]
 					else:
 						break
-
+				localDir = 1
 				newTest = newTest * (10 **(Ldb/20))
 			else:
 				newTest = testArr[trialCount-2] * (2 - 10 ** (Ldb/20))
@@ -332,6 +340,7 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 				if (1): #if (rightStreak == 2):
 					# change the stimulus pattern
 					newTest = test * 10 ** (Ldb/20)
+					localDir = 1
 					#rightStreak = 0
 				# else:
 				# 	newTest = test
@@ -370,20 +379,22 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 			#if (abs(statistics.mean(testArr[-10:]) - reference) <  10**(0.1)):
 			if ( (max(testArr[-10:]) - min(testArr[-10:])) <  10**(0.1)):
 				keepGoing = False
+				c.send(("Termination Condition #1 Reached: range of last 10 < 2 dB").encode())
 			#npTestArr = np.array(testArr[-10:])
 
 			# Condition #2: if the last 10 values are the exact same
 			elif (nEqualityCheck == 10):
 				keepGoing = False
+				c.send(("Termination Condition #2 Reached: last 10 values the same").encode())
 			# elif ( sum(abs(np.gradient(npTestArr, 1))) < 0.3 ):
 			# 	keepGoing = False
 
-		newTest = round(newTest, 2)
-		if (newTest > avgMax):
-			newTest = avgMax
-		elif (newTest < avgMin):
-			newTest = avgMin
-		testArr.append(newTest)
+		# newTest = round(newTest, 2)
+		# if (newTest > avgMax):
+		# 	newTest = avgMax
+		# elif (newTest < avgMin):
+		# 	newTest = avgMin
+		# testArr.append(newTest)
 
 		if (trialCount > MIN_TRIALS):
 			npTestArr = np.array(testArr) 		# precomputation for condition #3
@@ -391,7 +402,15 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 			diffVal = diffVal[diffVal != 0]
 			# Condition #3: if the increment is smaller than the resolution of the system
 			if (min(abs(diffVal)) < skB.SYSTEM_MIN_RESOLUTION):
+				c.send(("Termination Condition #3 Reached: increments are less than the system resolution").encode())
 				keepGoing = False
+
+		newTest = round(newTest, 2)
+		if (newTest > avgMax):
+			newTest = avgMax
+		elif (newTest < avgMin):
+			newTest = avgMin
+		testArr.append(newTest)
 
 		n = open(staircaseFileName, 'a', encoding='UTF8', newline='')
 		n.write(str(trialCount-1) + "," + str(test) + "," + str(reference) + "," + str(packetA) + "," + str(packetB)+ "," + str(answerKey)+ "," + str(userAnswer)+ "," + str(reversals)+ "," + str(graphIcon) + "," + str(nRight) + "," + str(nWrong) + "\n")
