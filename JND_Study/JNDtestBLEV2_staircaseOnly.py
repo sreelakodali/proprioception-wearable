@@ -98,7 +98,7 @@ async def waitSK_setpointTimer(td, s, c, n):
 	c.send(("Final Stim time = " + str(stimTime) + "s \n").encode())
 
 # provide staircasing parameters: going up or down (bounds); reference, nUP, nDown, retract, wait, c, clients and rxchars
-async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, wait, retract, client1, rx_char1, client2, rx_char2):
+async def staircaseNewBLE(Xo, l, c, nAct, increasing, avgMin, avgMax, key, reference, wait, retract, client1, rx_char1, client2, rx_char2):
 	#global writer
 	global trialCount
 	global fileName
@@ -120,24 +120,25 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 
 	trialCount = 0
 
-	staircaseFileName = skB.initializeTrialFiles(p, fileName, key)
+	staircaseFileName = skB.initializeTrialFiles(p, fileName, key, l)
 
 	# we are assuming nUp, nDown: 2:1
 	testArr = [] # [0.0] * 50
 	Ldb = 4 #db
 	if (not (increasing)):
 		Ldb = 2
-	Xo = skB.generateInitialValue(increasing, avgMin, avgMax, reference)
+	
+	# Xo = skB.generateInitialValue(increasing, avgMin, avgMax, reference)
+	# # # FIX since some people's force range won't allow for 3.0 difference
+	# # while (abs(Xo - reference) < (avgMax-avgMin)/6):
+	# # 	Xo = skB.generateInitialValue(increasing, avgMin, avgMax, reference)
 
-	# # FIX since some people's force range won't allow for 3.0 difference
-	# while (abs(Xo - reference) < (avgMax-avgMin)/6):
-	# 	Xo = skB.generateInitialValue(increasing, avgMin, avgMax, reference)
-
-	# make sure that (10^(4/20) )^n doesn't equal the value
-	# nIterations = np.log(reference/Xo) / np.log(10**(Ldb/20))
-	# while ( (abs(Xo*(10**(Ldb/20))**(np.ceil(nIterations)) - reference) < 0.6) or (abs(Xo*(10**(Ldb/20))**(np.floor(nIterations)) - reference) < 0.6)):
-	# 	Xo = skB.generateInitialValue(increasing, avgMin, avgMax, reference)
-	# 	nIterations = np.log(reference/Xo) / np.log(10**(Ldb/20))
+	# # make sure that (10^(4/20) )^n doesn't equal the value
+	# # nIterations = np.log(reference/Xo) / np.log(10**(Ldb/20))
+	# # while ( (abs(Xo*(10**(Ldb/20))**(np.ceil(nIterations)) - reference) < 0.6) or (abs(Xo*(10**(Ldb/20))**(np.floor(nIterations)) - reference) < 0.6)):
+	# # 	Xo = skB.generateInitialValue(increasing, avgMin, avgMax, reference)
+	# # 	nIterations = np.log(reference/Xo) / np.log(10**(Ldb/20))
+	
 	Xo = round(Xo, 2)
 	
 	c.send((("ACTUATOR#= {}, STAIRCASE DIRECTION, UP= {}, QUARTILE={}\n").format(nAct, increasing, key)).encode())
@@ -168,7 +169,7 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 
 		# send stimuli A
 		c.send(("Receiving Stimulus A: " + str(packetA) + "\n").encode())
-		skG.writeText(sc, -350, 230, "Stimulus A in progress", skG.COLOR)
+		#skG.writeText(sc, -350, 230, "Stimulus A in progress", skG.COLOR)
 
 		# await skB.sendSetpoint(packetA, client1, rx_char1, 1) 	
 		# if (nAct == 2):
@@ -183,7 +184,7 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 
 		# send stimuli B
 		c.send(("Receiving Stimulus B: " + str(packetB) + "\n").encode())
-		skG.writeText(sc, -350, 180, "Stimulus B in progress", skG.COLOR)
+		#skG.writeText(sc, -350, 180, "Stimulus B in progress", skG.COLOR)
 
 		# await skB.sendSetpoint(packetB, client1, rx_char1, 1) 	
 		# if (nAct == 2):
@@ -202,38 +203,39 @@ async def staircaseNewBLE(c, nAct, increasing, avgMin, avgMax, key, reference, w
 		answerKey = (packetA > packetB)*1 + (packetA == packetB)*2 + (packetA < packetB)*3
 		c.send(("The real answer is: " + str(answerKey) + "\n").encode())
 
-		skB.displayAnswerOptionsGUI(sc)
+		#skB.displayAnswerOptionsGUI(sc)
 
-		while(1):
-			await asyncio.sleep(0.01)
+		# while(1):
+		# 	await asyncio.sleep(0.01)
 		# wait for user's input
-			k = keyboard.read_key()
+			# k = keyboard.read_key()
 
-			if k == 'left':
-				userAnswer = 1
-				skB.updateUserAnswerGUI(sc, userAnswer)
+			# if k == 'left':
+			# 	userAnswer = 1
+			# 	skB.updateUserAnswerGUI(sc, userAnswer)
 
-			elif k == 'up':
-				userAnswer = 2
-				skB.updateUserAnswerGUI(sc, userAnswer)
+			# elif k == 'up':
+			# 	userAnswer = 2
+			# 	skB.updateUserAnswerGUI(sc, userAnswer)
 
-			elif k == 'right':
-				userAnswer = 3
-				skB.updateUserAnswerGUI(sc, userAnswer)
+			# elif k == 'right':
+			# 	userAnswer = 3
+			# 	skB.updateUserAnswerGUI(sc, userAnswer)
+		userAnswer = skB.simulatedSubjectResponse(c, packetA, packetB)
 
-			elif k == 'down':
+			# elif k == 'down':
 
-				if (userAnswer == 0):
-					skG.writeText(sc, -350,-20, "You have to choose an answer to proceed.", skG.COLOR)					
-				else:
-					skG.eraseLine(sc,-350,40)
-					skG.erase(sc, 'white')
-					#skG.eraseLine(sc,-350,-20)
-					trialCount = trialCount + 1
-					#if trialCount < N_Trials:
-					skG.updateTrialLabel(sc, trialCount)
-					skG.delay(sc, t)
-					break
+			# 	if (userAnswer == 0):
+			# 		skG.writeText(sc, -350,-20, "You have to choose an answer to proceed.", skG.COLOR)					
+			# 	else:
+		# skG.eraseLine(sc,-350,40)
+		# skG.erase(sc, 'white')
+		#skG.eraseLine(sc,-350,-20)
+		trialCount = trialCount + 1
+		#if trialCount < N_Trials:
+		# skG.updateTrialLabel(sc, trialCount)
+		# skG.delay(sc, t)
+		#break
 			
 		# check the answer. depending on answer, determine next test value
 		# if answer wrong, reset streak and step up test value
@@ -715,7 +717,7 @@ async def main():
 
 			# 		await skB.waitGUI(sc) # Calibration Filter: wait for filter to stabilize
 
-	actuatorOrder = [1, 2]
+	actuatorOrder = [1] #[1, 2]
 	random.shuffle(actuatorOrder)
 
 	nParts = 0
@@ -729,14 +731,25 @@ async def main():
 			for r in rUpArr:
 				rUpStack.append(r)
 
-			for l in list(range(0,len(rUpArr))):
-				#skB.instructionsGUI2(sc, tr, (nParts-1)*len(rUpArr) + l)
-				skB.prepareExperimentGUI(sc, l)
-				rUp = rUpStack.pop()
-				#print ("this is staircase" + str(k))
-				c.send(("TRIAL#" + str(l) + "\n").encode())
-				#print("actuator#= {}, increasing= {}, quartile={}, trial#={}".format(n, rUp, k, l))
-				await staircaseNewBLE(c, n, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+			XoArr = []
+			for _ in range(0,1):
+				XoTemp = skB.generateInitialValue(1, avgMin, avgMax, quartiles[k])
+				nIterations = np.log(quartiles[k]/XoTemp) / np.log(10**(4/20))
+				while ( (abs(XoTemp*(10**(4/20))**(np.ceil(nIterations)) - quartiles[k]) < 0.6) or (abs(XoTemp*(10**(4/20))**(np.floor(nIterations)) - quartiles[k]) < 0.6)):
+					XoTemp = skB.generateInitialValue(1, avgMin, avgMax, quartiles[k])
+					nIterations = np.log(quartiles[k]/XoTemp) / np.log(10**(4/20))
+				XoArr.append(XoTemp)
+
+
+			for Xo in XoArr:
+				for l in list(range(0,len(rUpArr))):
+					#skB.instructionsGUI2(sc, tr, (nParts-1)*len(rUpArr) + l)
+					skB.prepareExperimentGUI(sc, l)
+					rUp = 1#rUpStack.pop()
+					#print ("this is staircase" + str(k))
+					c.send(("TRIAL#" + str(l) + "_" + str(quartiles[k])+ "_" + str(Xo) +"\n").encode())
+					#print("actuator#= {}, increasing= {}, quartile={}, trial#={}".format(n, rUp, k, l))
+					await staircaseNewBLE(Xo, l, c, n, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 
 					# skB.orderedPairsInstructionsGUI(sc, tr)
 					# skB.orderedPairsGUI(sc)

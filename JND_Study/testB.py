@@ -7,10 +7,52 @@ def changeScalePolyfit(s):
 	#ls = 13.309610778443160 -3.142974745776060* (s ** 1) + 0.329362743111748* (s ** 2) - 0.015300291353016*(s ** 3) + 0.0002598774881315157*(s ** 4);
 	return ls
 
+
+# the probability will progressively decrease with magnitude until
+def simulatedSubjectResponse(a, b):
+	diff = float(a)-float(b)
+	pA=0
+	pB=0
+	pEqual=0
+
+	if (abs(diff) > 1):
+		pA = 1
+		pEqual = 0
+		if(diff < 0):
+			pA = 1 - pA - pEqual
+
+	elif (abs(diff) < 0.4):
+		pEqual=0.4
+		pA = 0.3
+
+	elif (abs(diff) < 0.6):
+		pEqual=0.3
+		pA = 0.5
+		if(diff < 0):
+			pA = 1 - pA - pEqual
+
+	elif (abs(diff) <= 1):
+		pEqual = 0.15
+		pA = 0.75
+		if(diff < 0):
+			pA = 1 - pA - pEqual
+
+	pB = 1-pA-pEqual
+
+	print("pA={}, pEqual={}, pB={}".format(pA, pEqual, pB))
+
+	response = random.choices([1, 2, 3], weights=[pA, pEqual, pB])
+	response = response[0]
+	print("response={}".format(response))
+	return response
+
 while (1):
-	print("what setpoint?")
-	setpoint = input()
-	print("scale is {}".format(changeScalePolyfit(float(setpoint))))
+	print("A?")
+	A = input()
+	print("B?")
+	B = input()
+	simulatedSubjectResponse(A, B)
+	#print("scale is {}".format(changeScalePolyfit(float(setpoint))))
 
 
 # def sendMySetpoints():

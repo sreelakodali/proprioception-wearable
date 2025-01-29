@@ -82,6 +82,51 @@ bleName = "Adafruit Bluefruit LE"
 
 t = 1
 
+
+# how I'll model it
+# if magnitude difference > x, probability is 1
+# if magnitude < 1, 0.75
+# if magnitude <0.6, 0.6
+# if magnitude <0.4 0.5
+# the probability will progressively decrease with magnitude until
+def simulatedSubjectResponse(c, a, b):
+	diff = float(a)-float(b)
+	pA=0
+	pB=0
+	pEqual=0
+
+	if (abs(diff) > 1):
+		pA = 1
+		pEqual = 0
+		if(diff < 0):
+			pA = 1 - pA - pEqual
+
+	elif (abs(diff) < 0.4):
+		pEqual=0.4
+		pA = 0.3
+
+	elif (abs(diff) < 0.6):
+		pEqual=0.3
+		pA = 0.5
+		if(diff < 0):
+			pA = 1 - pA - pEqual
+
+	elif (abs(diff) <= 1):
+		pEqual = 0.15
+		pA = 0.75
+		if(diff < 0):
+			pA = 1 - pA - pEqual
+
+	pB = 1-pA-pEqual
+
+	c.send( ("pA={}, pEqual={}, pB={}\n".format(pA, pEqual, pB)).encode())
+
+	response = random.choices([1, 2, 3], weights=[pA, pEqual, pB])
+	response = response[0]
+	c.send( ("response={}\n".format(response)).encode())
+	return response
+
+
 #initial value is randomized 
 def generateInitialValue(increasing, minValue, maxValue, reference):
 	if (increasing): # 
@@ -308,9 +353,9 @@ async def orderingPairs(c, avgMin, avgMax, q2, wait):
 		await asyncio.sleep(0.1)
 
 	
-def initializeTrialFiles(p, fileName, key):
+def initializeTrialFiles(p, fileName, key, l):
 	newTime = str(datetime.datetime.now())[11:16].replace(':','-')
-	newFileName = p + 'trial' + key + '_' + fileName + '_' + newTime + '.csv'
+	newFileName = p + 'trial'+ str(l) + '_' + key + '_' + fileName + '_' + newTime + '.csv'
 	n = open(newFileName, 'w+', encoding='UTF8', newline='')
 	writer = csv.writer(n) # csv writer for trials
 	writer.writerow(["trialCount", "Test", "Reference", "A", "B", "answerKey", "userAnswer", "reversals", "graphIcon", "nRight", "nWrong"])
