@@ -1,0 +1,13 @@
+LOAD ASR VALUES
+Min1 0.7
+Max1 10.0
+Min2 0.3
+Max2 12.0
+Min3 0.7
+Max3 13.0
+avgMin 0.57
+avgMax 11.67
+q1 3.34
+q2 6.12
+q3 8.89
+TRIAL#0

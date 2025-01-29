@@ -1,0 +1,24 @@
+LOAD ASR VALUES
+Min1 0.2
+Max1 10.0
+Min2 0.7
+Max2 12.0
+Min3 0.5
+Max3 13.0
+avgMin 0.47
+avgMax 11.67
+q1 3.27
+q2 6.07
+q3 8.87
+TRIAL#0
+ACTUATOR#= 1, STAIRCASE DIRECTION, UP= 1, QUARTILE=q2
+STAIRCASE q2
+INITIAL VALUE= 3.3
+REFERENCE= 6.07
+----- TRIAL #0 -----
+test: 3.3
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 3.3
+Receiving Stimulus B: 6.07
+The real answer is: 3
