@@ -414,6 +414,13 @@ def closeFiles(arr):
 	for i in arr:
 		i.close()
 
+def randomizeStimuliV2(r, ref, test, c):
+	c.send(("r: " + str(r)+ "\n").encode())
+	if (r == 1):
+		return (ref, test, "Reference", "Test")
+	else:
+		return (test, ref, "Test", "Reference")
+
 def randomizeStimuli(ref, test, c):
 	r = random.randrange(0,2)
 	c.send(("r: " + str(r)+ "\n").encode())
@@ -492,9 +499,24 @@ def updateUserAnswerGUI(sc, userAnswer):
 	elif (userAnswer == 3):
 		skG.writeText(sc, -350,30, "A > B             A == B            (A < B)", skG.COLOR_RED)
 
+def updateUserAnswerGUIV2(sc, userAnswer):
+	skG.eraseLine(sc,-350,40)
+	if (userAnswer == 1):		
+		skG.writeText(sc, -350,30, "(Ref > Test: More)       Ref == Test       Ref < Test: Less", skG.COLOR_RED)
+	elif (userAnswer == 2):
+		skG.writeText(sc, -350,30, "Ref > Test: More       (Ref == Test)       Ref < Test: Less", skG.COLOR_RED)
+	elif (userAnswer == 3):
+		skG.writeText(sc, -350,30, "Ref > Test: More       Ref == Test       (Ref < Test: Less)", skG.COLOR_RED)
+
 def displayAnswerOptionsGUI(sc):
 	skG.writeText(sc, -350,80, "Select your answer:", skG.COLOR)
 	skG.writeText(sc, -350,30, "A > B             A == B             A < B ", skG.COLOR_RED)
+	skG.writeText(sc, -350,-120, "Press the red key to confirm your answer", skG.COLOR)
+	skG.writeText(sc, -350,-170, "and proceed to the next trial.", skG.COLOR_GREEN)
+
+def displayAnswerOptionsGUIV2(sc):
+	skG.writeText(sc, -350,80, "Select your answer:", skG.COLOR)
+	skG.writeText(sc, -350,30, "Ref > Test: More       Ref == Test       Ref < Test: Less", skG.COLOR_RED)
 	skG.writeText(sc, -350,-120, "Press the red key to confirm your answer", skG.COLOR)
 	skG.writeText(sc, -350,-170, "and proceed to the next trial.", skG.COLOR_GREEN)
 

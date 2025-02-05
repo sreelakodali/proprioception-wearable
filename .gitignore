@@ -3,3 +3,8 @@
 
 # Ignore folder
 preliminaryCode
+
+.JND_Study/FiguresToH/
+JND_Study/FiguresToH/
+# file types to ignore
+*.pptx

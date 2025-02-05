@@ -1,0 +1,30 @@
+LOAD ASR VALUES
+Min1 0.26
+Max1 17.31
+Min2 0.18
+Max2 17.0
+Min3 0.26
+Max3 15.12
+avgMin 0.23
+avgMax 16.48
+q1 4.29
+q2 8.36
+q3 12.42
+TRIAL#0
+ACTUATOR#= 1, STAIRCASE DIRECTION, UP= 1, QUARTILE=q1
+STAIRCASE q1
+INITIAL VALUE= 1.31
+REFERENCE= 4.29
+----- TRIAL #0 -----
+test: 1.31
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 1.31
+REACHED FORCE 1.31
+Stim time = 8.7e-05s 
+Final Stim time = 4.000639s 
+Receiving Stimulus B: 4.29
+REACHED FORCE 4.29
+Stim time = 0.000281s 
+Final Stim time = 4.000773s 
+The real answer is: 3

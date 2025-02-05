@@ -39,7 +39,7 @@ void setup()
 void loop()
 {   
     byte i2cAddress = 0x04; //  peripheral (SingleTact), default 0x04
-    byte i2cNewAddress = 0x06; // New device address;
+    byte i2cNewAddress = 0x08; // New device address;
     changeSensorAddress(i2cAddress,i2cNewAddress);
     
     delay(100); // Change this if you are getting values too quickly 

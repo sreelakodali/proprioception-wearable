@@ -702,7 +702,7 @@ async def main():
 	q2=5.98
 	quartiles = {"q1": q1, "q2": q2}
 	keys = list(quartiles.keys())
-	#random.shuffle(keys)
+	random.shuffle(keys)
 			
 			# skB.device2GUI(sc)
 			# device2 = await BleakScanner.find_device_by_address(skB.addr_Adafruit2)
@@ -717,7 +717,7 @@ async def main():
 
 			# 		await skB.waitGUI(sc) # Calibration Filter: wait for filter to stabilize
 
-	actuatorOrder = [1] #[1, 2]
+	actuatorOrder = [1, 2]
 	random.shuffle(actuatorOrder)
 
 	nParts = 0
