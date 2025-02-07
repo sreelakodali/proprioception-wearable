@@ -1,0 +1,111 @@
+TRIAL#0_5.98
+ACTUATOR#= 2, QUARTILE=q2
+STAIRCASE q2
+INITIAL VALUE= 0.55
+REFERENCE= 5.98
+----- TRIAL #0 -----
+test: 0.55
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 5.98
+Receiving Stimulus B: 0.55
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #1 -----
+test: 0.69
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 0.69
+Receiving Stimulus B: 5.98
+The real answer is: 3
+User answer is: 3
+User said TEST is less than REFERENCE
+----- TRIAL #2 -----
+test: 0.87
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 5.98
+Receiving Stimulus B: 0.87
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #3 -----
+test: 1.1
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 1.1
+Receiving Stimulus B: 5.98
+The real answer is: 3
+User answer is: 3
+User said TEST is less than REFERENCE
+----- TRIAL #4 -----
+test: 1.38
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 5.98
+Receiving Stimulus B: 1.38
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #5 -----
+test: 1.74
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 5.98
+Receiving Stimulus B: 1.74
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #6 -----
+test: 2.19
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 2.19
+Receiving Stimulus B: 5.98
+The real answer is: 3
+User answer is: 3
+User said TEST is less than REFERENCE
+----- TRIAL #7 -----
+test: 2.76
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 2.76
+Receiving Stimulus B: 5.98
+The real answer is: 3
+User answer is: 3
+User said TEST is less than REFERENCE
+----- TRIAL #8 -----
+test: 3.47
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 5.98
+Receiving Stimulus B: 3.47
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #9 -----
+test: 4.37
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 5.98
+Receiving Stimulus B: 4.37
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #10 -----
+test: 5.5
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 5.5
+Receiving Stimulus B: 5.98
+The real answer is: 3
+User answer is: 3
+User said TEST is less than REFERENCE
+----- TRIAL #11 -----
+test: 6.92
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 5.98
+Receiving Stimulus B: 6.92
+The real answer is: 3

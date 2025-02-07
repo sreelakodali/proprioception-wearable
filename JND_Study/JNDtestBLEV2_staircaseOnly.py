@@ -98,6 +98,226 @@ async def waitSK_setpointTimer(td, s, c, n):
 	c.send(("Final Stim time = " + str(stimTime) + "s \n").encode())
 
 # provide staircasing parameters: going up or down (bounds); reference, nUP, nDown, retract, wait, c, clients and rxchars
+async def staircase2AFC(l, c, nAct, nDown, avgMin, avgMax, key, reference, wait, retract, client1, rx_char1, client2, rx_char2):
+	#global writer
+	global trialCount
+	global fileName
+	global p
+	#global n
+	packetA = 0
+	packetB = 0
+	rightStreak = 0
+	answerKey = 0
+	userAnswer = 0
+	test = 0
+	trialCount = 0 # counter
+	reversals = 0
+	nWrong = 0
+	nRight = 0
+	increment = 0
+
+	localDir = 1 # 1 is increasing. 2 is equal. 0 is decreasing. starts increasing
+	staircaseFileName = skB.initializeTrialFiles(p, fileName, key, l)
+
+	# we are assuming nUp, nDown: 2:1
+	testArr = [] # [0.0] * 50
+	Ldb = 2 #db
+	Xo = skB.generateInitialValue(1, avgMin, avgMax, reference)
+	# while (abs(Xo - reference) < (avgMax-avgMin)/6):
+	# make sure that (10^(4/20) )^n doesn't equal the value
+	nIterations = np.log(reference/Xo) / np.log(10**(Ldb/20))
+	if ((avgMax - avgMin) > 9.5):	
+		while ( (abs(Xo*(10**(Ldb/20))**(np.ceil(nIterations)) - reference) < 0.6) or (abs(Xo*(10**(Ldb/20))**(np.floor(nIterations)) - reference) < 0.6)):
+			Xo = skB.generateInitialValue(1, avgMin, avgMax, reference)
+			nIterations = np.log(reference/Xo) / np.log(10**(Ldb/20))
+	Xo = round(Xo, 2)
+	testArr.append(Xo)
+	
+	c.send((("ACTUATOR#= {}, QUARTILE={}\n").format(nAct, key)).encode())
+	c.send(("STAIRCASE " + key + "\n").encode())
+	c.send(("INITIAL VALUE= " + str(Xo) + "\n").encode())
+	c.send(("REFERENCE= " + str(reference) + "\n").encode())
+	
+	keepGoing = True
+	while (keepGoing):
+		graphIcon = 0
+		await asyncio.sleep(0.01)
+		test = testArr[trialCount]
+
+		c.send( ( "----- TRIAL #" + str(trialCount) + " -----\n").encode())
+		c.send(("test: " + str(test) + "\n" ).encode())
+		c.send(("rightStreak: " + str(rightStreak) + "\n").encode())
+
+		packetA, packetB, r = skB.randomizeStimuli(reference, test, c)
+		# if r == 1, A=ref, B=test
+		# if r== 0, A=test, B=ref
+
+		# send stimuli A
+		c.send(("Receiving Stimulus A: " + str(packetA) + "\n").encode())
+		skG.writeText(sc, -350, 230, "Stimulus A in progress", skG.COLOR)
+
+		# await skB.sendSetpoint(packetA, client1, rx_char1, 1) 	
+		# if (nAct == 2):
+		# 	await skB.sendSetpoint(packetA, client2, rx_char2, 2) 	
+		# #await skB.waitSK(wait) 	# hold the poke	
+		# await waitSK_setpointTimer(wait, packetA, c, 1) # device1
+
+		# await skB.sendSetpoint(retract, client1, rx_char1, 1)
+		# if (nAct == 2):
+		# 	await skB.sendSetpoint(retract, client2, rx_char2, 2)
+		# await skB.waitSK(2) 	# retract
+
+		# send stimuli B
+		c.send(("Receiving Stimulus B: " + str(packetB) + "\n").encode())
+		skG.writeText(sc, -350, 180, "Stimulus B in progress", skG.COLOR)
+
+		# await skB.sendSetpoint(packetB, client1, rx_char1, 1) 	
+		# if (nAct == 2):
+		# 	await skB.sendSetpoint(packetB, client2, rx_char2, 2) 	
+		# #await skB.waitSK(wait) 	# hold the poke	
+		# await waitSK_setpointTimer(wait, packetB, c, 1) #device 1
+
+		# await skB.sendSetpoint(retract, client1, rx_char1, 1)
+		# if (nAct == 2):
+		# 	await skB.sendSetpoint(retract, client2, rx_char2, 2)
+		# await skB.waitSK(2) 	# retract	
+
+		# find the real answer
+		# 1 means A > B, 2 means A == B, 3 means A < B
+		answerKey = (packetA > packetB)*1 + (packetA == packetB)*2 + (packetA < packetB)*3
+		c.send(("The real answer is: " + str(answerKey) + "\n").encode())
+
+		skB.displayAnswerOptionsGUI2AFC(sc)
+
+		while(1):
+			await asyncio.sleep(0.01)
+		# wait for user's input
+			k = keyboard.read_key()
+
+			if k == 'left':
+				userAnswer = 1
+				skB.updateUserAnswerGUI2AFC(sc, userAnswer)
+
+			elif k == 'right':
+				userAnswer = 3
+				skB.updateUserAnswerGUI2AFC(sc, userAnswer)
+
+			elif k == 'down':
+
+				if (userAnswer == 0):
+					skG.writeText(sc, -350,-20, "You have to choose an answer to proceed.", skG.COLOR)					
+				else:
+					skG.eraseLine(sc,-350,40)
+					skG.erase(sc, 'white')
+					#skG.eraseLine(sc,-350,-20)
+					trialCount = trialCount + 1
+					#if trialCount < N_Trials:
+					skG.updateTrialLabel(sc, trialCount)
+					skG.delay(sc, t)
+					break
+			
+		# check the answer. depending on answer, determine next test value
+		# if answer wrong, reset streak and step up test value
+		c.send(("User answer is: " + str(userAnswer)+ "\n").encode())
+		await asyncio.sleep(0.01)
+
+		if (userAnswer == answerKey):
+			nRight = nRight + 1
+		else:
+			nWrong = nWrong + 1
+		# if test < ref
+
+		## if r == 1, A=ref, B=test. --> to have ref > test, answer 1
+		# if r== 0, A=test, B=ref. --> to have test < ref, answer 3
+		
+		# if (increasing):
+		# 	condition1 = ((r==0) and (userAnswer==1)) or ((r==1) and (userAnswer==3))
+		# 	condition3 = ((r==0) and (userAnswer==3)) or ((r==1) and (userAnswer==1))
+
+		# if TEST > reference, needs to be correct N times before reducing.
+		if ((r==0) and (userAnswer==1)) or ((r==1) and (userAnswer==3)):
+			
+			c.send(("User said TEST is greater than REFERENCE\n").encode())
+			graphIcon = 3
+			rightStreak = rightStreak + 1
+
+			# if greater N times in a row, reduce it to the last less value
+			if (rightStreak == nDown):
+				rightStreak = 0
+				newTest = test - increment	#increment = increment * -1
+
+				# # if its a direction change, then reversal
+				if (localDir):
+					reversals = reversals + 1 # reversals
+					Ldb = Ldb / 2 # Ldb is reduced
+					if (Ldb <= 0.5):
+						Ldb = 0.5
+					c.send(("reversals:" + str(reversals)+ "\n").encode())
+				localDir = 0
+
+			else:
+				newTest = test
+				localDir = 2 # keep the same
+		
+		# if TEST < reference, increase by the exponential factor
+		elif ((r==0) and (userAnswer==3)) or ((r==1) and (userAnswer==1)):
+			
+			c.send(("User said TEST is less than REFERENCE\n").encode())
+			graphIcon = 1
+			rightStreak = 0
+
+			newTest = test * 10 ** (Ldb/20)
+			increment = newTest - test
+			localDir = 1
+			
+		# updated termination conditions
+		if (trialCount > MIN_TRIALS):
+
+			# precomputation for condition #2
+			equalityCheckVal = testArr[-10]
+			nEqualityCheck = 0
+			for j in testArr[-10:]:
+				if (j==equalityCheckVal):
+					nEqualityCheck = nEqualityCheck + 1
+
+			# precomputation for condition #3
+			diffVal = np.diff(np.array(testArr))
+			diffVal = diffVal[diffVal != 0]
+
+			# Condition #1: less than 2dB
+			# the range of the most recent 10 values
+			#if (abs(statistics.mean(testArr[-10:]) - reference) <  10**(0.1)):
+			if ( (max(testArr[-10:]) - min(testArr[-10:])) <  10**(1/20)):
+				keepGoing = False
+				c.send(("Termination Condition #1 Reached: range of last 10 < 2 dB").encode())
+			#npTestArr = np.array(testArr[-10:])
+
+			# Condition #2: if the last 10 values are the exact same
+			elif (nEqualityCheck == 10):
+				keepGoing = False
+				c.send(("Termination Condition #2 Reached: last 10 values the same").encode())
+			
+			# Condition #3: if the increment is smaller than the resolution of the system
+			elif (min(abs(diffVal)) < skB.SYSTEM_MIN_RESOLUTION):
+				keepGoing = False 
+				c.send(("Termination Condition #3 Reached: increments are less than the system resolution").encode())
+
+		# round and bound next value and append to array
+		newTest = round(newTest, 2)
+		if (newTest > avgMax):
+			newTest = avgMax
+		elif (newTest < avgMin):
+			newTest = avgMin
+		testArr.append(newTest)
+
+		n = open(staircaseFileName, 'a', encoding='UTF8', newline='')
+		n.write(str(trialCount) + "," + str(test) + "," + str(reference) + "," + str(packetA) + "," + str(packetB)+ "," + str(answerKey)+ "," + str(userAnswer)+ "," + str(reversals)+ "," + str(graphIcon) + "," + str(nRight) + "," + str(nWrong) + "," + str(r) + "\n")
+		n.close()
+		userAnswer = 0
+
+	c.send(("DONE\n").encode())
+
+# provide staircasing parameters: going up or down (bounds); reference, nUP, nDown, retract, wait, c, clients and rxchars
 async def staircaseNewBLE(Xo, l, c, nAct, increasing, avgMin, avgMax, key, reference, wait, retract, client1, rx_char1, client2, rx_char2):
 	#global writer
 	global trialCount
@@ -694,6 +914,7 @@ async def main():
 	client2 = 0
 	rx_char1 = 0
 	rx_char2 = 0
+	nDown = 2
 
 	# avgMin, avgMax, q1, q2, q3 = skB.loadASRValues(c);
 	avgMin=0.3
@@ -731,25 +952,25 @@ async def main():
 			for r in rUpArr:
 				rUpStack.append(r)
 
-			XoArr = []
-			for _ in range(0,1):
-				XoTemp = skB.generateInitialValue(1, avgMin, avgMax, quartiles[k])
-				nIterations = np.log(quartiles[k]/XoTemp) / np.log(10**(4/20))
-				while ( (abs(XoTemp*(10**(4/20))**(np.ceil(nIterations)) - quartiles[k]) < 0.6) or (abs(XoTemp*(10**(4/20))**(np.floor(nIterations)) - quartiles[k]) < 0.6)):
-					XoTemp = skB.generateInitialValue(1, avgMin, avgMax, quartiles[k])
-					nIterations = np.log(quartiles[k]/XoTemp) / np.log(10**(4/20))
-				XoArr.append(XoTemp)
+			# XoArr = []
+			# for _ in range(0,1):
+			# 	XoTemp = skB.generateInitialValue(1, avgMin, avgMax, quartiles[k])
+			# 	nIterations = np.log(quartiles[k]/XoTemp) / np.log(10**(4/20))
+			# 	while ( (abs(XoTemp*(10**(4/20))**(np.ceil(nIterations)) - quartiles[k]) < 0.6) or (abs(XoTemp*(10**(4/20))**(np.floor(nIterations)) - quartiles[k]) < 0.6)):
+			# 		XoTemp = skB.generateInitialValue(1, avgMin, avgMax, quartiles[k])
+			# 		nIterations = np.log(quartiles[k]/XoTemp) / np.log(10**(4/20))
+			# 	XoArr.append(XoTemp)
 
 
-			for Xo in XoArr:
-				for l in list(range(0,len(rUpArr))):
-					#skB.instructionsGUI2(sc, tr, (nParts-1)*len(rUpArr) + l)
-					skB.prepareExperimentGUI(sc, l)
-					rUp = 1#rUpStack.pop()
-					#print ("this is staircase" + str(k))
-					c.send(("TRIAL#" + str(l) + "_" + str(quartiles[k])+ "_" + str(Xo) +"\n").encode())
-					#print("actuator#= {}, increasing= {}, quartile={}, trial#={}".format(n, rUp, k, l))
-					await staircaseNewBLE(Xo, l, c, n, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+			# for Xo in XoArr:
+			for l in list(range(0,len(rUpArr))):
+				#skB.instructionsGUI2(sc, tr, (nParts-1)*len(rUpArr) + l)
+				skB.prepareExperimentGUI(sc, l)
+				rUp = 1#rUpStack.pop()
+				#print ("this is staircase" + str(k))
+				c.send(("TRIAL#" + str(l) + "_" + str(quartiles[k]) +"\n").encode())
+				#print("actuator#= {}, increasing= {}, quartile={}, trial#={}".format(n, rUp, k, l))
+				await staircase2AFC(l, c, n, nDown, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 
 					# skB.orderedPairsInstructionsGUI(sc, tr)
 					# skB.orderedPairsGUI(sc)

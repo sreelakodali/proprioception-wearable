@@ -1,0 +1,472 @@
+TRIAL#0_3.14
+ACTUATOR#= 2, QUARTILE=q1
+STAIRCASE q1
+INITIAL VALUE= 0.6
+REFERENCE= 3.14
+----- TRIAL #0 -----
+test: 0.6
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 0.6
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #1 -----
+test: 0.76
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 0.76
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #2 -----
+test: 0.96
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 0.96
+Receiving Stimulus B: 3.14
+The real answer is: 3
+User answer is: 3
+User said TEST is less than REFERENCE
+----- TRIAL #3 -----
+test: 1.21
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 1.21
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #4 -----
+test: 1.52
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 1.52
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #5 -----
+test: 1.91
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 1.91
+Receiving Stimulus B: 3.14
+The real answer is: 3
+User answer is: 3
+User said TEST is less than REFERENCE
+----- TRIAL #6 -----
+test: 2.4
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 2.4
+Receiving Stimulus B: 3.14
+The real answer is: 3
+User answer is: 3
+User said TEST is less than REFERENCE
+----- TRIAL #7 -----
+test: 3.02
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 3.02
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #8 -----
+test: 3.8
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 3.8
+Receiving Stimulus B: 3.14
+The real answer is: 1
+User answer is: 1
+User said TEST is greater than REFERENCE
+----- TRIAL #9 -----
+test: 3.8
+rightStreak: 1
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 3.8
+The real answer is: 3
+User answer is: 3
+User said TEST is greater than REFERENCE
+reversals:1
+----- TRIAL #10 -----
+test: 3.02
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 3.02
+Receiving Stimulus B: 3.14
+The real answer is: 3
+User answer is: 3
+User said TEST is less than REFERENCE
+----- TRIAL #11 -----
+test: 3.39
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 3.39
+The real answer is: 3
+User answer is: 3
+User said TEST is greater than REFERENCE
+----- TRIAL #12 -----
+test: 3.39
+rightStreak: 1
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 3.39
+The real answer is: 3
+User answer is: 3
+User said TEST is greater than REFERENCE
+reversals:2
+----- TRIAL #13 -----
+test: 3.02
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 3.02
+The real answer is: 1
+User answer is: 3
+User said TEST is greater than REFERENCE
+----- TRIAL #14 -----
+test: 3.02
+rightStreak: 1
+r: 0
+Receiving Stimulus A: 3.02
+Receiving Stimulus B: 3.14
+The real answer is: 3
+User answer is: 1
+User said TEST is greater than REFERENCE
+reversals:3
+----- TRIAL #15 -----
+test: 2.65
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 2.65
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #16 -----
+test: 2.81
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 2.81
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #17 -----
+test: 2.98
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 2.98
+Receiving Stimulus B: 3.14
+The real answer is: 3
+User answer is: 1
+User said TEST is greater than REFERENCE
+----- TRIAL #18 -----
+test: 2.98
+rightStreak: 1
+r: 0
+Receiving Stimulus A: 2.98
+Receiving Stimulus B: 3.14
+The real answer is: 3
+User answer is: 1
+User said TEST is greater than REFERENCE
+reversals:4
+----- TRIAL #19 -----
+test: 2.81
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 2.81
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+Termination Condition #1 Reached: range of last 10 < 2 dBDONE
+TRIAL#1_3.14
+ACTUATOR#= 2, QUARTILE=q1
+STAIRCASE q1
+INITIAL VALUE= 0.6
+REFERENCE= 3.14
+----- TRIAL #0 -----
+test: 0.6
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 0.6
+Receiving Stimulus B: 3.14
+The real answer is: 3
+User answer is: 3
+User said TEST is less than REFERENCE
+----- TRIAL #1 -----
+test: 0.76
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 0.76
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #2 -----
+test: 0.96
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 0.96
+Receiving Stimulus B: 3.14
+The real answer is: 3
+User answer is: 3
+User said TEST is less than REFERENCE
+----- TRIAL #3 -----
+test: 1.21
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 1.21
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #4 -----
+test: 1.52
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 1.52
+Receiving Stimulus B: 3.14
+The real answer is: 3
+User answer is: 3
+User said TEST is less than REFERENCE
+----- TRIAL #5 -----
+test: 1.91
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 1.91
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #6 -----
+test: 2.4
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 2.4
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #7 -----
+test: 3.02
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 3.02
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #8 -----
+test: 3.8
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 3.8
+The real answer is: 3
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #9 -----
+test: 4.78
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 4.78
+Receiving Stimulus B: 3.14
+The real answer is: 1
+User answer is: 1
+User said TEST is greater than REFERENCE
+----- TRIAL #10 -----
+test: 4.78
+rightStreak: 1
+r: 0
+Receiving Stimulus A: 4.78
+Receiving Stimulus B: 3.14
+The real answer is: 1
+User answer is: 1
+User said TEST is greater than REFERENCE
+reversals:1
+----- TRIAL #11 -----
+test: 3.8
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 3.8
+The real answer is: 3
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #12 -----
+test: 4.26
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 4.26
+The real answer is: 3
+User answer is: 3
+User said TEST is greater than REFERENCE
+----- TRIAL #13 -----
+test: 4.26
+rightStreak: 1
+r: 0
+Receiving Stimulus A: 4.26
+Receiving Stimulus B: 3.14
+The real answer is: 1
+User answer is: 1
+User said TEST is greater than REFERENCE
+reversals:2
+----- TRIAL #14 -----
+test: 3.8
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 3.8
+Receiving Stimulus B: 3.14
+The real answer is: 1
+User answer is: 3
+User said TEST is less than REFERENCE
+----- TRIAL #15 -----
+test: 4.03
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 4.03
+The real answer is: 3
+User answer is: 3
+User said TEST is greater than REFERENCE
+----- TRIAL #16 -----
+test: 4.03
+rightStreak: 1
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 4.03
+The real answer is: 3
+User answer is: 3
+User said TEST is greater than REFERENCE
+reversals:3
+----- TRIAL #17 -----
+test: 3.8
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 3.8
+Receiving Stimulus B: 3.14
+The real answer is: 1
+User answer is: 1
+User said TEST is greater than REFERENCE
+Termination Condition #1 Reached: range of last 10 < 2 dBDONE
+TRIAL#2_3.14
+ACTUATOR#= 2, QUARTILE=q1
+STAIRCASE q1
+INITIAL VALUE= 0.6
+REFERENCE= 3.14
+----- TRIAL #0 -----
+test: 0.6
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 0.6
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #1 -----
+test: 0.76
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 0.76
+Receiving Stimulus B: 3.14
+The real answer is: 3
+User answer is: 3
+User said TEST is less than REFERENCE
+----- TRIAL #2 -----
+test: 0.96
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 0.96
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #3 -----
+test: 1.21
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 1.21
+Receiving Stimulus B: 3.14
+The real answer is: 3
+User answer is: 3
+User said TEST is less than REFERENCE
+----- TRIAL #4 -----
+test: 1.52
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 1.52
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #5 -----
+test: 1.91
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 1.91
+Receiving Stimulus B: 3.14
+The real answer is: 3
+User answer is: 1
+User said TEST is greater than REFERENCE
+----- TRIAL #6 -----
+test: 1.91
+rightStreak: 1
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 1.91
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #7 -----
+test: 2.4
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 2.4
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #8 -----
+test: 3.02
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 3.02
+The real answer is: 1
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #9 -----
+test: 3.8
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 3.8
+The real answer is: 3
+User answer is: 1
+User said TEST is less than REFERENCE
+----- TRIAL #10 -----
+test: 4.78
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 4.78
+Receiving Stimulus B: 3.14
+The real answer is: 1
+User answer is: 3
+User said TEST is less than REFERENCE
+----- TRIAL #11 -----
+test: 6.02
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 6.02
+Receiving Stimulus B: 3.14
+The real answer is: 1
