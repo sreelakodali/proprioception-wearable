@@ -98,7 +98,7 @@ async def waitSK_setpointTimer(td, s, c, n):
 
 
 # provide staircasing parameters: going up or down (bounds); reference, nUP, nDown, retract, wait, c, clients and rxchars
-async def staircase2AFC(l, c, nAct, nDown, avgMin, avgMax, key, reference, wait, retract, client1, rx_char1, client2, rx_char2):
+async def staircase2AFC(Xo, l, c, nAct, nDown, avgMin, avgMax, key, reference, wait, retract, client1, rx_char1, client2, rx_char2):
 	#global writer
 	global trialCount
 	global fileName
@@ -121,15 +121,7 @@ async def staircase2AFC(l, c, nAct, nDown, avgMin, avgMax, key, reference, wait,
 
 	# we are assuming nUp, nDown: 2:1
 	testArr = [] # [0.0] * 50
-	Ldb = 4 #db
-	Xo = skB.generateInitialValue(1, avgMin, avgMax, reference)
-	# while (abs(Xo - reference) < (avgMax-avgMin)/6):
-	# make sure that (10^(4/20) )^n doesn't equal the value
-	nIterations = np.log(reference/Xo) / np.log(10**(Ldb/20))
-	if ((avgMax - avgMin) > 9.5):	
-		while ( (abs(Xo*(10**(Ldb/20))**(np.ceil(nIterations)) - reference) < 0.6) or (abs(Xo*(10**(Ldb/20))**(np.floor(nIterations)) - reference) < 0.6)):
-			Xo = skB.generateInitialValue(1, avgMin, avgMax, reference)
-			nIterations = np.log(reference/Xo) / np.log(10**(Ldb/20))
+	Ldb = 2 #db
 	Xo = round(Xo, 2)
 	testArr.append(Xo)
 	
@@ -250,8 +242,8 @@ async def staircase2AFC(l, c, nAct, nDown, avgMin, avgMax, key, reference, wait,
 				if (localDir):
 					reversals = reversals + 1 # reversals
 					Ldb = Ldb / 2 # Ldb is reduced
-					# if (Ldb <= 0.5):
-					# 	Ldb = 0.5
+					if (Ldb <= 0.5):
+						Ldb = 0.5
 					c.send(("reversals:" + str(reversals)+ "\n").encode())
 				localDir = 0
 
@@ -287,7 +279,7 @@ async def staircase2AFC(l, c, nAct, nDown, avgMin, avgMax, key, reference, wait,
 			# Condition #1: less than 2dB
 			# the range of the most recent 10 values
 			#if (abs(statistics.mean(testArr[-10:]) - reference) <  10**(0.1)):
-			if ( (max(testArr[-10:]) - min(testArr[-10:])) <  10**(0.1)):
+			if ( (max(testArr[-10:]) - min(testArr[-10:])) <  1.2):#10**(2/20)
 				keepGoing = False
 				c.send(("Termination Condition #1 Reached: range of last 10 < 2 dB").encode())
 			#npTestArr = np.array(testArr[-10:])
@@ -518,7 +510,7 @@ async def main():
 
 	# write the staircase data via socket
 	s = socket.socket()
-	port = 12346
+	port = 12345
 	s.bind(('', port))
 	s.listen(2)
 	print("Waiting to connect to client to print JND data...")
@@ -580,9 +572,10 @@ async def main():
 			await skB.waitSK(3)
 
 			avgMin, avgMax, q1, q2, q3 = skB.loadASRValues(c);
-			quartiles = {"q1": q1, "q2": q2}#, 
+			quartiles = {"q1":q1, "q2": q2}#, # , 
+			XoArr = {"q1": [skB.generateInitialValue(avgMin, avgMax, q1), skB.generateInitialValue(avgMin, avgMax, q1)], "q2": [skB.generateInitialValue(avgMin, avgMax, q2), skB.generateInitialValue(avgMin, avgMax, q2)]}
 			keys = list(quartiles.keys())
-			random.shuffle(keys)
+			#random.shuffle(keys)
 			
 			skB.device2GUI(sc)
 			device2 = await BleakScanner.find_device_by_address(skB.addr_Adafruit2)
@@ -597,28 +590,22 @@ async def main():
 
 					await skB.waitGUI(sc) # Calibration Filter: wait for filter to stabilize
 
-					actuatorOrder = [1,2]
+					nDown = 2
+					actuatorOrder = [1] # 1
 					random.shuffle(actuatorOrder)
 
 					nParts = 0
 					for n in actuatorOrder:
 						for k in keys:
 							nParts = nParts + 1
-							rUpStack = deque()
-							# rUpArr = [0, 0, 0, 1, 1, 1]
-							# random.shuffle(rUpArr)
-							rUpArr = [1, 1, 1]
-							for r in rUpArr:
-								rUpStack.append(r)
 
-							for l in list(range(0,len(rUpArr))):
-								skB.instructionsGUI2(sc, tr, (nParts-1)*len(rUpArr) + l)
+							for l in list(range(0,2)):
+								skB.instructionsGUI2(sc, tr, (nParts-1)*3 + l)
 								skB.prepareExperimentGUI(sc, l)
-								rUp = rUpStack.pop()
 								#print ("this is staircase" + str(k))
 								c.send(("TRIAL#" + str(l) + "\n").encode())
-								#print("actuator#= {}, increasing= {}, quartile={}, trial#={}".format(n, rUp, k, l))
-								await staircaseNewBLE(l, c, n, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+								await staircase2AFC((XoArr[k])[l], l, c, n, nDown, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+								#await staircaseNewBLE(l, c, n, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 
 					# skB.orderedPairsInstructionsGUI(sc, tr)
 					# skB.orderedPairsGUI(sc)

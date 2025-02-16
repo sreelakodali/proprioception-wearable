@@ -5,6 +5,8 @@ import shutil
 import numpy as np
 import pandas as pd
 
+# Purpose: removes extra commas or zeros in the data and text
+
 ### FOR SUBJECT 1, READ IN REVISED TARGET ANGLE AND COMPUTE ERROR WITH SUBJECT ATTEMPT
 folder='subject3_2025-01-30_20-23'
 PATH = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/JND_Study/bleData/' # change this to your path!

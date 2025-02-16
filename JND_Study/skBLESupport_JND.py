@@ -24,7 +24,7 @@ dataFunc = {'time':sk.millisToSeconds, 'setpoint':sk.doNothing,'set-err':sk.doNo
 SYSTEM_MIN_RESOLUTION = 0.098
 EXPERIMENT_TEXT_0 = ["Welcome!", "Let's begin the experiment", "", "", "", "", "", "", "", "", "", "", "Please click the red key to continue."]
 EXPERIMENT_TEXT_1 = ["Experiment", "Task: Identify whether Stimulus A feels more", "intense, the same, or less intense than Stimulus B.", "", "",  "", "", "", "", "", "Use >, =, and < keys to indicate your answer,", "and then click the red key to go to the next trial.", "Please click the red key to proceed."]
-EXPERIMENT_TEXT_5 = ["Task: Identify whether Stimulus A feels more", "intense, the same, or less intense than Stimulus B.", "", "",  "", "", "", "", "", "Use >, =, and < keys to indicate your answer,", "and then click the red key to go to the next trial.", "Please click the red key to proceed."]
+EXPERIMENT_TEXT_5 = ["Task: Identify whether Stimulus A feels more", "intense, the same, or less intense than Stimulus B.", "", "",  "", "", "", "", "", "Use > and < keys to indicate your answer,", "and then click the red key to go to the next trial.", "Please click the red key to proceed."]
 EXPERIMENT_TEXT = [EXPERIMENT_TEXT_0, EXPERIMENT_TEXT_1]
 EXPERIMENT_TEXT_3 = ["JND Study", ""]
 EXPERIMENT_TEXT_2 = ["Initializing", "Please wait 5 seconds until we begin"]
@@ -128,13 +128,34 @@ def simulatedSubjectResponse(c, a, b):
 
 
 #initial value is randomized 
-def generateInitialValue(increasing, minValue, maxValue, reference):
-	if (increasing): # 
-		Xo = random.uniform(minValue, reference); #initial value less than reference
-	else:
-		Xo = random.uniform(reference, maxValue); # initial value is greater than reference
-	Xo = round(Xo, 2)
+def generateInitialValue(minValue, maxValue, reference):
+	Ldb = 2
 
+	# Condition #1
+	minConvergenceValue = 0.5 # condition #1 xo > min amount so staircasing works #1
+	minDistanceFromRef = 0.5
+	minDistanceFromRef2 = 0.2
+	Xo = random.uniform(minConvergenceValue, reference); #initial value less than reference
+	
+	#Condition #2 abs(xo - reference) > min value
+	condition2 = ( abs(Xo - reference ) )
+	
+	# Condition #3 	# 3 so (xo*(10^Ldb/20)^x - reference) > 0.5 -- even for different 
+	nIterations = abs(np.log(reference/Xo) / np.log(10**(Ldb/20)))
+	condition3pt1 = (abs(Xo*(10**(Ldb/20))**(np.ceil(nIterations)) - reference) )
+	condition3pt2 = (abs(Xo*(10**(Ldb/20))**(np.floor(nIterations)) - reference) )
+
+	#print("Xo={}, condition2={}, condition3pt1={}, condition3pt2={}".format(Xo, condition2, condition3pt1, condition3pt2 ))
+	# condition #2
+	while ( (condition2< minDistanceFromRef) or (condition3pt1< minDistanceFromRef2) or (condition3pt2< minDistanceFromRef2)):
+		Xo = random.uniform(minConvergenceValue, reference);
+		condition2 = ( abs(Xo - reference ))
+		nIterations = abs(np.log(reference/Xo) / np.log(10**(Ldb/20)))
+		condition3pt1 = (abs(Xo*(10**(Ldb/20))**(np.ceil(nIterations)) - reference))
+		condition3pt2 = (abs(Xo*(10**(Ldb/20))**(np.floor(nIterations)) - reference))
+		#print("Xo={}, nIterationsceil={}, nIterationsfloor={}, condition2={}, condition3pt1={}, condition3pt2={}".format(Xo, np.ceil(nIterations), np.floor(nIterations), condition2, condition3pt1, condition3pt2 ))
+
+	Xo = round(Xo, 2)
 	return Xo
 
 def initializeGUI(sc):

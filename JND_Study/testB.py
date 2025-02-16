@@ -1,5 +1,6 @@
 import socket, sys, datetime, select, random
 from collections import deque
+import skBLESupport_JND as skB
 
 
 def changeScalePolyfit(s):
@@ -47,12 +48,25 @@ def simulatedSubjectResponse(a, b):
 	return response
 
 while (1):
-	print("A?")
-	A = input()
-	print("B?")
-	B = input()
-	simulatedSubjectResponse(A, B)
+	print("min?")
+	A = float(input())
+	print("max?")
+	B = float(input())
+
+	asr = (B - A)
+	q1 = A + asr/4
+	q2 = A + asr/2
+	q3 = A + (3* asr/4)
+
+	print("ASR={},  q1={}, q2={}, q3={}".format(asr, q1, q2, q3))
+
+	print("ref?")
+	C = float(input())
+	Xo = skB.generateInitialValue(A, B, C);
+	print("Xo={}".format(Xo))
 	#print("scale is {}".format(changeScalePolyfit(float(setpoint))))
+
+
 
 
 # def sendMySetpoints():
@@ -66,6 +80,7 @@ while (1):
 #     return(s)
 
 # keys = ['q1', 'q2']
+
 
 
 # for k in keys:

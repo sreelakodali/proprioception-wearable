@@ -24,11 +24,6 @@ typedef enum {
 	POSITION_MAX = 139 // 2100us mightyZap
 } ACTUATOR_LIMITS;
 
-
-// Calibration states
-typedef enum { NONE, ZERO_FORCE, FLEX, MAX_PRESSURE, ACTUATOR  
-} CALIBRATION_OPTIONS;
-
 typedef enum {
 	NO_INPUT,
 	FLEX_INPUT,
@@ -46,18 +41,17 @@ class DeepPressureWearableBLE {
 	// Calibration 
 	int  user_position_MIN;
 	int  user_position_MAX;
-	float  user_flex_MIN;
-	float  user_flex_MAX;
+	// float  user_flex_MIN;
+	// float  user_flex_MAX;
 	int position_CommandArr[N_ACT];
     int  buttonCount; // button count. global!
     const  int position_INArr[4] = {A0, A1, A2, A3}; // analog adc pins
 
-	void calibration();
 	void runtime(void (*mapping)(int));
 	void serialActuatorControl(int n);
 	short readDataFromSensor(short address);
 	
-	void sweep_uS(int t_d, int n);
+	void measureRollPitch(bool print); // Aarya's code
 
 	void testLed();
 	void testPushbutton();
@@ -72,9 +66,6 @@ class DeepPressureWearableBLE {
 
 
 	private:
-	
-
-	// variables
 
 	// Settings
 	INPUT_TYPE inputType;
@@ -85,15 +76,12 @@ class DeepPressureWearableBLE {
 	const bool actuatorType = 0; // keep actuatorType at 0 for actuonix
 	Servo actuatorArr[N_ACT]; // Array version for multiple actuators
 	
-	
-	int WRITE_COUNT = 8;
 	int T_CYCLE = 15; // minimum delay to ensure not sampling at too high a rate for sensors
-	short zeroForceArr[N_ACT]; // should this be local?
+	//short zeroForceArr[N_ACT]; // should this be local?
 	
-	const int position_OUTArr[4] = {8, 9, 8, 9}; // pwm output
+	const int position_OUTArr[4] = {D8, D9, D8, D9}; // pwm output
 	const int  button_IN = 10;
 	const int  led_OUT = 13;
-	
 	
 	unsigned long t_lastWrite;
 	bool  powerOn; // powerOn
@@ -106,10 +94,8 @@ class DeepPressureWearableBLE {
 	int  buttonState; // button state
 	int  oldButtonState; // old button state
 	
-
-
 	// Aarya's code
-	LSM6DS3 myIMU(I2C_MODE, 0x6A);
+	LSM6DS3* myIMU;
 
 	float accelX, accelY, accelZ;
 	float gyroX, gyroY, gyroZ;
@@ -142,12 +128,7 @@ class DeepPressureWearableBLE {
 	float computeRoll();
 	float computePitch();
 	void readAllAccelGyro();
-	void measureRollPitch(bool print)
 
-	void calibrationActuatorFeedback(int n);
-	void calibrationZeroForce();
-	void calibrationFlexSensor(unsigned long timeLength);
-	int calibrationMaxDeepPressure(int n);
 
 };
 #endif
