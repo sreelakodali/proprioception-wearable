@@ -117,20 +117,21 @@ async def staircase2AFC(l, c, nAct, nDown, avgMin, avgMax, key, reference, wait,
 	increment = 0
 
 	localDir = 1 # 1 is increasing. 2 is equal. 0 is decreasing. starts increasing
+	#plateau = 0 
 	staircaseFileName = skB.initializeTrialFiles(p, fileName, key, l)
 
 	# we are assuming nUp, nDown: 2:1
 	testArr = [] # [0.0] * 50
 	Ldb = 2 #db
-	Xo = skB.generateInitialValue(1, avgMin, avgMax, reference)
+	Xo = 0.6#skB.generateInitialValue(1, avgMin, avgMax, reference)
 	# while (abs(Xo - reference) < (avgMax-avgMin)/6):
 	# make sure that (10^(4/20) )^n doesn't equal the value
-	nIterations = np.log(reference/Xo) / np.log(10**(Ldb/20))
-	if ((avgMax - avgMin) > 9.5):	
-		while ( (abs(Xo*(10**(Ldb/20))**(np.ceil(nIterations)) - reference) < 0.6) or (abs(Xo*(10**(Ldb/20))**(np.floor(nIterations)) - reference) < 0.6)):
-			Xo = skB.generateInitialValue(1, avgMin, avgMax, reference)
-			nIterations = np.log(reference/Xo) / np.log(10**(Ldb/20))
-	Xo = round(Xo, 2)
+	# nIterations = np.log(reference/Xo) / np.log(10**(Ldb/20))
+	# if ((avgMax - avgMin) > 9.5):	
+	# 	while ( (abs(Xo*(10**(Ldb/20))**(np.ceil(nIterations)) - reference) < 0.6) or (abs(Xo*(10**(Ldb/20))**(np.floor(nIterations)) - reference) < 0.6)):
+	# 		Xo = skB.generateInitialValue(1, avgMin, avgMax, reference)
+	# 		nIterations = np.log(reference/Xo) / np.log(10**(Ldb/20))
+	# Xo = round(Xo, 2)
 	testArr.append(Xo)
 	
 	c.send((("ACTUATOR#= {}, QUARTILE={}\n").format(nAct, key)).encode())
@@ -247,7 +248,8 @@ async def staircase2AFC(l, c, nAct, nDown, avgMin, avgMax, key, reference, wait,
 				newTest = test - increment	#increment = increment * -1
 
 				# # if its a direction change, then reversal
-				if (localDir):
+
+				if (localDir==1):
 					reversals = reversals + 1 # reversals
 					Ldb = Ldb / 2 # Ldb is reduced
 					if (Ldb <= 0.5):
@@ -257,7 +259,6 @@ async def staircase2AFC(l, c, nAct, nDown, avgMin, avgMax, key, reference, wait,
 
 			else:
 				newTest = test
-				localDir = 2 # keep the same
 		
 		# if TEST < reference, increase by the exponential factor
 		elif ((r==0) and (userAnswer==3)) or ((r==1) and (userAnswer==1)):
@@ -849,7 +850,7 @@ async def main():
 
 	# write the staircase data via socket
 	s = socket.socket()
-	port = 12346
+	port = 12345
 	s.bind(('', port))
 	s.listen(2)
 	print("Waiting to connect to client to print JND data...")
@@ -941,16 +942,22 @@ async def main():
 	actuatorOrder = [1, 2]
 	random.shuffle(actuatorOrder)
 
+	c.send(("Quartile Order: " + str(keys) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())
+	while(1):
+		k = keyboard.read_key()
+		if k == 'y':
+			c.send(("Confirmed.\n").encode())
+			break
+		elif k == 'n':
+			random.shuffle(keys)
+			random.shuffle(actuatorOrder)
+			c.send(("Quartile Order: " + str(keys) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())	
+		await asyncio.sleep(0.1)
+
 	nParts = 0
 	for n in actuatorOrder:
 		for k in keys:
 			nParts = nParts + 1
-			rUpStack = deque()
-			# rUpArr = [0, 0, 0, 1, 1, 1]
-			# random.shuffle(rUpArr)
-			rUpArr = [1, 1, 1]
-			for r in rUpArr:
-				rUpStack.append(r)
 
 			# XoArr = []
 			# for _ in range(0,1):
@@ -963,14 +970,13 @@ async def main():
 
 
 			# for Xo in XoArr:
-			for l in list(range(0,len(rUpArr))):
+			for l in list(range(0,2)):
 				#skB.instructionsGUI2(sc, tr, (nParts-1)*len(rUpArr) + l)
 				skB.prepareExperimentGUI(sc, l)
-				rUp = 1#rUpStack.pop()
 				#print ("this is staircase" + str(k))
 				c.send(("TRIAL#" + str(l) + "_" + str(quartiles[k]) +"\n").encode())
 				#print("actuator#= {}, increasing= {}, quartile={}, trial#={}".format(n, rUp, k, l))
-				await staircase2AFC(l, c, n, nDown, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+				await staircase2AFC(l, c, n, nDown, avgMin, avgMax, k, 3.14, waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 
 					# skB.orderedPairsInstructionsGUI(sc, tr)
 					# skB.orderedPairsGUI(sc)

@@ -1,128 +1,160 @@
 
 % Sreela Kodali, kodali@stanford.edu
 % Reading Raw Data from Staircasing JND and plotting
-
-
-dataDir = ["subject7_2025-02-12_20-53", "subject7_2025-02-12_21-17", "subject7_2025-02-12_22-02"];
-nActArr = [2, 2, 1]; % number of actuators for corresponding above directory
-
-plotSubject_Staircasing(dataDir, nActArr, 0);
-
+% clear;
 % close all;
-% 
-% calibrationDir = '';
-% % first 2 directories are nAct=2, last one is nAct=1
-% dataDir = ["subject7_2025-02-12_20-53", "subject7_2025-02-12_21-17", "subject7_2025-02-12_22-02"];
-% path = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/JND_Study/bleData/';
-% 
-% nActArr_2 = [1,2]; % which directory indices have 2 actuators activated
-% l1 = 2;
-% cellArr = {};
-% yMax = 0;
-% 
-% % % for each directory in dataDir, will read all the trial*.csv.
-% %  if data isn't empty then, plots it
-% for i = 1:length(dataDir)
-%     localPath = path + dataDir(i) + "/";
-%     listing = struct2table(dir(localPath+"trial*.csv"));
-%     
-%     if ismember(i,nActArr_2)
-%         nAct = 2;
-%     else
-%         nAct = 1;
-%     end
-%      
-%     if (~isempty(listing.name))
-%         for j = 1:length(listing.name)
-% 
-%             localName = listing.name(j);
-%             data = readmatrix(strcat(localPath,localName));
-% 
-%             if (size(data,1) > 3)
-%                 % plot data
-%                 nTrials = data(:,1);
-%                 test = data(:,2);
-%                 localMax = max(test);
-%                 if (localMax > yMax)
-%                     yMax = localMax;
-%                 end
-%                 ref = data(:,3);
-%                 graphIcon = data(:,9);
-% 
-%                 graphIcon(graphIcon==1) = -1;
-%                 graphIcon(graphIcon==3) = 1;
-%                 graphIconVals = test .* graphIcon;
-% 
-%                 trialNumber = cell2mat(strfind(localName, 'trial'));
-%                 localName = localName{:};
-%                 trialNumber = localName(trialNumber+5);
-% 
-%                 quartile = strfind(localName, '_q');
-%                 quartile = localName(quartile+2);
-% 
-%                 subjectN = strfind(localName, '_subject');
-%                 subjectN = localName(subjectN+8);
-% 
-%                 x = strcat(string(nAct), 'q', quartile, '_', trialNumber);
-%                 %dataTitles = [dataTitles, x];
-% 
-%                 localCell = {localName, x, length(nTrials), ref(1), test, graphIconVals, trialNumber, quartile};
-%                 cellArr = [cellArr; localCell];
-%                 
-%                 
-%                 %dict = insert(dict, strcat(nAct, "q", quartile, "_", trialNumber), localCell);
-%                 figure;
-%                 set(gcf,'color','white');
-%                 ax = gca(gcf);
-%                 plot(nTrials-1, test, 'Color','#ea4335','Marker','x', 'LineWidth',l1, 'MarkerSize',10); hold on;
-%                 plot(nTrials-1, ref, 'Color', '#666666', 'LineStyle','--', 'LineWidth',l1); hold on;
-%                 plot(nTrials-1,graphIconVals, 'Color', '#00ff00', 'Marker', 'o', 'MarkerSize', 10, 'LineStyle','none', 'MarkerFaceColor','#00ff00'); hold on;
-%                 title(strcat("Subject ", subjectN, ": Q", quartile, " Trial #", trialNumber)); hold on;
-%                 xlabel('Trials');
-%                 ylabel('Force (N)');
-%                 ylim(ax,[0,max(test)+1]);
-%                 ax.FontSize = 15;
-%                 
-%             end
-%         end
-%     end
-% end
-% 
-% 
-% cellPlotOrder = [5, 7, 6, 8, 1, 2, 3, 4];
-% 
-% figure;
-% set(gcf,'color','white');
-% sg = sgtitle("Subject 7");
-% sg.FontSize = 20;
-% sg.FontWeight = 'bold';
-% 
-% % s1 = subplot(4,2,1);
-% % N = 5;
-% % plot(0:(cellArr{N,3}-1), cellArr{N,5}, 'Color','#ea4335','Marker','x', 'LineWidth',l1, 'MarkerSize',10); hold on;
-% % yline(cellArr{N,4},'--','LineWidth',l1, 'Color', '#666666'); hold on;
-% % plot(0:(cellArr{N,3}-1),cellArr{N,6}, 'Color', '#00ff00', 'Marker', 'o', 'MarkerSize', 10, 'LineStyle','none', 'MarkerFaceColor','#00ff00'); hold on;
-% % title(cellArr{N,2}); hold on;
-% % ylim(s1,[0,max(cellArr{N,5})+1]);
-% % xlabel('Trials');
-% % ylabel('Force (N)');
-% % % s1.ylim(ax,[0,max(test)+1]);
-% % s1.FontSize = 12;
-% 
-% for i= 1:length(cellPlotOrder)
-%     s = subplot(2,4,i);
-%     N = cellPlotOrder(i);
-%     plot(0:(cellArr{N,3}-1), cellArr{N,5}, 'Color','#ea4335','Marker','x', 'LineWidth',l1, 'MarkerSize',10); hold on;
-%     yline(cellArr{N,4},'--','LineWidth',l1, 'Color', '#666666'); hold on;
-%     plot(0:(cellArr{N,3}-1),cellArr{N,6}, 'Color', '#00ff00', 'Marker', 'o', 'MarkerSize', 10, 'LineStyle','none', 'MarkerFaceColor','#00ff00'); hold on;
-%     disp(cellArr{N,2});
-%     title(cellArr{N,2});
-%     ylim(s,[0,yMax]);
-%     xlim(s,[0,cellArr{N,3}-1]);
-%     xlabel('Trials');
-%     ylabel('Force (N)');
-%     % s1.ylim(ax,[0,max(test)+1]);
-%     s.FontSize = 12;
-% 
-% end
+clear;
+N_SUBJECT = 12;
 
+if (N_SUBJECT == 7)
+% subject 7
+dataDir = ["subject7_2025-02-12_20-53", "subject7_2025-02-12_21-17", "subject7_2025-02-12_22-02"];
+nActArr = [2*ones(1,4), ones(1,4)]; % number of actuators for corresponding above directory
+calibrationDir = 'subject7_2025-02-12_20-40';
+coordinates = [1, 1, 1; 2, 1, 2; 3, 2, 1; 4, 2, 2; 5, 3, 1; 6, 3, 2; 7, 4, 1; 8, 4, 2]; % for subjects 6 and 7, nTrials=2
+nTrials = 2;
+indices = [45,263];
+cellPlotOrder = [5, 6, 7, 8, 1, 2, 3, 4];
+
+elseif (N_SUBJECT == 6)
+% subject 6
+dataDir = ["subject6_2025-02-12_10-42"];
+nActArr = [ones(1,4), 2*ones(1,4)]; % number of actuators for corresponding above directory
+calibrationDir = 'subject6_2025-02-12_10-42';
+coordinates = [1, 1, 1; 2, 1, 2; 3, 2, 1; 4, 2, 2; 5, 3, 1; 6, 3, 2; 7, 4, 1; 8, 4, 2]; % for subjects 6  and 7, nTrials=2
+nTrials = 2;
+indices = [295, 443];
+cellPlotOrder = [1, 2, 3, 4, 5, 6, 7, 8];
+
+elseif (N_SUBJECT == 5)
+% subject 5
+dataDir = ["subject5_2025-02-11_16-12", "subject5_2025-02-11_17-17", "subject5_2025-02-11_17-32"];
+nActArr = [2*ones(1,6), ones(1,4)]; % number of actuators for corresponding above directory
+calibrationDir = 'subject5_2025-02-11_15-55';
+coordinates = [1, 1, 1; 2, 1, 2; 4, 2, 1; 5, 2, 2; 7, 3, 1; 8, 3, 2; 9, 3, 3; 10, 4, 1; 11, 4, 2; 12, 4, 3]; % for subject 5, nTrials=3
+nTrials = 3;
+indices = [518,663];
+%cellPlotOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+cellPlotOrder = [7, 8, 9, 10, 1, 2, 3, 4, 5, 6];
+% 1, 2, 3 - 2q1
+% 4, 5, 6 - 2q2
+% 7, 8 - 1q1
+% 9, 10 - 1q2
+
+idxUser = 6; % which calibration strand plotted
+
+elseif (N_SUBJECT == 8)
+dataDir = ["subject8_2025-02-17_17-42"];
+nActArr = [2*ones(1,4), ones(1,4)]; % number of actuators for corresponding above directory
+calibrationDir = 'subject8_2025-02-17_17-42';
+coordinates = [1, 1, 1; 2, 1, 2; 3, 2, 1; 4, 2, 2; 5, 3, 1; 6, 3, 2; 7, 4, 1; 8, 4, 2]; % for subjects 6  and 7, nTrials=2
+nTrials = 2;
+indices = [62,211];
+%cellPlotOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+cellPlotOrder = [7, 8, 5, 6, 3, 4, 1, 2];
+
+elseif (N_SUBJECT == 9)
+dataDir = ["subject9_2025-02-18_18-36", "subject9_2025-02-18_19-49"];
+nActArr = [ones(1,4), 2*ones(1,4)]; % number of actuators for corresponding above directory
+calibrationDir = 'subject9_2025-02-18_18-25';
+coordinates = [1, 1, 1; 2, 1, 2; 3, 2, 1; 4, 2, 2; 5, 3, 1; 6, 3, 2; 7, 4, 1; 8, 4, 2]; % for subjects 6  and 7, nTrials=2
+nTrials = 2;
+indices = [65,190];
+%cellPlotOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+cellPlotOrder = [3, 4, 1, 2, 7, 8, 5, 6];
+
+elseif (N_SUBJECT == 10)
+dataDir = ["subject10_2025-02-19_10-46"];
+nActArr = [ones(1,4), 2*ones(1,4)]; % number of actuators for corresponding above directory
+calibrationDir = 'subject10_2025-02-19_10-46';
+coordinates = [1, 1, 1; 2, 1, 2; 3, 2, 1; 4, 2, 2; 5, 3, 1; 6, 3, 2; 7, 4, 1; 8, 4, 2]; % for subjects 6  and 7, nTrials=2
+nTrials = 2;
+indices = [65,190];
+%cellPlotOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+cellPlotOrder = [3, 4, 1, 2, 7, 8, 5, 6];
+
+elseif (N_SUBJECT == 11)
+% subject sk, test
+dataDir = ["subject11_2025-04-01_20-45"];
+nActArr = [ones(1,2)]; % number of actuators for corresponding above directory
+calibrationDir = 'subject11_2025-04-01_20-45';
+coordinates = [1, 1, 1; 2, 1, 2];
+nTrials = 2;
+indices = [65,190];
+cellPlotOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+elseif (N_SUBJECT == 12)
+% subject sk, test
+dataDir = ["subject12_2025-04-02_14-22"];
+nActArr = [ones(1,2)]; % number of actuators for corresponding above directory
+calibrationDir = 'subject12_2025-04-02_14-22';
+coordinates = [1, 1, 1; 2, 1, 2];
+nTrials = 2;
+indices = [65,190];
+cellPlotOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+end
+
+% plot each trial*.csv file
+[subjectN, cellArr, yMax] = plotAllTrials(dataDir, nActArr, 1);
+
+
+% plot all trials in grid format
+[subjectN, JNDArr, JNDAbsArr] = plotAllTrialsGrid(subjectN, cellArr, cellPlotOrder, yMax, nTrials, coordinates);
+
+% % plot calibration
+% plotCalibration(subjectN, calibrationDir, indices);
+
+
+if N_SUBJECT == 6
+% specific modifications
+JNDArr(4,1) = JNDArr(4,2);
+JNDArr(3,1) = JNDArr(3,2);
+avgJND = reshape(transpose(mean(JNDArr,2)), [2,2]);
+tJNDArr = transpose(JNDArr);
+stdErr = [(std(tJNDArr(:,1:2))/sqrt(2))' , (std(tJNDArr(:,3:4))/sqrt(1))'] ;
+
+
+
+elseif N_SUBJECT == 5
+A = mean(JNDArr(1:2,1:2),2);
+B = mean(JNDArr(3:4,2:3),2);
+avgJND = [A, B];
+tJNDArr = transpose(JNDArr);
+stdErr = [(std(tJNDArr(1:2,1:2))/sqrt(2))', (std(tJNDArr(:,3:4))/sqrt(3))'];
+% A = mean(JNDArr(1:2,1:2),2);
+% B = mean(JNDArr(3:4,2:3),2);
+% avgJND = [A, B];
+% stdErr = [(std(JNDArr(1:2,1:2))/sqrt(2))', (std(JNDArr(3:4,2:3))/sqrt(2))'];
+% avgJND = reshape(mean(JNDArr,2), [2,2]);
+% stdErr = reshape(std(JNDArr')/sqrt(2), [2,2]);
+
+
+elseif ismember(N_SUBJECT, [7, 8, 9, 10, 11, 12])
+avgJND = reshape(mean(JNDArr,2), [2,2]);
+stdErr = reshape(std(JNDArr')/sqrt(2), [2,2]);
+
+% 
+
+
+% elseif subjectN == '8'
+% avgJND = reshape(mean(JNDArr,2), [2,2]);
+% 
+% elseif subjectN == '9'
+% avgJND = reshape(mean(JNDArr,2), [2,2]);
+
+
+end
+
+
+figure;
+set(gcf,'color','white');
+ax = gca(gcf);
+b = bar(avgJND, 'EdgeColor','none'); hold on;
+z = [b(1).XEndPoints',b(2).XEndPoints'];
+er = errorbar(z, avgJND, stdErr, 'color', 'k', 'linestyle', 'none', 'linewidth', 1.5); hold on;
+title(strcat("JND Results: Subject ", subjectN));
+xlabel('Quartile');
+ylabel('JND (N)');
+ax.FontSize = 15;
+leg = legend({'Single Contact', 'Two Contacts'}, 'Location','northwest', 'edgeColor','w');

@@ -12,12 +12,21 @@ from scipy import signal
 PATH = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/JND_Study/bleData/' # change this to your path!
 PORT_NAME = "/dev/cu.usbmodem161767201"#"/dev/cu.usbmodem131752901" # change this to Arduino/teeny's port
 BAUD_RATE = 4608000
-RUNTIME_LENGTH = 135#570 # secon4ds
+RUNTIME_LENGTH = 205#135#570 # secon4ds
+
+## temporary new, for PID
+kp = 12
+ki = 30
+kd = 0.5
+# scale = 7
+# setpt = 4
+pidParams = ("_p{}_i{}_d{}").format(kp, ki, kd)
 
 
 #DIRECTORY
 fileName = str(datetime.datetime.now())[0:16] # default name is date and time
 fileName = ((fileName.replace('/', '_')).replace(' ', '_')).replace(':','-')
+fileName += pidParams # temporary for PID
 p = PATH +fileName+'/'
 if not (os.path.exists(p)):
 	os.makedirs(p)

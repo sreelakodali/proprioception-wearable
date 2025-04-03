@@ -1,0 +1,5 @@
+7/30/2014: UML ver 2.2
+1) The cumulative gaussian model has been added with example files. 
+2) It was previously assumed that the starting signal strength is at the upper limit of the stimulus space, which was also the lambda sweet point. This means that the UML procedure would fail if par.x0 was set to a value that is lower than the threshold. A new variable has been introduced into the "par" variable, "par.x_lim", which specifies the lower and upper limits of the stimulus space. The lambda sweetpoint is at the upper limit. With this new parameter, the initial signal strength "par.x0" could be freely specified, either above or below the threshold.
+3) The manual included in the previous version was out-dated. It has been excluded from the package, and we are currently working on updating the manual. Users who are looking for documentation on the toolbox are encouraged to take a look at our paper in Behavioral Research Methods:
+http://link.springer.com/article/10.3758/s13428-014-0450-6

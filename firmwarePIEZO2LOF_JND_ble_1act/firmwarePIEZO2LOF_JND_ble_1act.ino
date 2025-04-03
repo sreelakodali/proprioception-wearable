@@ -23,7 +23,7 @@
 //#include "IntervalTimerEx.h"
 
 # define N_ACT 1
-#define ID_NUM 2
+#define ID_NUM 1
 #define FC 0.5 // 10 Hz
 
 // BLE UART 
@@ -50,10 +50,10 @@ int  buttonCount = 0; // button count. global!
 //float  user_flex_MIN;
 //float  user_flex_MAX;
 //  IntervalTimerEx ForceSampleSerialWriteTimer;
-const bool bleON = true;
+const bool bleON = false;  // to tune PID, turn serial on
 const bool serialON = !(bleON);
 
-const bool calibratepidON = false;
+const bool calibratepidON = true;// to tune PID, turn serial on
 const  byte I2C_ADDR = 0x04;
 const  byte I2C_ADDRArr[4] = {0x04, 0x08, 0x0A, 0x0C};
 const bool actuatorType = 1; // NEW. 0 = actuonix and 1 = MightyZap. CHANGE THIS for new actuator!
@@ -108,9 +108,9 @@ char detectionChar = 'x';
 
 // ACTUATOR 1
 double scaleF = 1;
-double KpConst = 11*scaleF;//11.5;
-double KiConst = 36*scaleF;//0.031;
-double KdConst = 2;//1.05*scaleF;//50*scaleF;//30.0;
+double KpConst = 12*scaleF;//11.5;
+double KiConst = 30;//36*scaleF;//0.031;
+double KdConst = 0.5;//1.05*scaleF;//50*scaleF;//30.0;
 double setPointTest = 0.0;
 double td = 0.029;
 
@@ -122,6 +122,7 @@ struct PID_sk {
   double Kd; // dampens out oscillations, but can slow down response time
   double setpoint;
   double pErr;
+  double pPrevErr;
   double Iterm;
   int actuatorCommand;
   short zeroForce;
@@ -157,10 +158,10 @@ void setup() {
 }
 
 void loop() {
-  //readForce();
-  runtime();
-  //testSetpointSequence(10000);
-  //sweep(5000,ID_NUM-1);
+  //runtime(); // standard behavior 
+  testSetpointSequence(10000); // to tune PID controller
+  ////readForce();
+  ////sweep(5000,ID_NUM-1);
 }
 
 // -------------------- SUPPORT FUNCTIONS --------------------//
@@ -195,7 +196,11 @@ void runtime() {
  double error = computeError(&myPID, filteredData1); // 3) compute error between input and setpoint 
  
  if (currentSetpointGlobal > 0.0 ) myPID.actuatorCommand = PIDcompute(&myPID, error);
- else myPID.actuatorCommand = POSITION_MIN;
+ else {
+      myPID.actuatorCommand = POSITION_MIN;
+      myPID.pPrevErr = myPID.pErr;
+      myPID.pErr = error;
+     }
  
  m_zap.GoalPosition(ID_NUM, myPID.actuatorCommand);
 
@@ -229,7 +234,8 @@ double iirFilterSK(short data, bool printYes) {
 }
 
 void testSetpointSequence(int td) {
-  float setpointArr[] = {1.0, 0.0, 3.0, 0.0, 6.0, 0.0, 10.0, 0.0, 15.0, 0.0, 21.0, 0.0};//14.0, 0.0, 16.0, 0.0, 18.0, 0.0, 20.0, 0.0
+  //float setpointArr[] = {4.0, 0.0, 4.25, 0.0, 4.5, 0.0, 4.75, 0.0, 4.0, 0.0};//14.0, 0.0, 16.0, 0.0, 18.0, 0.0, 20.0, 0.0
+  float setpointArr[] = {1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0, 5.0, 0.0, 6.0, 0.0, 7.0, 0.0, 8.0, 0.0, 9.0, 0.0};//14.0, 0.0, 16.0, 0.0, 18.0, 0.0, 20.0, 0.0
   //float setpointArr[] = {1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0, 5.0, 0.0, 6.0, 0.0, 8.0, 0.0, 10.0, 0.0, 12.0, 0.0};//14.0, 0.0, 16.0, 0.0, 18.0, 0.0, 20.0, 0.0
   //float setpointArr[] = {1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0, 5.0, 0.0, 6.0, 0.0, 7.0, 0.0, 8.0, 0.0};
   int arrLength = (sizeof(setpointArr) / sizeof(setpointArr[0]));
@@ -249,7 +255,11 @@ void testSetpointSequence(int td) {
      //myPID.actuatorCommand = PIDcompute(&myPID, error);
      
      if (currentSetpointGlobal > 0.0 ) myPID.actuatorCommand = PIDcompute(&myPID, error);
-     else myPID.actuatorCommand = POSITION_MIN;
+     else {
+      myPID.actuatorCommand = POSITION_MIN;
+      myPID.pPrevErr = myPID.pErr;
+      myPID.pErr = error;
+     }
       m_zap.GoalPosition(ID_NUM, myPID.actuatorCommand);
     
     // if (yesPrint) { // writeout data
@@ -258,7 +268,7 @@ void testSetpointSequence(int td) {
         
         // dataString += (String(myPID.setpoint) + "," + String(filteredData1)+ "," + String(myPID.setpoint - error));
         dataString = (String(myTimeLoop) + "," + String(myPID.setpoint) + "," + String(myPID.setpoint - error) + "," + String(filteredData1)+ "," + String(myPID.actuatorCommand) + "," + String(measuredPos));
-        if (calibratepidON) dataString =  (String(myPID.setpoint)+ "," + String(myPID.setpoint - error));
+        //if (calibratepidON) dataString =  (String(myPID.setpoint)+ "," + String(myPID.setpoint - error));
         if (serialON) Serial.println(dataString);
         if (bleON) ble.println(dataString);
         myPID.tLastWriteout = millis();
@@ -285,7 +295,8 @@ double changeScalePolyFit (double s) {
   double ls;
   if (s < user_force_MIN) s = user_force_MIN;
   if (s > user_force_MAX) s = user_force_MAX;
-  ls = 13.1 - 2.99* pow(s,1) + 0.354* pow(s,2) - 0.0188*pow(s,3) + 0.000355*pow(s,4);
+  ls = 13.5 - 3.43* pow(s,1) + 0.401* pow(s,2) - 0.0207*pow(s,3) + 0.000387*pow(s,4);
+  //ls = 13.1 - 2.99* pow(s,1) + 0.354* pow(s,2) - 0.0188*pow(s,3) + 0.000355*pow(s,4);
   //ls = 13.30 - 3.12* pow(s,1) + 0.321* pow(s,2) - 0.0145*pow(s,3) + 0.000239*pow(s,4);
   //ls = 13.30 - 3.14* pow(s,1) + 0.329* pow(s,2) - 0.0153*pow(s,3) + 0.0002599*pow(s,4);
   if (ls < 1.9) ls = 1.9;
@@ -299,19 +310,38 @@ double changeScale(double s) {
   if (s > user_force_MAX) s = user_force_MAX;
 
   // change PID depending on s
-  if (s <= 1) ls = 10.5;
-  else if (s <= 2) ls = 8.0; // 7 , 1, 2, 3
-  else if (s <= 3) ls = 6.9; // 7 , 1, 2, 3
-  else if (s <= 4) ls = 5.5; // 5,  4, 5
-  else if (s <= 5) ls = 4.5; // 5,  4, 5
-  else if (s <= 6) ls = 4.4; // 5,  4, 5
-  else if (s <= 9) ls = 3.0;  //  3, 6, 7, 8, 9 
-  else if (s <= 10) ls = 3.5;//2.08;  //  3, 6, 7, 8, 9 
+  if (s <= 1) ls = 8.7;
+  else if (s <= 2) ls = 8.2; // 7 , 1, 2, 3
+  else if (s <= 3) ls = 7.9; // 7 , 1, 2, 3
+  else if (s <= 4) ls = 7.5; // 5,  4, 5
+  else if (s <= 5) ls = 7.1; // 5,  4, 5
+  else if (s <= 6) ls = 6.3; // 5,  4, 5
+  else if (s <= 7) ls = 5.7; // 5,  4, 5
+  else if (s <= 8) ls = 5.1; // 5,  4, 5
+  else if (s <= 9) ls = 4.7;  //  3, 6, 7, 8, 9 
+  else if (s <= 10) ls = 3.3;//2.08;  //  3, 6, 7, 8, 9 
   else if (s <= 12) ls = 3.0;  //  3, 6, 7, 8, 9 
   else if (s <= 15) ls = 2.7;//1.8;
   else if (s <= 18) ls = 2.25;
   else if (s <= 21) ls = 1.9;//1.4;
   else ls = 1.75;// 1.7s5, 12, 14
+
+
+//  if (s <= 1) ls = 10.5;
+//  else if (s <= 2) ls = 8.25; // 7 , 1, 2, 3
+//  else if (s <= 3) ls = 6.9; // 7 , 1, 2, 3
+//  else if (s <= 4) ls = 7; // 5,  4, 5
+//  else if (s <= 5) ls = 7; // 5,  4, 5
+//  else if (s <= 6) ls = 4.3; // 5,  4, 5
+//  else if (s <= 7) ls = 3.25; // 5,  4, 5
+//  else if (s <= 8) ls = 2.7; // 5,  4, 5
+//  else if (s <= 9) ls = 2.4;  //  3, 6, 7, 8, 9 
+//  else if (s <= 10) ls = 3.3;//2.08;  //  3, 6, 7, 8, 9 
+//  else if (s <= 12) ls = 3.0;  //  3, 6, 7, 8, 9 
+//  else if (s <= 15) ls = 2.7;//1.8;
+//  else if (s <= 18) ls = 2.25;
+//  else if (s <= 21) ls = 1.9;//1.4;
+//  else ls = 1.75;// 1.7s5, 12, 14
 
 //
 //    if (s <= 1) ls = 11.0;
@@ -679,7 +709,7 @@ void initializePID(PID_sk* pid, double p, double i, double d, double s) {
   double newI;
   double newD;
 
-  localScale = changeScalePolyFit(s);
+  localScale = changeScalePolyFit(s); // changeScale(s);//
 
   newP = p*localScale;//130.00;
   newI = i*localScale;//0.031;
@@ -690,6 +720,7 @@ void initializePID(PID_sk* pid, double p, double i, double d, double s) {
   (*pid).Kd = newD;
   (*pid).setpoint = s;
   (*pid).pErr = 0.0;
+  (*pid).pPrevErr = 0.0;
   (*pid).Iterm = 0.0;
   (*pid).actuatorCommand = 0;
   (*pid).zeroForce = 0;
@@ -718,7 +749,7 @@ void changeSetpoint(PID_sk* pid, float s, double filteredData) {
     (*pid).zeroForce = zeroForceGlobal;
   }
    
-  localScale = 1.04 * changeScalePolyFit(s);//changeScale(s); // 0.93* //
+  localScale = changeScale(s); // 1.04 *  changeScale(s); //changeScalePolyFit(s);//// 0.93* //
 
   newP = KpConst*localScale;//130.00; 
   newI = KiConst*localScale;//0.031;
@@ -748,20 +779,21 @@ void changePIDparam(PID_sk* pid, float p, float i, float d) {
 double computeError(PID_sk* pid, double input) {
   double inputForce = (input - (*pid).zeroForce) * (45.0/512.0);
   double err = (*pid).setpoint - inputForce; //compute error between input and desired output/setpoint
+  (*pid).pPrevErr = (*pid).pErr;
   (*pid).pErr = err;
   return err;
 }
 
 // compute
 int PIDcompute(PID_sk* pid, double err) {
-  // String dataString = "";
+//  String dataString = "";
   // compute the PID terms
   unsigned long myTime = millis();
   double Pcomponent = (*pid).Kp * err;
   double Icomponent = (*pid).Ki * err * td;//(myTime - (*pid).pTime);
   (*pid).Iterm += Icomponent;
   //if ((*pid).Iterm > IMax) (*pid).Iterm = IMax;// cap on Iterm to avoid integral windup
-  double Dcomponent = (*pid).Kd * ( err - (*pid).pErr) / td; 
+  double Dcomponent = (*pid).Kd * ( err - (*pid).pPrevErr) / td; 
   double outF = Pcomponent + (*pid).Iterm + Dcomponent; // use that error to adjust the signal going to the system
   int out = int(outF);
   //dataString +=  (String((*pid).setpoint)+ "," + String((*pid).setpoint - err));//+ "," + String(out)
@@ -770,8 +802,9 @@ int PIDcompute(PID_sk* pid, double err) {
   if (out < user_position_MIN) out = user_position_MIN;
   if (out > user_position_MAX) out = user_position_MAX;
  
-//  //dataString += (myTimeLoop + "," + String(myPID.setpoint) + "," + String(myPID.setpoint - error) + "," + String(filteredData1) + "," + String(myPID.actuatorCommand) );
-  //Serial.println(dataString);
+////  //dataString += (myTimeLoop + "," + String(myPID.setpoint) + "," + String(myPID.setpoint - error) + "," + String(filteredData1) + "," + String(myPID.actuatorCommand) );
+//  dataString = (String(myTime)+ "," + String(myPID.setpoint) + "," + String(myPID.setpoint - err) + "," + String(myPID.actuatorCommand) + "," + String(Pcomponent) + "," + String((*pid).Iterm) + "," + String(Dcomponent)+ "," + String((*pid).pErr)  + "," + String((*pid).pPrevErr));
+//  Serial.println(dataString);
   
   (*pid).pErr = err;
   (*pid).pTime = myTime;

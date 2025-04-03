@@ -1,0 +1,32 @@
+% Sreela Kodali, kodali@stanford.edu
+% PID TUNING Round 2 with kd
+clear;
+close all;
+
+path = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/JND_Study/bleData/';
+
+
+dataDir = ["2025-04-02_18-46_p11_i36_d0_scale9_setpt4"]; %["2025-04-02_18-32_p15_i30_d0_scale9"];
+fileName1 = 'raw_' + dataDir(1) +'.csv';
+device1Data = readmatrix(strcat(path,dataDir,'/',fileName1));
+
+t1 = device1Data(:,1)/1000;
+t1 = t1 - t1(1);
+command1= device1Data(:,2);
+force1 = device1Data(:,3);
+actuatorCommand1 = device1Data(:,5);
+measured1= device1Data(:,6);
+idx = find(diff(command1) < 0);
+
+figure;
+set(gcf,'color','white');
+ax = gca(gcf);
+plot(t1, command1, 'LineWidth',1.2); hold on;
+plot(t1, force1, 'LineWidth',1.2); hold on;
+scatter(t1(idx), command1(idx), 'cyan', 'filled'); hold on;
+ax.FontSize = 18;
+ylim([0,max(force1)]);
+xlabel("time (s)")
+ylabel("force (N)")
+yyaxis right
+plot(t1, actuatorCommand1, 'LineWidth',1.2); hold on;

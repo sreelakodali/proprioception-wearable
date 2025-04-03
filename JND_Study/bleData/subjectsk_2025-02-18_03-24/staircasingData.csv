@@ -1,0 +1,14 @@
+Quartile Order: ['q1', 'q2'] N_Actuator Order: [2, 1]  Ok?
+Confirmed.
+TRIAL#0_3.14
+ACTUATOR#= 2, QUARTILE=q1
+STAIRCASE q1
+INITIAL VALUE= 0.6
+REFERENCE= 3.14
+----- TRIAL #0 -----
+test: 0.6
+rightStreak: 0
+r: 1
+Receiving Stimulus A: 3.14
+Receiving Stimulus B: 0.6
+The real answer is: 1

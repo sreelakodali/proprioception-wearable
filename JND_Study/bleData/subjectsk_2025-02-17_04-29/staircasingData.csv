@@ -1,0 +1,21 @@
+Quartile Order: ['q2', 'q1'] N_Actuator Order: [1, 2]  Ok?
+Quartile Order: ['q1', 'q2'] N_Actuator Order: [2, 1]  Ok?
+Quartile Order: ['q1', 'q2'] N_Actuator Order: [1, 2]  Ok?
+Quartile Order: ['q1', 'q2'] N_Actuator Order: [1, 2]  Ok?
+Quartile Order: ['q1', 'q2'] N_Actuator Order: [2, 1]  Ok?
+Quartile Order: ['q2', 'q1'] N_Actuator Order: [1, 2]  Ok?
+Quartile Order: ['q2', 'q1'] N_Actuator Order: [1, 2]  Ok?
+Quartile Order: ['q2', 'q1'] N_Actuator Order: [2, 1]  Ok?
+Confirmed.
+TRIAL#0_5.98
+ACTUATOR#= 2, QUARTILE=q2
+STAIRCASE q2
+INITIAL VALUE= 0.6
+REFERENCE= 3.14
+----- TRIAL #0 -----
+test: 0.6
+rightStreak: 0
+r: 0
+Receiving Stimulus A: 0.6
+Receiving Stimulus B: 3.14
+The real answer is: 3

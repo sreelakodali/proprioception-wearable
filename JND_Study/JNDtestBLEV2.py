@@ -48,7 +48,7 @@ linebuf = ""
 # ----- Global Force Values, for holding... let's see
 force1Global = 0.0
 force2Global = 0.0
-tStim = 4.0
+tStim = 6.0 # sets the actual stimulation time. 4-1-25: maybe make it 6-8 seconds
 MIN_TRIALS = 12
 
 # ------- Display & GUI variables
@@ -97,6 +97,123 @@ async def waitSK_setpointTimer(td, s, c, n):
 	c.send(("Final Stim time = " + str(stimTime) + "s \n").encode())
 
 
+async def methodOfConstantStimuli(reference, inc1, inc2, inc3, l, c, nAct, avgMin, avgMax, wait, retract, client1, rx_char1, client2, rx_char2):
+	global trialCount
+	global fileName
+	global p
+	nWrong = 0
+	nRight = 0
+
+	trialCount = 0
+	staircaseFileName = skB.initializeTrialFiles(p, fileName, str(reference), l)
+	c.send((("ACTUATOR#= {}, REFERENCE={}\n").format(nAct, reference)).encode())
+
+	# step 1: generate 8 values for comparisons
+	comparisonValues = [reference - inc3, reference - inc2, reference - inc1, reference + inc3, reference + inc2, reference + inc1]
+
+	# step 2: randomize order for experiment, 10 times per value
+	experimentStimuli = []
+	for j in comparisonValues:
+		for i in range(0,10):
+			experimentStimuli.append(j)
+	random.shuffle(experimentStimuli)
+	stimuliStack = deque(experimentStimuli)
+
+	for i in range(0, len(experimentStimuli)):
+		graphIcon = 0
+		await asyncio.sleep(0.01)
+		test = stimuliStack.pop() #testArr[trialCount]
+
+		c.send( ( "----- TRIAL #" + str(trialCount) + " -----\n").encode())
+		c.send(("test: " + str(test) + "\n" ).encode())
+
+		packetA, packetB, r = skB.randomizeStimuli(reference, test, c)
+		# if r == 1, A=ref, B=test
+		# if r== 0, A=test, B=ref
+
+		# send stimuli A
+		c.send(("Receiving Stimulus A: " + str(packetA) + "\n").encode())
+		skG.writeText(sc, -350, 230, "Stimulus A in progress", skG.COLOR)
+
+		await skB.sendSetpoint(packetA, client1, rx_char1, 1) 	
+		if (nAct == 2):
+			await skB.sendSetpoint(packetA, client2, rx_char2, 2) 	
+		#await skB.waitSK(wait) 	# hold the poke	
+		await waitSK_setpointTimer(wait, packetA, c, 1) # device1
+
+		await skB.sendSetpoint(retract, client1, rx_char1, 1)
+		if (nAct == 2):
+			await skB.sendSetpoint(retract, client2, rx_char2, 2)
+		await skB.waitSK(2) 	# retract
+
+		# send stimuli B
+		c.send(("Receiving Stimulus B: " + str(packetB) + "\n").encode())
+		skG.writeText(sc, -350, 180, "Stimulus B in progress", skG.COLOR)
+
+		await skB.sendSetpoint(packetB, client1, rx_char1, 1) 	
+		if (nAct == 2):
+			await skB.sendSetpoint(packetB, client2, rx_char2, 2) 	
+		#await skB.waitSK(wait) 	# hold the poke	
+		await waitSK_setpointTimer(wait, packetB, c, 1) #device 1
+
+		await skB.sendSetpoint(retract, client1, rx_char1, 1)
+		if (nAct == 2):
+			await skB.sendSetpoint(retract, client2, rx_char2, 2)
+		await skB.waitSK(2) 	# retract	
+
+		# find the real answer
+		# 1 means A > B, 2 means A == B, 3 means A < B
+		answerKey = (packetA > packetB)*1 + (packetA == packetB)*2 + (packetA < packetB)*3
+		c.send(("The real answer is: " + str(answerKey) + "\n").encode())
+
+		skB.displayAnswerOptionsGUI2AFC(sc)
+
+		while(1):
+			await asyncio.sleep(0.01)
+		# wait for user's input
+			k = keyboard.read_key()
+
+			if k == 'page up':
+				userAnswer = 1
+				skB.updateUserAnswerGUI2AFC(sc, userAnswer)
+
+			elif k == 'page down':
+				userAnswer = 3
+				skB.updateUserAnswerGUI2AFC(sc, userAnswer)
+
+			elif k == 'down':
+
+				if (userAnswer == 0):
+					skG.writeText(sc, -350,-20, "You have to choose an answer to proceed.", skG.COLOR)					
+				else:
+					skG.eraseLine(sc,-350,40)
+					skG.erase(sc, 'white')
+					#skG.eraseLine(sc,-350,-20)
+					trialCount = trialCount + 1
+					#if trialCount < N_Trials:
+					skG.updateTrialLabel(sc, trialCount)
+					skG.delay(sc, t)
+					break
+			
+		# check the answer. depending on answer, determine next test value
+		# if answer wrong, reset streak and step up test value
+		c.send(("User answer is: " + str(userAnswer)+ "\n").encode())
+		await asyncio.sleep(0.01)
+
+		if (userAnswer == answerKey):
+			nRight = nRight + 1
+		else:
+			nWrong = nWrong + 1
+		# if test < ref
+
+		n = open(staircaseFileName, 'a', encoding='UTF8', newline='')
+		n.write(str(trialCount) + "," + str(test) + "," + str(reference) + "," + str(packetA) + "," + str(packetB)+ "," + str(answerKey)+ "," + str(userAnswer)+ "," + str(nRight) + "," + str(nWrong) + "," + str(r) + "\n")
+		n.close()
+		userAnswer = 0
+
+	c.send(("DONE\n").encode())
+
+
 # provide staircasing parameters: going up or down (bounds); reference, nUP, nDown, retract, wait, c, clients and rxchars
 async def staircase2AFC(Xo, l, c, nAct, nDown, avgMin, avgMax, key, reference, wait, retract, client1, rx_char1, client2, rx_char2):
 	#global writer
@@ -116,7 +233,7 @@ async def staircase2AFC(Xo, l, c, nAct, nDown, avgMin, avgMax, key, reference, w
 	nRight = 0
 	increment = 0
 
-	localDir = 1 # 1 is increasing. 2 is equal. 0 is decreasing. starts increasing
+	localDir = 1 # 1 is increasing. 0 is decreasing. starts increasing
 	staircaseFileName = skB.initializeTrialFiles(p, fileName, key, l)
 
 	# we are assuming nUp, nDown: 2:1
@@ -239,7 +356,7 @@ async def staircase2AFC(Xo, l, c, nAct, nDown, avgMin, avgMax, key, reference, w
 				newTest = test - increment	#increment = increment * -1
 
 				# # if its a direction change, then reversal
-				if (localDir):
+				if (localDir==1):
 					reversals = reversals + 1 # reversals
 					Ldb = Ldb / 2 # Ldb is reduced
 					if (Ldb <= 0.5):
@@ -249,7 +366,7 @@ async def staircase2AFC(Xo, l, c, nAct, nDown, avgMin, avgMax, key, reference, w
 
 			else:
 				newTest = test
-				localDir = 2 # keep the same
+				#localDir = 2 # keep the same
 		
 		# if TEST < reference, increase by the exponential factor
 		elif ((r==0) and (userAnswer==3)) or ((r==1) and (userAnswer==1)):
@@ -572,10 +689,10 @@ async def main():
 			await skB.waitSK(3)
 
 			avgMin, avgMax, q1, q2, q3 = skB.loadASRValues(c);
-			quartiles = {"q1":q1, "q2": q2}#, # , 
-			XoArr = {"q1": [skB.generateInitialValue(avgMin, avgMax, q1), skB.generateInitialValue(avgMin, avgMax, q1)], "q2": [skB.generateInitialValue(avgMin, avgMax, q2), skB.generateInitialValue(avgMin, avgMax, q2)]}
+			quartiles = {"q2": q2, "q1":q1, }#, # , 
+			XoArr = {"q1": [skB.generateInitialValue(avgMin, q1), skB.generateInitialValue(avgMin, q1)], "q2": [skB.generateInitialValue(avgMin, q2), skB.generateInitialValue(avgMin, q2)]}
 			keys = list(quartiles.keys())
-			#random.shuffle(keys)
+			random.shuffle(keys)
 			
 			skB.device2GUI(sc)
 			device2 = await BleakScanner.find_device_by_address(skB.addr_Adafruit2)
@@ -591,21 +708,55 @@ async def main():
 					await skB.waitGUI(sc) # Calibration Filter: wait for filter to stabilize
 
 					nDown = 2
-					actuatorOrder = [1] # 1
+					actuatorOrder = [1,2] # 1
 					random.shuffle(actuatorOrder)
 
+					refArr = [2, 4, 7]					
+					random.shuffle(refArr)
+
+					c.send(("Quartile Order: " + str(keys) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())
+					#c.send(("Reference Order: " + str(refArr) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())					
+					while(1):
+						k = keyboard.read_key()
+						if k == 'y':
+							c.send(("Confirmed.\n").encode())
+							break
+						elif k == 'n':
+							random.shuffle(keys)
+							random.shuffle(refArr)
+							random.shuffle(actuatorOrder)
+							c.send(("Quartile Order: " + str(keys) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())
+							#c.send(("Reference Order: " + str(refArr) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())	
+						await asyncio.sleep(0.1)
+
+
+					# # method of constant stimuli
+					# inc = 0.25
+					# for n in actuatorOrder:
+					# 	for r in refArr:
+
+					# 		if (r == 7):
+					# 			inc = 0.5
+					# 		elif (r in [2,4]):
+					# 			inc = 0.25
+					# 		skB.instructionsGUI2(sc, tr, 1)
+					# 		skB.prepareExperimentGUI(sc, 1)
+					# 		await methodOfConstantStimuli(r, inc, 2*inc, 3*inc, 1, c, n, avgMin, avgMax, waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+
+					# staircasing, 2 up 1 down
 					nParts = 0
 					for n in actuatorOrder:
 						for k in keys:
 							nParts = nParts + 1
 
-							for l in list(range(0,2)):
-								skB.instructionsGUI2(sc, tr, (nParts-1)*3 + l)
-								skB.prepareExperimentGUI(sc, l)
-								#print ("this is staircase" + str(k))
-								c.send(("TRIAL#" + str(l) + "\n").encode())
-								await staircase2AFC((XoArr[k])[l], l, c, n, nDown, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
-								#await staircaseNewBLE(l, c, n, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+							if k == "q2":
+								for l in list(range(0,2)):
+									skB.instructionsGUI2(sc, tr, (nParts-1)*2 + l)
+									skB.prepareExperimentGUI(sc, l)
+									#print ("this is staircase" + str(k))
+									c.send(("TRIAL#" + str(l) + "\n").encode())
+									await staircase2AFC((XoArr[k])[l], l, c, n, nDown, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+									#await staircaseNewBLE(l, c, n, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 
 					# skB.orderedPairsInstructionsGUI(sc, tr)
 					# skB.orderedPairsGUI(sc)

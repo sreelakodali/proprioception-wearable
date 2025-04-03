@@ -128,26 +128,28 @@ def simulatedSubjectResponse(c, a, b):
 
 
 #initial value is randomized 
-def generateInitialValue(minValue, maxValue, reference):
+def generateInitialValue(minValue, reference):
 	Ldb = 2
 
-	# Condition #1
-	minConvergenceValue = 0.5 # condition #1 xo > min amount so staircasing works #1
+	# Condition #1: Xo is not less than minConvergence Value
+	# Condition #2: Xo is at least minDistanceFromRef less than reference
+	minConvergenceValue = 1.0 # condition #1 xo > min amount so staircasing works #1
+	if (minValue > minConvergenceValue):
+		minConvergenceValue = minValue
+
 	minDistanceFromRef = 0.5
 	minDistanceFromRef2 = 0.2
-	Xo = random.uniform(minConvergenceValue, reference); #initial value less than reference
+	Xo = random.uniform(minConvergenceValue, (reference-minDistanceFromRef)); #initial value less than reference
 	
-	#Condition #2 abs(xo - reference) > min value
-	condition2 = ( abs(Xo - reference ) )
 	
-	# Condition #3 	# 3 so (xo*(10^Ldb/20)^x - reference) > 0.5 -- even for different 
+	# Condition #3 	# 3 so (xo*(10^Ldb/20)^x - reference) > 0.2 -- even for different 
 	nIterations = abs(np.log(reference/Xo) / np.log(10**(Ldb/20)))
 	condition3pt1 = (abs(Xo*(10**(Ldb/20))**(np.ceil(nIterations)) - reference) )
 	condition3pt2 = (abs(Xo*(10**(Ldb/20))**(np.floor(nIterations)) - reference) )
 
 	#print("Xo={}, condition2={}, condition3pt1={}, condition3pt2={}".format(Xo, condition2, condition3pt1, condition3pt2 ))
 	# condition #2
-	while ( (condition2< minDistanceFromRef) or (condition3pt1< minDistanceFromRef2) or (condition3pt2< minDistanceFromRef2)):
+	while ( (condition3pt1< minDistanceFromRef2) or (condition3pt2< minDistanceFromRef2)):
 		Xo = random.uniform(minConvergenceValue, reference);
 		condition2 = ( abs(Xo - reference ))
 		nIterations = abs(np.log(reference/Xo) / np.log(10**(Ldb/20)))
@@ -379,7 +381,8 @@ def initializeTrialFiles(p, fileName, key, l):
 	newFileName = p + 'trial'+ str(l) + '_' + key + '_' + fileName + '_' + newTime + '.csv'
 	n = open(newFileName, 'w+', encoding='UTF8', newline='')
 	writer = csv.writer(n) # csv writer for trials
-	writer.writerow(["trialCount", "Test", "Reference", "A", "B", "answerKey", "userAnswer", "reversals", "graphIcon", "nRight", "nWrong", "r"])
+	#writer.writerow(["trialCount", "Test", "Reference", "A", "B", "answerKey", "userAnswer", "reversals", "graphIcon", "nRight", "nWrong", "r"])
+	writer.writerow(["trialCount", "Test", "Reference", "A", "B", "answerKey", "userAnswer", "nRight", "nWrong", "r"]) # updated for method of constant stimuli
 	n.close()
 	return newFileName
 

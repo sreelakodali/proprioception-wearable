@@ -4,9 +4,9 @@
  */
 
 #define LENGTH 3
-#define td 5000
+#define td 500
 
-int ledArr[LENGTH] = {14, 13, 12}; 
+int ledArr[LENGTH] = {13, 12, 11}; //14,
 int transistorArr[LENGTH] = {11, 8, 2};
 int transistor = 11;
 int led = 14;
@@ -25,11 +25,11 @@ void setup() {
 void loop() {
   for (int i = 0; i < LENGTH; i ++ ) {
     digitalWrite(ledArr[i], LOW);   // turn the LED on (HIGH is the voltage level)
-    digitalWrite(transistorArr[i], HIGH);
+    //digitalWrite(transistorArr[i], HIGH);
     delay(td);               // wait for a second
     
     digitalWrite(ledArr[i], HIGH);    // turn the LED off by making the voltage LOW
-    digitalWrite(transistorArr[i], LOW);
+    //digitalWrite(transistorArr[i], LOW);
     delay(td);               // wait for a second
   }
 

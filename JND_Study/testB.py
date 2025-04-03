@@ -4,7 +4,7 @@ import skBLESupport_JND as skB
 
 
 def changeScalePolyfit(s):
-	ls = 13.30 - 3.14* (s ** 1) + 0.329* (s ** 2) - 0.0153*(s ** 3) + 0.0002599*(s ** 4);
+	ls = 13.3 - 2.83* (s ** 1) + 0.264* (s ** 2) - 0.0108*(s ** 3) + 0.000106*(s ** 4);
 	#ls = 13.309610778443160 -3.142974745776060* (s ** 1) + 0.329362743111748* (s ** 2) - 0.015300291353016*(s ** 3) + 0.0002598774881315157*(s ** 4);
 	return ls
 
@@ -47,26 +47,40 @@ def simulatedSubjectResponse(a, b):
 	print("response={}".format(response))
 	return response
 
+# while (1):
+# 	print("min?")
+# 	A = float(input())
+# 	print("max?")
+# 	B = float(input())
+
+# 	asr = (B - A)
+# 	q1 = A + asr/4
+# 	q2 = A + asr/2
+# 	q3 = A + (3* asr/4)
+
+# 	print("ASR={},  q1={}, q2={}, q3={}".format(asr, q1, q2, q3))
+
+# 	print("ref?")
+# 	C = float(input())
+# 	Xo = skB.generateInitialValue(A, B, C);
+# 	print("Xo={}".format(Xo))
+# 	#print("scale is {}".format(changeScalePolyfit(float(setpoint))))
+
 while (1):
-	print("min?")
-	A = float(input())
-	print("max?")
-	B = float(input())
-
-	asr = (B - A)
-	q1 = A + asr/4
-	q2 = A + asr/2
-	q3 = A + (3* asr/4)
-
-	print("ASR={},  q1={}, q2={}, q3={}".format(asr, q1, q2, q3))
-
-	print("ref?")
-	C = float(input())
-	Xo = skB.generateInitialValue(A, B, C);
-	print("Xo={}".format(Xo))
-	#print("scale is {}".format(changeScalePolyfit(float(setpoint))))
+	print("setpoint?")
+	s = float(input())
+	print("scale is {}".format(changeScalePolyfit(float(s))))
 
 
+# comparisonValues = [10-3, 10-2, 10-1, 10, 10+1, 10+2, 10+3]
+# experimentStimuli = []
+# for j in comparisonValues:
+# 	for i in range(0,10):
+# 		experimentStimuli.append(j)
+# random.shuffle(experimentStimuli)
+# stack = deque(experimentStimuli)
+
+# print(experimentStimuli)
 
 
 # def sendMySetpoints():

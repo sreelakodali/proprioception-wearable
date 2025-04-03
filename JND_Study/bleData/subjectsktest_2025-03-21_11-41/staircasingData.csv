@@ -1,0 +1,28 @@
+LOAD ASR VALUES
+Min1 0.26
+Max1 10.0
+Min2 0.26
+Max2 10.0
+Min3 0.26
+Max3 10.0
+avgMin 0.26
+avgMax 10.0
+q1 2.7
+q2 5.13
+q3 7.56
+Quartile Order: ['q1', 'q2'] N_Actuator Order: [1, 2]  Ok?
+Confirmed.
+ACTUATOR#= 1, REFERENCE=4
+----- TRIAL #0 -----
+test: 3.75
+r: 0
+Receiving Stimulus A: 3.75
+REACHED FORCE 3.75
+Stim time = 4.9e-05s 
+Final Stim time = 4.002246s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.00018s 
+Final Stim time = 4.001727s 
+The real answer is: 3
+User answer is: 1

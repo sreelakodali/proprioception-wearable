@@ -1,0 +1,15 @@
+LOAD ASR VALUES
+Min1 0.3
+Max1 10.0
+Min2 0.3
+Max2 10.0
+Min3 0.3
+Max3 10.0
+avgMin 0.3
+avgMax 10.0
+q1 2.72
+q2 5.15
+q3 7.58
+Quartile Order: ['q2', 'q1'] N_Actuator Order: [2, 1]  Ok?
+Confirmed.
+ACTUATOR#= 1, REFERENCE=4
