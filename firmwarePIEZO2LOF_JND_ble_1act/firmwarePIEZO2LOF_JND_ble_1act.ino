@@ -23,7 +23,7 @@
 //#include "IntervalTimerEx.h"
 
 # define N_ACT 1
-#define ID_NUM 1
+#define ID_NUM 2
 #define FC 0.5 // 10 Hz
 
 // BLE UART 
@@ -50,10 +50,10 @@ int  buttonCount = 0; // button count. global!
 //float  user_flex_MIN;
 //float  user_flex_MAX;
 //  IntervalTimerEx ForceSampleSerialWriteTimer;
-const bool bleON = false;  // to tune PID, turn serial on
+const bool bleON = true;  // to tune PID, turn serial on
 const bool serialON = !(bleON);
 
-const bool calibratepidON = true;// to tune PID, turn serial on
+const bool calibratepidON = false;// to tune PID, turn serial on
 const  byte I2C_ADDR = 0x04;
 const  byte I2C_ADDRArr[4] = {0x04, 0x08, 0x0A, 0x0C};
 const bool actuatorType = 1; // NEW. 0 = actuonix and 1 = MightyZap. CHANGE THIS for new actuator!
@@ -158,8 +158,8 @@ void setup() {
 }
 
 void loop() {
-  //runtime(); // standard behavior 
-  testSetpointSequence(10000); // to tune PID controller
+  if (calibratepidON) testSetpointSequence(10000); // to tune PID controller
+  else runtime(); // standard behavior 
   ////readForce();
   ////sweep(5000,ID_NUM-1);
 }
@@ -235,7 +235,7 @@ double iirFilterSK(short data, bool printYes) {
 
 void testSetpointSequence(int td) {
   //float setpointArr[] = {4.0, 0.0, 4.25, 0.0, 4.5, 0.0, 4.75, 0.0, 4.0, 0.0};//14.0, 0.0, 16.0, 0.0, 18.0, 0.0, 20.0, 0.0
-  float setpointArr[] = {1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0, 5.0, 0.0, 6.0, 0.0, 7.0, 0.0, 8.0, 0.0, 9.0, 0.0};//14.0, 0.0, 16.0, 0.0, 18.0, 0.0, 20.0, 0.0
+  float setpointArr[] = {6.0, 0.0, 7.0, 0.0, 8.0, 0.0, 9.0, 0.0};//1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0, 14.0, 0.0, 16.0, 0.0, 18.0, 0.0, 20.0, 0.0
   //float setpointArr[] = {1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0, 5.0, 0.0, 6.0, 0.0, 8.0, 0.0, 10.0, 0.0, 12.0, 0.0};//14.0, 0.0, 16.0, 0.0, 18.0, 0.0, 20.0, 0.0
   //float setpointArr[] = {1.0, 0.0, 2.0, 0.0, 3.0, 0.0, 4.0, 0.0, 5.0, 0.0, 6.0, 0.0, 7.0, 0.0, 8.0, 0.0};
   int arrLength = (sizeof(setpointArr) / sizeof(setpointArr[0]));
@@ -268,7 +268,7 @@ void testSetpointSequence(int td) {
         
         // dataString += (String(myPID.setpoint) + "," + String(filteredData1)+ "," + String(myPID.setpoint - error));
         dataString = (String(myTimeLoop) + "," + String(myPID.setpoint) + "," + String(myPID.setpoint - error) + "," + String(filteredData1)+ "," + String(myPID.actuatorCommand) + "," + String(measuredPos));
-        //if (calibratepidON) dataString =  (String(myPID.setpoint)+ "," + String(myPID.setpoint - error));
+        if (calibratepidON) dataString =  (String(myPID.setpoint)+ "," + String(myPID.setpoint - error));
         if (serialON) Serial.println(dataString);
         if (bleON) ble.println(dataString);
         myPID.tLastWriteout = millis();
@@ -295,7 +295,21 @@ double changeScalePolyFit (double s) {
   double ls;
   if (s < user_force_MIN) s = user_force_MIN;
   if (s > user_force_MAX) s = user_force_MAX;
-  ls = 13.5 - 3.43* pow(s,1) + 0.401* pow(s,2) - 0.0207*pow(s,3) + 0.000387*pow(s,4);
+
+  // 4-3-25: 4th order with new form factor and kd in controller
+  //V1 ls = 9.15 - 0.5711* pow(s,1) + 0.1060* pow(s,2) - 0.0217*pow(s,3) + 0.00120*pow(s,4);
+ //V2 ls = 9.45 - 1.0179* pow(s,1) + 0.3017* pow(s,2) - 0.0533*pow(s,3) + 0.0028*pow(s,4);
+ //V3  ls = 9.3583 - 0.9016* pow(s,1) + 0.2579* pow(s,2) - 0.0459*pow(s,3) + 0.0022*pow(s,4); // V3
+ //V4 ls = 9.3083 - 0.8204* pow(s,1) + 0.2229* pow(s,2) - 0.0411*pow(s,3) + 0.0020*pow(s,4); // V4
+ //V5 ls = 9.2042 - 0.6860* pow(s,1) + 0.1770* pow(s,2) - 0.0360*pow(s,3) + 0.0018*pow(s,4); // V5
+ // V6 ls = 9.1833 - 0.6675* pow(s,1) + 0.1757* pow(s,2) - 0.0368*pow(s,3) + 0.0019*pow(s,4); // V6
+ // V7 ls = 9.0167 - 0.4632* pow(s,1) + 0.1130* pow(s,2) - 0.0312*pow(s,3) + 0.0018*pow(s,4); // V7
+   ls = 9.0583 - 0.5276* pow(s,1) + 0.1420* pow(s,2) - 0.0359*pow(s,3) + 0.0020*pow(s,4); // V8
+
+//   // V1 4-3-25: 6th order with new form factor and kd in controller
+//   ls = 9.620 - 1.1771* pow(s,1) + 0.2626* pow(s,2) + 0.0080*pow(s,3) - 0.0150*pow(s,4) + 0.0021*pow(s,5) - 0.0000833*pow(s,6);
+  
+  //ls = 13.5 - 3.43* pow(s,1) + 0.401* pow(s,2) - 0.0207*pow(s,3) + 0.000387*pow(s,4);
   //ls = 13.1 - 2.99* pow(s,1) + 0.354* pow(s,2) - 0.0188*pow(s,3) + 0.000355*pow(s,4);
   //ls = 13.30 - 3.12* pow(s,1) + 0.321* pow(s,2) - 0.0145*pow(s,3) + 0.000239*pow(s,4);
   //ls = 13.30 - 3.14* pow(s,1) + 0.329* pow(s,2) - 0.0153*pow(s,3) + 0.0002599*pow(s,4);
@@ -749,7 +763,7 @@ void changeSetpoint(PID_sk* pid, float s, double filteredData) {
     (*pid).zeroForce = zeroForceGlobal;
   }
    
-  localScale = changeScale(s); // 1.04 *  changeScale(s); //changeScalePolyFit(s);//// 0.93* //
+  localScale = changeScalePolyFit(s);//changeScale(s); // 1.04 *  changeScale(s); //// 0.93* //
 
   newP = KpConst*localScale;//130.00; 
   newI = KiConst*localScale;//0.031;

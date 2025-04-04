@@ -12,7 +12,7 @@ from scipy import signal
 PATH = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/JND_Study/bleData/' # change this to your path!
 PORT_NAME = "/dev/cu.usbmodem161767201"#"/dev/cu.usbmodem131752901" # change this to Arduino/teeny's port
 BAUD_RATE = 4608000
-RUNTIME_LENGTH = 205#135#570 # secon4ds
+RUNTIME_LENGTH = 105#135#570 # secon4ds
 
 ## temporary new, for PID
 kp = 12
@@ -20,7 +20,7 @@ ki = 30
 kd = 0.5
 # scale = 7
 # setpt = 4
-pidParams = ("_p{}_i{}_d{}").format(kp, ki, kd)
+pidParams = ("_p{}_i{}_d{}_updatedPolyFitV7").format(kp, ki, kd)
 
 
 #DIRECTORY
