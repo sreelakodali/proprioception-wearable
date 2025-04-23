@@ -48,7 +48,7 @@ linebuf = ""
 # ----- Global Force Values, for holding... let's see
 force1Global = 0.0
 force2Global = 0.0
-tStim = 6.0 # sets the actual stimulation time. 4-1-25: maybe make it 6-8 seconds
+tStim = 4.0 # sets the actual stimulation time. 4-1-25: maybe make it 6-8 seconds
 MIN_TRIALS = 12
 
 # ------- Display & GUI variables
@@ -112,12 +112,15 @@ async def methodOfConstantStimuli(reference, inc1, inc2, inc3, l, c, nAct, avgMi
 	comparisonValues = [reference - inc3, reference - inc2, reference - inc1, reference + inc3, reference + inc2, reference + inc1]
 
 	# step 2: randomize order for experiment, 10 times per value
+	
+	#experimentStimuli = 3*[comparisonValues[0]] + 6*[comparisonValues[1]] + 3*[comparisonValues[2]] + 6*[comparisonValues[3]] + 6*[comparisonValues[4]] + 4*[comparisonValues[5]]
 	experimentStimuli = []
 	for j in comparisonValues:
 		for i in range(0,10):
 			experimentStimuli.append(j)
 	random.shuffle(experimentStimuli)
 	stimuliStack = deque(experimentStimuli)
+	c.send((str(stimuliStack)).encode())
 
 	for i in range(0, len(experimentStimuli)):
 		graphIcon = 0
@@ -714,8 +717,8 @@ async def main():
 					refArr = [2, 4, 7]					
 					random.shuffle(refArr)
 
-					c.send(("Quartile Order: " + str(keys) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())
-					#c.send(("Reference Order: " + str(refArr) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())					
+					#c.send(("Quartile Order: " + str(keys) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())
+					c.send(("Reference Order: " + str(refArr) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())					
 					while(1):
 						k = keyboard.read_key()
 						if k == 'y':
@@ -725,38 +728,43 @@ async def main():
 							random.shuffle(keys)
 							random.shuffle(refArr)
 							random.shuffle(actuatorOrder)
-							c.send(("Quartile Order: " + str(keys) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())
-							#c.send(("Reference Order: " + str(refArr) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())	
+							#c.send(("Quartile Order: " + str(keys) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())
+							c.send(("Reference Order: " + str(refArr) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())	
 						await asyncio.sleep(0.1)
 
 
-					# # method of constant stimuli
-					# inc = 0.25
+					# method of constant stimuli
+					inc = 0.4
+					n = 1
+					r = 5
+					skB.instructionsGUI2(sc, tr, 1)
+					skB.prepareExperimentGUI(sc, 1)
+					await methodOfConstantStimuli(r, inc, 2*inc, 3*inc, 1, c, n, avgMin, avgMax, waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 					# for n in actuatorOrder:
 					# 	for r in refArr:
 
 					# 		if (r == 7):
 					# 			inc = 0.5
 					# 		elif (r in [2,4]):
-					# 			inc = 0.25
+					# 			inc = 0.3
 					# 		skB.instructionsGUI2(sc, tr, 1)
 					# 		skB.prepareExperimentGUI(sc, 1)
 					# 		await methodOfConstantStimuli(r, inc, 2*inc, 3*inc, 1, c, n, avgMin, avgMax, waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 
-					# staircasing, 2 up 1 down
-					nParts = 0
-					for n in actuatorOrder:
-						for k in keys:
-							nParts = nParts + 1
+					# # staircasing, 2 up 1 down
+					# nParts = 0
+					# for n in actuatorOrder:
+					# 	for k in keys:
+					# 		nParts = nParts + 1
 
-							if k == "q2":
-								for l in list(range(0,2)):
-									skB.instructionsGUI2(sc, tr, (nParts-1)*2 + l)
-									skB.prepareExperimentGUI(sc, l)
-									#print ("this is staircase" + str(k))
-									c.send(("TRIAL#" + str(l) + "\n").encode())
-									await staircase2AFC((XoArr[k])[l], l, c, n, nDown, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
-									#await staircaseNewBLE(l, c, n, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+					# 		if k == "q2":
+					# 			for l in list(range(0,2)):
+					# 				skB.instructionsGUI2(sc, tr, (nParts-1)*2 + l)
+					# 				skB.prepareExperimentGUI(sc, l)
+					# 				#print ("this is staircase" + str(k))
+					# 				c.send(("TRIAL#" + str(l) + "\n").encode())
+					# 				await staircase2AFC((XoArr[k])[l], l, c, n, nDown, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+					# 				#await staircaseNewBLE(l, c, n, rUp, avgMin, avgMax, k, quartiles[k], waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 
 					# skB.orderedPairsInstructionsGUI(sc, tr)
 					# skB.orderedPairsGUI(sc)

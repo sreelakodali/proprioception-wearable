@@ -8,7 +8,7 @@ import pandas as pd
 # Purpose: removes extra commas or zeros in the data and text
 
 ### FOR SUBJECT 1, READ IN REVISED TARGET ANGLE AND COMPUTE ERROR WITH SUBJECT ATTEMPT
-folder='subject12_2025-04-02_14-22'#'subject8_2025-02-17_17-42'
+folder='subjectsk_2025-04-08_21-50'#'subject8_2025-02-17_17-42'
 PATH = '/Users/Sreela/Documents/School/Stanford/Year3_2/PIEZO2/JND_Study/bleData/' # change this to your path!
 PATH = PATH + folder + '/'
 # Find the most recent data directory

@@ -1,0 +1,79 @@
+LOAD ASR VALUES
+Min1 0.0
+Max1 8.0
+Min2 0.0
+Max2 8.0
+Min3 0.0
+Max3 8.0
+avgMin 0.0
+avgMax 8.0
+q1 2.0
+q2 4.0
+q3 6.0
+Reference Order: [2, 7, 4] N_Actuator Order: [1, 2]  Ok?
+Confirmed.
+ACTUATOR#= 1, REFERENCE=5
+deque([5.9, 4.4, 5.9, 4.4, 4.7, 4.7, 5.9, 4.4, 4.7, 5.9, 5.6, 5.3, 4.4, 5.9, 5.9, 5.6, 5.3, 4.4, 4.4, 5.6, 4.1, 4.4, 4.1, 4.1, 4.7, 5.3, 4.7, 5.3, 5.6, 5.6, 4.7, 4.7, 5.3, 4.4, 4.7, 4.1, 5.3, 4.1, 5.6, 4.1, 5.3, 5.6, 4.7, 5.6, 5.3, 4.4, 5.6, 5.9, 5.9, 5.9, 4.4, 5.9, 5.3, 4.1, 5.6, 4.7, 4.1, 5.3, 4.1, 4.1])----- TRIAL #0 -----
+test: 4.1
+r: 0
+Receiving Stimulus A: 4.1
+REACHED FORCE 4.1
+Stim time = 0.000197s 
+Final Stim time = 4.007377s 
+Receiving Stimulus B: 5
+REACHED FORCE 5
+Stim time = 0.000174s 
+Final Stim time = 4.006399s 
+The real answer is: 3
+User answer is: 1
+----- TRIAL #1 -----
+test: 4.1
+r: 0
+Receiving Stimulus A: 4.1
+REACHED FORCE 4.1
+Stim time = 0.00015s 
+Final Stim time = 4.002573s 
+Receiving Stimulus B: 5
+REACHED FORCE 5
+Stim time = 0.000147s 
+Final Stim time = 4.004652s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #2 -----
+test: 5.3
+r: 1
+Receiving Stimulus A: 5
+REACHED FORCE 5
+Stim time = 0.000182s 
+Final Stim time = 4.00129s 
+Receiving Stimulus B: 5.3
+REACHED FORCE 5.3
+Stim time = 0.000197s 
+Final Stim time = 4.007708s 
+The real answer is: 3
+User answer is: 1
+----- TRIAL #3 -----
+test: 4.1
+r: 1
+Receiving Stimulus A: 5
+REACHED FORCE 5
+Stim time = 0.000142s 
+Final Stim time = 4.010295s 
+Receiving Stimulus B: 4.1
+REACHED FORCE 4.1
+Stim time = 0.000203s 
+Final Stim time = 4.004431s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #4 -----
+test: 4.7
+r: 0
+Receiving Stimulus A: 4.7
+REACHED FORCE 4.7
+Stim time = 0.000191s 
+Final Stim time = 4.002925s 
+Receiving Stimulus B: 5
+REACHED FORCE 5
+Stim time = 0.000163s 
+Final Stim time = 4.000515s 
+The real answer is: 3

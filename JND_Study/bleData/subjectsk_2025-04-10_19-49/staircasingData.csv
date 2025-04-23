@@ -1,0 +1,15 @@
+LOAD ASR VALUES
+Min1 0.0
+Max1 8.0
+Min2 0.0
+Max2 8.0
+Min3 0.0
+Max3 8.0
+avgMin 0.0
+avgMax 8.0
+q1 2.0
+q2 4.0
+q3 6.0
+Reference Order: [2, 4, 7] N_Actuator Order: [2, 1]  Ok?
+Confirmed.
+ACTUATOR#= 2, REFERENCE=4
