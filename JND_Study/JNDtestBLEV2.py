@@ -12,10 +12,7 @@ from typing import Iterator
 from bleak.backends.characteristic import BleakGATTCharacteristic
 from bleak.backends.device import BLEDevice
 from bleak.backends.scanner import AdvertisementData
-import constants as CONST
-import skFunctions as sk
 import skPilotGraphics as skG
-import skCalibrationFunctions as skC
 import skBLESupport_JND as skB
 
 # ------------
