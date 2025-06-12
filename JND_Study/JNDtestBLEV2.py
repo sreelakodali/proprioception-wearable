@@ -113,7 +113,6 @@ async def methodOfConstantStimuli(reference, inc1, inc2, inc3, l, c, nAct, avgMi
 
 	# step 2: randomize order for experiment, 10 times per value
 	
-	#experimentStimuli = 3*[comparisonValues[0]] + 6*[comparisonValues[1]] + 3*[comparisonValues[2]] + 6*[comparisonValues[3]] + 6*[comparisonValues[4]] + 4*[comparisonValues[5]]
 	experimentStimuli = []
 	for j in comparisonValues:
 		for i in range(0,10):
@@ -170,7 +169,7 @@ async def methodOfConstantStimuli(reference, inc1, inc2, inc3, l, c, nAct, avgMi
 		c.send(("The real answer is: " + str(answerKey) + "\n").encode())
 
 		skB.displayAnswerOptionsGUI2AFC(sc)
-
+		userAnswer = 0
 		while(1):
 			await asyncio.sleep(0.01)
 		# wait for user's input
@@ -628,7 +627,8 @@ def handle_rx2(_: BleakGATTCharacteristic, data: bytearray):
 
 async def main():
 
-	# write the staircase data via socket
+	# write the staircasse data via socket
+	nASR = 2
 	s = socket.socket()
 	port = 12345
 	s.bind(('', port))
@@ -658,45 +658,7 @@ async def main():
 			global calibrate
 			await skB.waitGUI(sc) 	# Calibration Filter: wait for filter to stabilize
 
-			# calibration min max force
-			skB.calibrationMinMaxGUI(sc, tr)
-			skG.initializeCalibrationWindow(sc, skB.CALIBRATION_TEXT3)
-			
-			while (calibrate):
-				
-				k = keyboard.read_key()
 
-				if k == 'page up': # increase actuator position
-					await client1.write_gatt_char(rx_char1, ("c\n").encode(encoding="ascii"), response=False)
-
-				elif k == 'right': # indicate limit
-					await client1.write_gatt_char(rx_char1, ("z\n").encode(encoding="ascii"), response=False)
-
-				elif k == 'page down': # reduce actuator position
-					await client1.write_gatt_char(rx_char1, ("w\n").encode(encoding="ascii"), response=False)
-
-				elif k == 'up': # reset 
-					await client1.write_gatt_char(rx_char1, ("v\n").encode(encoding="ascii"), response=False)		
-
-				elif k == 'down': # complete
-
-					if (calibrate == 1):
-						calibrate = calibrate + 1
-						skG.initializeCalibrationWindow(sc, skB.CALIBRATION_TEXT4)
-					else:
-						await client1.write_gatt_char(rx_char1, ("d\n").encode(encoding="ascii"), response=False)		
-						calibrate = 0
-
-				await asyncio.sleep(0.1)
-
-			await skB.waitSK(3)
-
-			avgMin, avgMax, q1, q2, q3 = skB.loadASRValues(c);
-			quartiles = {"q2": q2, "q1":q1, }#, # , 
-			XoArr = {"q1": [skB.generateInitialValue(avgMin, q1), skB.generateInitialValue(avgMin, q1)], "q2": [skB.generateInitialValue(avgMin, q2), skB.generateInitialValue(avgMin, q2)]}
-			keys = list(quartiles.keys())
-			random.shuffle(keys)
-			
 			skB.device2GUI(sc)
 			device2 = await BleakScanner.find_device_by_address(skB.addr_Adafruit2)
 			if (device2 is None):
@@ -707,39 +669,99 @@ async def main():
 					await client2.start_notify(skB.UART_TX_CHAR_UUID, handle_rx2)
 					nus2 = client2.services.get_service(skB.UART_SERVICE_UUID)
 					rx_char2 = nus2.get_characteristic(skB.UART_RX_CHAR_UUID)
-
 					await skB.waitGUI(sc) # Calibration Filter: wait for filter to stabilize
 
-					nDown = 2
-					actuatorOrder = [1,2] # 1
-					random.shuffle(actuatorOrder)
-
-					refArr = [2, 4, 7]					
-					random.shuffle(refArr)
-
-					#c.send(("Quartile Order: " + str(keys) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())
-					c.send(("Reference Order: " + str(refArr) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())					
-					while(1):
+					# calibration min max force
+					skB.calibrationMinMaxGUI(sc, tr)
+					skG.initializeCalibrationWindow(sc, skB.CALIBRATION_TEXT3)
+					while (calibrate):
+						
 						k = keyboard.read_key()
-						if k == 'y':
-							c.send(("Confirmed.\n").encode())
-							break
-						elif k == 'n':
-							random.shuffle(keys)
-							random.shuffle(refArr)
-							random.shuffle(actuatorOrder)
-							#c.send(("Quartile Order: " + str(keys) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())
-							c.send(("Reference Order: " + str(refArr) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())	
+
+						if k == 'page up': # increase actuator position
+							await client1.write_gatt_char(rx_char1, ("c\n").encode(encoding="ascii"), response=False)
+							if (nASR == 2):
+								await client2.write_gatt_char(rx_char2, ("c\n").encode(encoding="ascii"), response=False)
+
+						elif k == 'right': # indicate limit
+							await client1.write_gatt_char(rx_char1, ("z\n").encode(encoding="ascii"), response=False)
+							if (nASR == 2):
+								await client2.write_gatt_char(rx_char2, ("z\n").encode(encoding="ascii"), response=False)
+
+						elif k == 'page down': # reduce actuator position
+							await client1.write_gatt_char(rx_char1, ("w\n").encode(encoding="ascii"), response=False)
+							if (nASR == 2):
+								await client2.write_gatt_char(rx_char2, ("w\n").encode(encoding="ascii"), response=False)
+
+						elif k == 'up': # reset 
+							await client1.write_gatt_char(rx_char1, ("v\n").encode(encoding="ascii"), response=False)
+							if (nASR == 2):
+								await client2.write_gatt_char(rx_char2, ("v\n").encode(encoding="ascii"), response=False)		
+
+						elif k == 'down': # complete
+
+							if (calibrate == 1):
+								calibrate = calibrate + 1
+								skG.initializeCalibrationWindow(sc, skB.CALIBRATION_TEXT4)
+							else:
+								await client1.write_gatt_char(rx_char1, ("d\n").encode(encoding="ascii"), response=False)
+								if (nASR == 2):
+									await client2.write_gatt_char(rx_char2, ("d\n").encode(encoding="ascii"), response=False)		
+								calibrate = 0
+
 						await asyncio.sleep(0.1)
+
+					await skB.waitSK(3)
+
+			# avgMin, avgMax, q1, q2, q3 = skB.loadASRValues(c);
+			# quartiles = {"q2": q2, "q1":q1, }#, # , 
+			# XoArr = {"q1": [skB.generateInitialValue(avgMin, q1), skB.generateInitialValue(avgMin, q1)], "q2": [skB.generateInitialValue(avgMin, q2), skB.generateInitialValue(avgMin, q2)]}
+			# keys = list(quartiles.keys())
+			# random.shuffle(keys)
+			
+			# skB.device2GUI(sc)
+			# device2 = await BleakScanner.find_device_by_address(skB.addr_Adafruit2)
+			# if (device2 is None):
+			# 	print("could not find device with address {}".format(skB.addr_Adafruit2))
+			# else:
+			# 	print(device2)
+			# 	async with BleakClient(device2.address) as client2:
+			# 		await client2.start_notify(skB.UART_TX_CHAR_UUID, handle_rx2)
+			# 		nus2 = client2.services.get_service(skB.UART_SERVICE_UUID)
+			# 		rx_char2 = nus2.get_characteristic(skB.UART_RX_CHAR_UUID)
+
+
+
+					# nDown = 2
+					# actuatorOrder = [1,2] # 1
+					# random.shuffle(actuatorOrder)
+
+					# refArr = [2, 4, 7]					
+					# random.shuffle(refArr)
+
+					# #c.send(("Quartile Order: " + str(keys) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())
+					# c.send(("Reference Order: " + str(refArr) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())					
+					# while(1):
+					# 	k = keyboard.read_key()
+					# 	if k == 'y':
+					# 		c.send(("Confirmed.\n").encode())
+					# 		break
+					# 	elif k == 'n':
+					# 		random.shuffle(keys)
+					# 		random.shuffle(refArr)
+					# 		random.shuffle(actuatorOrder)
+					# 		#c.send(("Quartile Order: " + str(keys) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())
+					# 		c.send(("Reference Order: " + str(refArr) + " N_Actuator Order: " + str(actuatorOrder) + "  Ok?\n").encode())	
+					# 	await asyncio.sleep(0.1)
 
 
 					# method of constant stimuli
-					inc = 0.4
-					n = 1
-					r = 5
+					inc = 0.3
+					n = 2
+					r = 4.0
 					skB.instructionsGUI2(sc, tr, 1)
 					skB.prepareExperimentGUI(sc, 1)
-					await methodOfConstantStimuli(r, inc, 2*inc, 3*inc, 1, c, n, avgMin, avgMax, waitTime, 0.0, client1, rx_char1, client2, rx_char2)
+					await methodOfConstantStimuli(r, inc, 2*inc, 3*inc, 1, c, n, 0, 10, waitTime, 0.0, client1, rx_char1, client2, rx_char2)
 					# for n in actuatorOrder:
 					# 	for r in refArr:
 

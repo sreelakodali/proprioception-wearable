@@ -1,0 +1,39 @@
+ACTUATOR#= 2, REFERENCE=2.5
+deque([3.1, 2.3, 2.3, 2.3, 1.9, 3.1, 2.7, 2.1, 2.7, 2.7, 3.1, 2.9, 1.9, 2.9, 2.9, 3.1, 1.9, 3.1, 2.7, 2.1, 2.9, 2.3, 3.1, 2.1, 2.7, 1.9, 2.9, 2.7, 2.7, 1.9, 2.7, 2.9, 3.1, 2.9, 2.3, 1.9, 2.9, 1.9, 2.3, 2.1, 2.7, 2.1, 2.3, 2.1, 2.1, 2.1, 2.3, 2.9, 2.7, 3.1, 1.9, 2.3, 3.1, 2.3, 3.1, 1.9, 2.9, 2.1, 1.9, 2.1])----- TRIAL #0 -----
+test: 2.1
+r: 1
+Receiving Stimulus A: 2.5
+REACHED FORCE 2.5
+Stim time = 8.8e-05s 
+Final Stim time = 4.007496s 
+Receiving Stimulus B: 2.1
+REACHED FORCE 2.1
+Stim time = 0.000427s 
+Final Stim time = 4.00918s 
+The real answer is: 1
+User answer is: 3
+----- TRIAL #1 -----
+test: 1.9
+r: 0
+Receiving Stimulus A: 1.9
+REACHED FORCE 1.9
+Stim time = 9e-05s 
+Final Stim time = 4.002385s 
+Receiving Stimulus B: 2.5
+REACHED FORCE 2.5
+Stim time = 0.000223s 
+Final Stim time = 4.009539s 
+The real answer is: 3
+User answer is: 1
+----- TRIAL #2 -----
+test: 2.1
+r: 0
+Receiving Stimulus A: 2.1
+REACHED FORCE 2.1
+Stim time = 7.7e-05s 
+Final Stim time = 4.006093s 
+Receiving Stimulus B: 2.5
+REACHED FORCE 2.5
+Stim time = 0.000224s 
+Final Stim time = 4.006428s 
+The real answer is: 3

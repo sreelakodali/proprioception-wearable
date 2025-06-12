@@ -1,0 +1,332 @@
+ACTUATOR#= 2, REFERENCE=4
+deque([4.6, 3.7, 3.1, 3.4, 3.7, 3.4, 3.4, 3.7, 3.4, 4.6, 3.7, 4.3, 4.9, 3.4, 3.1, 4.3, 3.1, 4.3, 4.9, 4.9, 3.1, 4.9, 3.7, 4.9, 4.6, 4.3, 4.6, 3.4, 3.7, 4.3])----- TRIAL #0 -----
+test: 4.3
+r: 1
+Receiving Stimulus A: 4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+Receiving Stimulus B: 4.3
+Stim time = 3e-06s 
+Final Stim time = 3e-06s 
+The real answer is: 3
+User answer is: 1
+----- TRIAL #1 -----
+test: 3.7
+r: 1
+Receiving Stimulus A: 4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+Receiving Stimulus B: 3.7
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #2 -----
+test: 3.4
+r: 1
+Receiving Stimulus A: 4
+Stim time = 3e-06s 
+Final Stim time = 3e-06s 
+Receiving Stimulus B: 3.4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #3 -----
+test: 4.6
+r: 0
+Receiving Stimulus A: 4.6
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+Receiving Stimulus B: 4
+Stim time = 2e-06s 
+Final Stim time = 2e-06s 
+The real answer is: 1
+User answer is: 3
+----- TRIAL #4 -----
+test: 4.3
+r: 1
+Receiving Stimulus A: 4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+Receiving Stimulus B: 4.3
+Stim time = 2e-06s 
+Final Stim time = 2e-06s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #5 -----
+test: 4.6
+r: 1
+Receiving Stimulus A: 4
+Stim time = 2e-06s 
+Final Stim time = 2e-06s 
+Receiving Stimulus B: 4.6
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+The real answer is: 3
+User answer is: 1
+----- TRIAL #6 -----
+test: 4.9
+r: 0
+Receiving Stimulus A: 4.9
+Stim time = 2e-06s 
+Final Stim time = 2e-06s 
+Receiving Stimulus B: 4
+Stim time = 2e-06s 
+Final Stim time = 2e-06s 
+The real answer is: 1
+User answer is: 3
+----- TRIAL #7 -----
+test: 3.7
+r: 1
+Receiving Stimulus A: 4
+Stim time = 2e-06s 
+Final Stim time = 2e-06s 
+Receiving Stimulus B: 3.7
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+The real answer is: 1
+User answer is: 3
+----- TRIAL #8 -----
+test: 4.9
+r: 0
+Receiving Stimulus A: 4.9
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+Receiving Stimulus B: 4
+Stim time = 2e-06s 
+Final Stim time = 2e-06s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #9 -----
+test: 3.1
+r: 0
+Receiving Stimulus A: 3.1
+Stim time = 2e-06s 
+Final Stim time = 2e-06s 
+Receiving Stimulus B: 4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #10 -----
+test: 4.9
+r: 1
+Receiving Stimulus A: 4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+Receiving Stimulus B: 4.9
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #11 -----
+test: 4.9
+r: 0
+Receiving Stimulus A: 4.9
+Stim time = 2e-06s 
+Final Stim time = 2e-06s 
+Receiving Stimulus B: 4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+The real answer is: 1
+User answer is: 3
+----- TRIAL #12 -----
+test: 4.3
+r: 0
+Receiving Stimulus A: 4.3
+Stim time = 3e-06s 
+Final Stim time = 3e-06s 
+Receiving Stimulus B: 4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #13 -----
+test: 3.1
+r: 0
+Receiving Stimulus A: 3.1
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+Receiving Stimulus B: 4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #14 -----
+test: 4.3
+r: 1
+Receiving Stimulus A: 4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+Receiving Stimulus B: 4.3
+Stim time = 3e-06s 
+Final Stim time = 3e-06s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #15 -----
+test: 3.1
+r: 1
+Receiving Stimulus A: 4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+Receiving Stimulus B: 3.1
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #16 -----
+test: 3.4
+r: 0
+Receiving Stimulus A: 3.4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+Receiving Stimulus B: 4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #17 -----
+test: 4.9
+r: 0
+Receiving Stimulus A: 4.9
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+Receiving Stimulus B: 4
+Stim time = 2e-06s 
+Final Stim time = 2e-06s 
+The real answer is: 1
+User answer is: 3
+----- TRIAL #18 -----
+test: 4.3
+r: 0
+Receiving Stimulus A: 4.3
+Stim time = 3e-06s 
+Final Stim time = 3e-06s 
+Receiving Stimulus B: 4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+The real answer is: 1
+User answer is: 3
+----- TRIAL #19 -----
+test: 3.7
+r: 0
+Receiving Stimulus A: 3.7
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+Receiving Stimulus B: 4
+Stim time = 3e-06s 
+Final Stim time = 3e-06s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #20 -----
+test: 4.6
+r: 0
+Receiving Stimulus A: 4.6
+Stim time = 2e-06s 
+Final Stim time = 2e-06s 
+Receiving Stimulus B: 4
+Stim time = 3e-06s 
+Final Stim time = 3e-06s 
+The real answer is: 1
+User answer is: 3
+----- TRIAL #21 -----
+test: 3.4
+r: 1
+Receiving Stimulus A: 4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+Receiving Stimulus B: 3.4
+Stim time = 2e-06s 
+Final Stim time = 2e-06s 
+The real answer is: 1
+User answer is: 3
+----- TRIAL #22 -----
+test: 3.7
+r: 1
+Receiving Stimulus A: 4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+Receiving Stimulus B: 3.7
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #23 -----
+test: 3.4
+r: 1
+Receiving Stimulus A: 4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+Receiving Stimulus B: 3.4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #24 -----
+test: 3.4
+r: 0
+Receiving Stimulus A: 3.4
+Stim time = 2e-06s 
+Final Stim time = 2e-06s 
+Receiving Stimulus B: 4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #25 -----
+test: 3.7
+r: 0
+Receiving Stimulus A: 3.7
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+Receiving Stimulus B: 4
+Stim time = 2e-06s 
+Final Stim time = 2e-06s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #26 -----
+test: 3.4
+r: 1
+Receiving Stimulus A: 4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+Receiving Stimulus B: 3.4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #27 -----
+test: 3.1
+r: 1
+Receiving Stimulus A: 4
+Stim time = 2e-06s 
+Final Stim time = 2e-06s 
+Receiving Stimulus B: 3.1
+Stim time = 3e-06s 
+Final Stim time = 3e-06s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #28 -----
+test: 3.7
+r: 0
+Receiving Stimulus A: 3.7
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+Receiving Stimulus B: 4
+Stim time = 1e-06s 
+Final Stim time = 1e-06s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #29 -----
+test: 4.6
+r: 0
+Receiving Stimulus A: 4.6
+Stim time = 2e-06s 
+Final Stim time = 2e-06s 
+Receiving Stimulus B: 4
+Stim time = 2e-06s 
+Final Stim time = 2e-06s 
+The real answer is: 1
+User answer is: 3
+DONE

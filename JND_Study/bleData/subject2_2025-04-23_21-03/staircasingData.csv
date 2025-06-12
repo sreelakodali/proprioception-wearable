@@ -1,0 +1,25 @@
+ACTUATOR#= 2, REFERENCE=5
+----- TRIAL #0 -----
+test: 4.2
+r: 0
+Receiving Stimulus A: 4.2
+REACHED FORCE 4.2
+Stim time = 0.000181s 
+Final Stim time = 4.000517s 
+Receiving Stimulus B: 5
+REACHED FORCE 5
+Stim time = 0.000226s 
+Final Stim time = 4.002113s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #1 -----
+test: 5.4
+r: 1
+Receiving Stimulus A: 5
+REACHED FORCE 5
+Stim time = 0.000236s 
+Final Stim time = 4.000091s 
+Receiving Stimulus B: 5.4
+REACHED FORCE 5.4
+Stim time = 0.000166s 
+Final Stim time = 4.006311s 

@@ -1,0 +1,782 @@
+ACTUATOR#= 2, REFERENCE=4
+----- TRIAL #0 -----
+test: 3.1
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000174s 
+Final Stim time = 4.00469s 
+Receiving Stimulus B: 3.1
+REACHED FORCE 3.1
+Stim time = 0.000206s 
+Final Stim time = 4.006692s 
+The real answer is: 1
+User answer is: 3
+----- TRIAL #1 -----
+test: 3.7
+r: 0
+Receiving Stimulus A: 3.7
+REACHED FORCE 3.7
+Stim time = 0.000264s 
+Final Stim time = 4.007528s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.000161s 
+Final Stim time = 4.008788s 
+The real answer is: 3
+User answer is: 1
+----- TRIAL #2 -----
+test: 3.7
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000227s 
+Final Stim time = 4.00402s 
+Receiving Stimulus B: 3.7
+REACHED FORCE 3.7
+Stim time = 0.000186s 
+Final Stim time = 4.006702s 
+The real answer is: 1
+User answer is: 3
+----- TRIAL #3 -----
+test: 4.9
+r: 0
+Receiving Stimulus A: 4.9
+REACHED FORCE 4.9
+Stim time = 0.000199s 
+Final Stim time = 4.001564s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 9e-05s 
+Final Stim time = 4.006373s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #4 -----
+test: 4.9
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000305s 
+Final Stim time = 4.010441s 
+Receiving Stimulus B: 4.9
+REACHED FORCE 4.9
+Stim time = 9.3e-05s 
+Final Stim time = 4.006975s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #5 -----
+test: 4.3
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000237s 
+Final Stim time = 4.00516s 
+Receiving Stimulus B: 4.3
+REACHED FORCE 4.3
+Stim time = 0.000251s 
+Final Stim time = 4.003014s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #6 -----
+test: 4.9
+r: 0
+Receiving Stimulus A: 4.9
+REACHED FORCE 4.9
+Stim time = 0.000231s 
+Final Stim time = 4.002018s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.000132s 
+Final Stim time = 4.009737s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #7 -----
+test: 3.4
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000169s 
+Final Stim time = 4.010999s 
+Receiving Stimulus B: 3.4
+REACHED FORCE 3.4
+Stim time = 7.8e-05s 
+Final Stim time = 4.000815s 
+The real answer is: 1
+User answer is: 3
+----- TRIAL #8 -----
+test: 4.3
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 8.5e-05s 
+Final Stim time = 4.009694s 
+Receiving Stimulus B: 4.3
+REACHED FORCE 4.3
+Stim time = 0.000253s 
+Final Stim time = 4.00195s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #9 -----
+test: 3.1
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 6.9e-05s 
+Final Stim time = 4.007534s 
+Receiving Stimulus B: 3.1
+REACHED FORCE 3.1
+Stim time = 0.000166s 
+Final Stim time = 4.004928s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #10 -----
+test: 3.7
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000175s 
+Final Stim time = 4.002379s 
+Receiving Stimulus B: 3.7
+REACHED FORCE 3.7
+Stim time = 0.000101s 
+Final Stim time = 4.011517s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #11 -----
+test: 3.1
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000196s 
+Final Stim time = 4.006395s 
+Receiving Stimulus B: 3.1
+REACHED FORCE 3.1
+Stim time = 7.7e-05s 
+Final Stim time = 4.004478s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #12 -----
+test: 4.9
+r: 0
+Receiving Stimulus A: 4.9
+REACHED FORCE 4.9
+Stim time = 0.000521s 
+Final Stim time = 4.004564s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 9.5e-05s 
+Final Stim time = 4.006428s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #13 -----
+test: 3.1
+r: 0
+Receiving Stimulus A: 3.1
+REACHED FORCE 3.1
+Stim time = 0.000144s 
+Final Stim time = 4.008657s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 7e-05s 
+Final Stim time = 4.004472s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #14 -----
+test: 4.3
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000171s 
+Final Stim time = 4.007082s 
+Receiving Stimulus B: 4.3
+REACHED FORCE 4.3
+Stim time = 8e-05s 
+Final Stim time = 4.008497s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #15 -----
+test: 3.4
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 5.6e-05s 
+Final Stim time = 4.005485s 
+Receiving Stimulus B: 3.4
+REACHED FORCE 3.4
+Stim time = 0.000116s 
+Final Stim time = 4.007641s 
+The real answer is: 1
+User answer is: 3
+----- TRIAL #16 -----
+test: 3.7
+r: 0
+Receiving Stimulus A: 3.7
+REACHED FORCE 3.7
+Stim time = 0.000206s 
+Final Stim time = 4.00423s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.00016s 
+Final Stim time = 4.010656s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #17 -----
+test: 4.9
+r: 0
+Receiving Stimulus A: 4.9
+REACHED FORCE 4.9
+Stim time = 0.000202s 
+Final Stim time = 4.004743s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.000278s 
+Final Stim time = 4.009554s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #18 -----
+test: 4.9
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 7.4e-05s 
+Final Stim time = 4.007615s 
+Receiving Stimulus B: 4.9
+REACHED FORCE 4.9
+Stim time = 9e-05s 
+Final Stim time = 4.010925s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #19 -----
+test: 3.7
+r: 0
+Receiving Stimulus A: 3.7
+REACHED FORCE 3.7
+Stim time = 0.000171s 
+Final Stim time = 4.00207s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.000112s 
+Final Stim time = 4.005749s 
+The real answer is: 3
+User answer is: 1
+----- TRIAL #20 -----
+test: 3.4
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 8.5e-05s 
+Final Stim time = 4.007365s 
+Receiving Stimulus B: 3.4
+REACHED FORCE 3.4
+Stim time = 0.000277s 
+Final Stim time = 4.000253s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #21 -----
+test: 4.6
+r: 0
+Receiving Stimulus A: 4.6
+REACHED FORCE 4.6
+Stim time = 0.000203s 
+Final Stim time = 4.007294s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.000153s 
+Final Stim time = 4.009882s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #22 -----
+test: 3.7
+r: 0
+Receiving Stimulus A: 3.7
+REACHED FORCE 3.7
+Stim time = 0.000194s 
+Final Stim time = 4.003091s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.000196s 
+Final Stim time = 4.006578s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #23 -----
+test: 3.1
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 5.5e-05s 
+Final Stim time = 4.004393s 
+Receiving Stimulus B: 3.1
+REACHED FORCE 3.1
+Stim time = 0.000163s 
+Final Stim time = 4.005303s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #24 -----
+test: 3.7
+r: 0
+Receiving Stimulus A: 3.7
+REACHED FORCE 3.7
+Stim time = 8.9e-05s 
+Final Stim time = 4.009784s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.000343s 
+Final Stim time = 4.000111s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #25 -----
+test: 3.1
+r: 0
+Receiving Stimulus A: 3.1
+REACHED FORCE 3.1
+Stim time = 7.5e-05s 
+Final Stim time = 4.010408s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.000202s 
+Final Stim time = 4.006607s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #26 -----
+test: 3.1
+r: 0
+Receiving Stimulus A: 3.1
+REACHED FORCE 3.1
+Stim time = 0.000195s 
+Final Stim time = 4.000042s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 6.8e-05s 
+Final Stim time = 4.002024s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #27 -----
+test: 4.9
+r: 0
+Receiving Stimulus A: 4.9
+REACHED FORCE 4.9
+Stim time = 5.2e-05s 
+Final Stim time = 4.005933s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.000168s 
+Final Stim time = 4.005142s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #28 -----
+test: 3.4
+r: 0
+Receiving Stimulus A: 3.4
+REACHED FORCE 3.4
+Stim time = 0.000193s 
+Final Stim time = 4.002121s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 9.4e-05s 
+Final Stim time = 4.002615s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #29 -----
+test: 4.9
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 7e-05s 
+Final Stim time = 4.007085s 
+Receiving Stimulus B: 4.9
+REACHED FORCE 4.9
+Stim time = 0.0002s 
+Final Stim time = 4.000834s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #30 -----
+test: 4.9
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000152s 
+Final Stim time = 4.004851s 
+Receiving Stimulus B: 4.9
+REACHED FORCE 4.9
+Stim time = 4.9e-05s 
+Final Stim time = 4.007275s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #31 -----
+test: 3.4
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.00017s 
+Final Stim time = 4.000784s 
+Receiving Stimulus B: 3.4
+REACHED FORCE 3.4
+Stim time = 8.6e-05s 
+Final Stim time = 4.002229s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #32 -----
+test: 4.6
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000153s 
+Final Stim time = 4.005463s 
+Receiving Stimulus B: 4.6
+REACHED FORCE 4.6
+Stim time = 0.000179s 
+Final Stim time = 4.000399s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #33 -----
+test: 4.6
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000102s 
+Final Stim time = 4.00848s 
+Receiving Stimulus B: 4.6
+REACHED FORCE 4.6
+Stim time = 5.6e-05s 
+Final Stim time = 4.005996s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #34 -----
+test: 4.6
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.00012s 
+Final Stim time = 4.010035s 
+Receiving Stimulus B: 4.6
+REACHED FORCE 4.6
+Stim time = 0.000358s 
+Final Stim time = 4.002914s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #35 -----
+test: 3.4
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 8.7e-05s 
+Final Stim time = 4.009858s 
+Receiving Stimulus B: 3.4
+REACHED FORCE 3.4
+Stim time = 0.000202s 
+Final Stim time = 4.00587s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #36 -----
+test: 4.3
+r: 0
+Receiving Stimulus A: 4.3
+REACHED FORCE 4.3
+Stim time = 0.000141s 
+Final Stim time = 4.004914s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.000168s 
+Final Stim time = 4.003078s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #37 -----
+test: 4.6
+r: 0
+Receiving Stimulus A: 4.6
+REACHED FORCE 4.6
+Stim time = 0.000237s 
+Final Stim time = 4.009568s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.00037s 
+Final Stim time = 4.006297s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #38 -----
+test: 4.3
+r: 0
+Receiving Stimulus A: 4.3
+REACHED FORCE 4.3
+Stim time = 0.00021s 
+Final Stim time = 4.003824s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.00029s 
+Final Stim time = 4.003052s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #39 -----
+test: 4.9
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.00028s 
+Final Stim time = 4.008233s 
+Receiving Stimulus B: 4.9
+REACHED FORCE 4.9
+Stim time = 9.4e-05s 
+Final Stim time = 4.007949s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #40 -----
+test: 4.6
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000367s 
+Final Stim time = 4.000202s 
+Receiving Stimulus B: 4.6
+REACHED FORCE 4.6
+Stim time = 7.7e-05s 
+Final Stim time = 4.007933s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #41 -----
+test: 4.3
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000106s 
+Final Stim time = 4.005468s 
+Receiving Stimulus B: 4.3
+REACHED FORCE 4.3
+Stim time = 0.000111s 
+Final Stim time = 4.004814s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #42 -----
+test: 3.4
+r: 0
+Receiving Stimulus A: 3.4
+REACHED FORCE 3.4
+Stim time = 6.7e-05s 
+Final Stim time = 4.000035s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.000166s 
+Final Stim time = 4.010639s 
+The real answer is: 3
+User answer is: 1
+----- TRIAL #43 -----
+test: 3.7
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000161s 
+Final Stim time = 4.003649s 
+Receiving Stimulus B: 3.7
+REACHED FORCE 3.7
+Stim time = 0.00021s 
+Final Stim time = 4.0036s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #44 -----
+test: 3.7
+r: 0
+Receiving Stimulus A: 3.7
+REACHED FORCE 3.7
+Stim time = 0.000165s 
+Final Stim time = 4.005454s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.000132s 
+Final Stim time = 4.005274s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #45 -----
+test: 3.1
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.00015s 
+Final Stim time = 4.010552s 
+Receiving Stimulus B: 3.1
+REACHED FORCE 3.1
+Stim time = 0.000353s 
+Final Stim time = 4.00436s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #46 -----
+test: 4.3
+r: 0
+Receiving Stimulus A: 4.3
+REACHED FORCE 4.3
+Stim time = 0.000198s 
+Final Stim time = 4.005783s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 6.7e-05s 
+Final Stim time = 4.00733s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #47 -----
+test: 3.1
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000158s 
+Final Stim time = 4.005406s 
+Receiving Stimulus B: 3.1
+REACHED FORCE 3.1
+Stim time = 0.000194s 
+Final Stim time = 4.004474s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #48 -----
+test: 3.4
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000131s 
+Final Stim time = 4.004098s 
+Receiving Stimulus B: 3.4
+REACHED FORCE 3.4
+Stim time = 0.000208s 
+Final Stim time = 4.00051s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #49 -----
+test: 3.4
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000217s 
+Final Stim time = 4.005527s 
+Receiving Stimulus B: 3.4
+REACHED FORCE 3.4
+Stim time = 0.000221s 
+Final Stim time = 4.006328s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #50 -----
+test: 3.7
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000138s 
+Final Stim time = 4.004326s 
+Receiving Stimulus B: 3.7
+REACHED FORCE 3.7
+Stim time = 6.6e-05s 
+Final Stim time = 4.004283s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #51 -----
+test: 4.6
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000187s 
+Final Stim time = 4.002229s 
+Receiving Stimulus B: 4.6
+REACHED FORCE 4.6
+Stim time = 0.000207s 
+Final Stim time = 4.000198s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #52 -----
+test: 4.6
+r: 0
+Receiving Stimulus A: 4.6
+REACHED FORCE 4.6
+Stim time = 0.000195s 
+Final Stim time = 4.004997s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 9.4e-05s 
+Final Stim time = 4.007656s 
+The real answer is: 1
+User answer is: 3
+----- TRIAL #53 -----
+test: 4.3
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000277s 
+Final Stim time = 4.003451s 
+Receiving Stimulus B: 4.3
+REACHED FORCE 4.3
+Stim time = 8.2e-05s 
+Final Stim time = 4.009269s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #54 -----
+test: 3.1
+r: 0
+Receiving Stimulus A: 3.1
+REACHED FORCE 3.1
+Stim time = 0.000177s 
+Final Stim time = 4.002024s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.000306s 
+Final Stim time = 4.005401s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #55 -----
+test: 4.3
+r: 1
+Receiving Stimulus A: 4
+REACHED FORCE 4
+Stim time = 0.000397s 
+Final Stim time = 4.002455s 
+Receiving Stimulus B: 4.3
+REACHED FORCE 4.3
+Stim time = 8.3e-05s 
+Final Stim time = 4.000624s 
+The real answer is: 3
+User answer is: 1
+----- TRIAL #56 -----
+test: 4.6
+r: 0
+Receiving Stimulus A: 4.6
+REACHED FORCE 4.6
+Stim time = 0.000216s 
+Final Stim time = 4.004613s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.000174s 
+Final Stim time = 4.000897s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #57 -----
+test: 4.3
+r: 0
+Receiving Stimulus A: 4.3
+REACHED FORCE 4.3
+Stim time = 0.000204s 
+Final Stim time = 4.009184s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.000184s 
+Final Stim time = 4.007747s 
+The real answer is: 1
+User answer is: 1
+----- TRIAL #58 -----
+test: 3.4
+r: 0
+Receiving Stimulus A: 3.4
+REACHED FORCE 3.4
+Stim time = 4.2e-05s 
+Final Stim time = 4.009242s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 6.8e-05s 
+Final Stim time = 4.000631s 
+The real answer is: 3
+User answer is: 3
+----- TRIAL #59 -----
+test: 4.6
+r: 0
+Receiving Stimulus A: 4.6
+REACHED FORCE 4.6
+Stim time = 6.7e-05s 
+Final Stim time = 4.007081s 
+Receiving Stimulus B: 4
+REACHED FORCE 4
+Stim time = 0.000174s 
+Final Stim time = 4.001548s 
+The real answer is: 1
+User answer is: 1
+DONE
